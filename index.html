@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAGARA Notion Architecture Viewer</title>
+<style>
+:root {
+  --bg: #f8f9fc;
+  --surface: #ffffff;
+  --surface2: #f0f2f7;
+  --border: #e2e5ee;
+  --text: #1a1d2e;
+  --text2: #6b7294;
+  --accent: #5046e5;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter','Hiragino Sans','Hiragino Kaku Gothic ProN',sans-serif; line-height:1.6; }
+.container { max-width:1480px; margin:0 auto; padding:20px 24px; }
+
+header { text-align:center; padding:40px 20px 24px; }
+header h1 { font-size:2rem; font-weight:800; color:var(--accent); }
+header p { color:var(--text2); margin-top:4px; font-size:0.95rem; }
+
+/* Tabs */
+.tabs { display:flex; gap:4px; margin-bottom:24px; border-bottom:2px solid var(--border); flex-wrap:wrap; }
+.tab { padding:12px 24px; cursor:pointer; border:none; background:none; color:var(--text2); font-size:0.95rem; font-weight:600; border-bottom:3px solid transparent; transition:all 0.15s; }
+.tab:hover { color:var(--text); background:var(--surface2); border-radius:8px 8px 0 0; }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* Layer section */
+.layer-section { margin-bottom:28px; }
+.layer-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; padding:8px 14px; border-radius:10px; }
+.layer-header h2 { font-size:1.15rem; font-weight:700; }
+.layer-header .layer-badge { font-size:0.72rem; padding:2px 10px; border-radius:20px; font-weight:700; color:#fff; }
+.layer-header .layer-desc { font-size:0.82rem; color:var(--text2); margin-left:auto; }
+
+/* DB cards */
+.cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
+.db-card {
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  padding:16px 18px;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+  overflow:hidden;
+}
+.db-card:hover { border-color:#b0b8d0; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+.db-card .card-top { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.db-card .db-id { font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:6px; color:#fff; flex-shrink:0; }
+.db-card .db-name { font-size:0.95rem; font-weight:700; }
+.db-card .db-desc { font-size:0.8rem; color:var(--text2); line-height:1.5; }
+.db-card .views-row { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.db-card .view-tag { font-size:0.68rem; padding:2px 8px; border-radius:6px; background:var(--surface2); color:var(--text2); }
+.db-card .view-icon { font-size:0.68rem; }
+
+/* Expanded card */
+.db-card .expanded-area { display:none; margin-top:14px; border-top:1px solid var(--border); padding-top:12px; }
+.db-card.expanded .expanded-area { display:block; }
+.db-card.expanded { grid-column: 1 / -1; max-width:100%; z-index:10; box-shadow:0 4px 24px rgba(0,0,0,0.1); border-color:var(--accent); }
+.close-btn { position:absolute; top:12px; right:14px; background:#f1f5f9; border:1px solid var(--border); border-radius:8px; padding:4px 14px; font-size:0.78rem; cursor:pointer; color:var(--text2); font-weight:600; z-index:20; }
+.close-btn:hover { background:#e2e8f0; color:var(--text); }
+
+/* Property groups */
+.prop-group { margin-bottom:12px; }
+.prop-group-title { font-size:0.82rem; font-weight:700; margin-bottom:6px; padding-bottom:4px; border-bottom:1px dashed var(--border); }
+.prop-row { display:flex; align-items:flex-start; gap:8px; padding:3px 0; font-size:0.78rem; flex-wrap:wrap; }
+.prop-type-badge { font-size:0.65rem; padding:1px 7px; border-radius:4px; font-weight:600; flex-shrink:0; background:#f1f5f9; color:var(--text2); border:1px solid var(--border); white-space:nowrap; }
+.prop-name { font-weight:600; color:var(--text); flex-shrink:0; }
+.prop-detail { color:var(--text2); font-size:0.75rem; }
+.prop-options { display:flex; flex-wrap:wrap; gap:3px; }
+.prop-pill { font-size:0.65rem; padding:1px 7px; border-radius:10px; font-weight:500; white-space:nowrap; }
+.relation-badge { font-size:0.72rem; padding:2px 10px; border-radius:8px; font-weight:600; color:#fff; cursor:default; }
+.rollup-detail { font-family:'SF Mono','Consolas',monospace; font-size:0.72rem; background:#f8fafc; padding:2px 8px; border-radius:4px; border:1px solid var(--border); }
+
+/* Canvas diagram */
+.canvas-wrap { position:relative; width:100%; overflow-x:auto; }
+canvas#archCanvas { display:block; margin:0 auto; }
+.canvas-legend { display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-top:16px; font-size:0.82rem; }
+.canvas-legend span { display:flex; align-items:center; gap:6px; }
+.canvas-legend .leg-dot { width:14px; height:14px; border-radius:4px; }
+
+/* Stats */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:28px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
+.stat-card .stat-num { font-size:2rem; font-weight:800; color:var(--accent); }
+.stat-card .stat-label { font-size:0.82rem; color:var(--text2); }
+
+/* Action plan */
+.phase { margin-bottom:20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
+.phase h3 { font-size:1rem; font-weight:700; margin-bottom:10px; }
+.phase-item { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:0.85rem; }
+.phase-item .status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.phase-item .status-dot.done { background:#22c55e; }
+.phase-item .status-dot.pending { background:#e2e5ee; border:2px solid #c0c5d4; }
+
+/* Search */
+.search-box { margin-bottom:20px; }
+.search-box input { width:100%; max-width:480px; padding:10px 16px; border:1.5px solid var(--border); border-radius:10px; font-size:0.95rem; outline:none; transition:border-color 0.15s; }
+.search-box input:focus { border-color:var(--accent); }
+
+/* View type icons */
+.vt-table::before { content:""; }
+.vt-board::before { content:""; }
+.vt-calendar::before { content:""; }
+.vt-timeline::before { content:""; }
+.vt-gallery::before { content:""; }
+.vt-form::before { content:""; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>NAGARA Notion Architecture Viewer</h1>
+  <p>16 DBs / 5+1 Layers / Full property & relation map</p>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" data-tab="overview">現状のDB構成</button>
+    <button class="tab" data-tab="ideal">理想のDB構成</button>
+    <button class="tab" data-tab="diagram">リレーション図</button>
+    <button class="tab" data-tab="action">アクションプラン</button>
+  </div>
+
+  <div class="tab-content active" id="tab-overview">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="search-box"><input type="text" id="searchInput" placeholder="DB名・プロパティ名で検索..."></div>
+    <div id="layerSections"></div>
+  </div>
+
+  <div class="tab-content" id="tab-ideal">
+    <div id="idealContent"></div>
+  </div>
+
+  <div class="tab-content" id="tab-diagram">
+    <div class="canvas-wrap">
+      <canvas id="archCanvas" width="1200" height="680"></canvas>
+    </div>
+    <div class="canvas-legend" id="canvasLegend"></div>
+    <p style="text-align:center;margin-top:8px;font-size:0.8rem;color:var(--text2);">ノードをクリックするとリレーションをハイライト。背景クリックでリセット</p>
+  </div>
+
+  <div class="tab-content" id="tab-action">
+    <div id="actionPlan"></div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const layers = {
+  crm:       {name:"CRM層",       color:"#5046e5", bg:"#eef2ff", count:8, desc:"顧客管理の全フロー"},
+  general:   {name:"General層",   color:"#0ea5e9", bg:"#ecfeff", count:4, desc:"組織・PJ・タスク・ドキュメント"},
+  marketing: {name:"Marketing層", color:"#f59e0b", bg:"#fffbeb", count:1, desc:"SNS発信パイプライン"},
+  dev:       {name:"Dev層",       color:"#22c55e", bg:"#f0fdf4", count:1, desc:"プロダクト開発管理"},
+  executive: {name:"Executive層", color:"#ef4444", bg:"#fef2f2", count:1, desc:"経営・1on1（非公開）"},
+  form:      {name:"Form層",      color:"#ec4899", bg:"#fdf2f8", count:1, desc:"営業報告入力"},
+};
+
+const dbs = [
+  {id:"DB1",name:"取引先（Accounts）",layer:"crm",
+   desc:"法人管理の最上位。施設数・事業所数をrollupで自動集計",
+   views:[{n:"全取引先",t:"table"},{n:"営業ステータス別",t:"board"},{n:"エリア別",t:"table"},{n:"ランク別",t:"board"}],
+   props:[
+     {n:"法人名",t:"title"},{n:"法人コード",t:"unique_id",x:"ACC"},
+     {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","商談中","関係継続中","契約法人","見送り","一時中断"]},
+     {n:"営業ステータス（議事録）",t:"select",o:["未接触","アプローチ中","商談中","関係継続中","契約法人","見送り","一時中断"]},
+     {n:"レコードステータス",t:"select",o:["下書き","確定"]},
+     {n:"組織区分",t:"select",o:["社会福祉法人","医療法人","株式会社","合同会社","NPO法人","行政","社団法人","その他"]},
+     {n:"ランク",t:"select",o:["S","A","B","C"]},
+     {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元"]},
+     {n:"エリア（都道府県）",t:"select",o:["北海道","青森県","...","沖縄県(47都道府県)"]},
+     {n:"接触元",t:"select",o:["紹介","SNS","HP問合せ","テレアポ","展示会","セミナー","DecacornCup","その他"]},
+     {n:"エリア（市町村）",t:"rich_text"},{n:"本社所在地",t:"rich_text"},{n:"代表者名",t:"rich_text"},{n:"法人番号",t:"rich_text"},{n:"取引先サマリー",t:"rich_text"},{n:"備考",t:"rich_text"},
+     {n:"電話番号",t:"phone_number"},{n:"メールアドレス",t:"email"},
+     {n:"HP",t:"url"},{n:"共有drive",t:"url"},
+     {n:"接触開始日",t:"date"},{n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"施設一覧",t:"relation",to:"DB2"},{n:"事業所一覧",t:"relation",to:"DB3"},{n:"名刺一覧",t:"relation",to:"DB4"},
+     {n:"商談一覧",t:"relation",to:"DB5"},{n:"活動一覧",t:"relation",to:"DB6"},{n:"契約一覧",t:"relation",to:"DB7"},
+     {n:"関連タスク",t:"relation",to:"DB10"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},{n:"報告一覧",t:"relation",to:"DB12"},
+     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+     {n:"紹介した取引先",t:"relation",to:"DB1"},{n:"紹介した施設",t:"relation",to:"DB2"},{n:"紹介した事業所",t:"relation",to:"DB3"},
+     {n:"施設数",t:"rollup",rp:"施設一覧",tp:"施設名",fn:"count"},
+     {n:"事業所数",t:"rollup",rp:"事業所一覧",tp:"事業所名",fn:"count"},
+     {n:"事業形態一覧",t:"rollup",rp:"事業所一覧",tp:"サービス種別",fn:"show_original"},
+     {n:"既存記録形態一覧",t:"rollup",rp:"事業所一覧",tp:"既存記録形態",fn:"show_original"},
+     {n:"既存請求ソフト一覧",t:"rollup",rp:"事業所一覧",tp:"既存請求ソフト",fn:"show_original"},
+     {n:"紹介実績数（法人経由）",t:"rollup",rp:"紹介元（法人）",tp:"法人名",fn:"count"},
+     {n:"紹介実績数（施設経由）",t:"rollup",rp:"紹介した施設",tp:"施設名",fn:"count"},
+     {n:"紹介実績数（事業所経由）",t:"rollup",rp:"紹介した事業所",tp:"事業所名",fn:"count"},
+   ]},
+  {id:"DB2",name:"施設（Facilities）",layer:"crm",
+   desc:"法人配下の施設管理。SNSリンク。営業ステータス追跡。配下事業所の自動集計",
+   views:[{n:"全施設",t:"table"},{n:"営業ステータス別",t:"board"}],
+   props:[
+     {n:"施設名",t:"title"},{n:"施設コード",t:"unique_id",x:"FAC"},
+     {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","日程調整中","アポ取得","商談済み","トライアル見込み","トライアル準備中","トライアル中","契約準備中","契約施設","見送り","一時中断"]},
+     {n:"営業ステータス（議事録）",t:"select",o:["同上"]},
+     {n:"レコードステータス",t:"select",o:["下書き","確定"]},
+     {n:"エリア（都道府県）",t:"select",o:["(47都道府県)"]},
+     {n:"接触元",t:"select",o:["紹介","SNS","HP問合せ","テレアポ","展示会","セミナー","その他"]},
+     {n:"SNS",t:"multi_select",o:["instagram","facebook","tiktok"]},
+     {n:"エリア（市町村）",t:"rich_text"},{n:"所在地",t:"rich_text"},{n:"備考",t:"rich_text"},
+     {n:"電話番号",t:"phone_number"},{n:"メールアドレス",t:"email"},
+     {n:"HP",t:"url"},{n:"Facebook",t:"url"},{n:"Instagram",t:"url"},{n:"X",t:"url"},{n:"共有drive",t:"url"},
+     {n:"接触開始日",t:"date"},{n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"上位法人",t:"relation",to:"DB1"},{n:"事業所一覧",t:"relation",to:"DB3"},{n:"所属メンバー",t:"relation",to:"DB4"},
+     {n:"商談一覧",t:"relation",to:"DB5"},{n:"関連活動記録",t:"relation",to:"DB6"},{n:"契約一覧",t:"relation",to:"DB7"},
+     {n:"関連タスク",t:"relation",to:"DB10"},{n:"関連ドキュメント",t:"relation",to:"DB11"},{n:"報告一覧",t:"relation",to:"DB12"},
+     {n:"事業所数",t:"rollup",rp:"事業所一覧",tp:"事業所名",fn:"count"},
+     {n:"事業形態一覧",t:"rollup",rp:"事業所一覧",tp:"サービス種別",fn:"show_original"},
+     {n:"既存記録形態一覧",t:"rollup",rp:"事業所一覧",tp:"既存記録形態",fn:"show_original"},
+     {n:"既存請求ソフト一覧",t:"rollup",rp:"事業所一覧",tp:"既存請求ソフト",fn:"show_original"},
+     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+   ]},
+  {id:"DB3",name:"事業所（Offices）",layer:"crm",
+   desc:"介護事業所の詳細。サービス種別・プロダクト導入状況・定員・既存ソフト",
+   views:[{n:"全事業所",t:"table"},{n:"導入ステータス別",t:"board"},{n:"サービス種別別",t:"table"}],
+   props:[
+     {n:"事業所名",t:"title"},{n:"事業所コード",t:"unique_id",x:"OFF"},
+     {n:"サービス種別",t:"select",o:["居宅介護支援","訪問介護","訪問看護","通所介護","地域密着型通所介護","短期入所生活介護","小規模多機能型居宅介護","認知症対応型共同生活介護","介護老人福祉施設","介護老人保健施設","他"]},
+     {n:"導入ステータス（記録）",t:"select",o:["未導入","トライアル見込み","トライアル準備中","トライアル中","契約準備中","契約中","見送り","一時中断"]},
+     {n:"導入ステータス（議事録）",t:"select",o:["同上"]},
+     {n:"レコードステータス",t:"select",o:["下書き","確定"]},
+     {n:"既存請求ソフト",t:"select",o:["カイポケ","ほのぼの","ワイズマン","ケアカルテ","まもる君","介舟ファミリー","NDソフト","他"]},
+     {n:"接触元",t:"select",o:["紹介","SNS","HP問合せ","テレアポ","展示会","セミナー","その他"]},
+     {n:"プロダクト導入状況",t:"multi_select",o:["ながらかいご記録","ながらかいご議事録","決定版介護ソフト"]},
+     {n:"既存記録形態",t:"multi_select",o:["ほのぼの","ワイズマン","カイポケ","ケアカルテ","まもる君","紙","Excel","その他"]},
+     {n:"事業所番号",t:"rich_text"},{n:"所在地",t:"rich_text"},{n:"管理者名",t:"rich_text"},{n:"備考",t:"rich_text"},
+     {n:"電話番号",t:"phone_number"},{n:"共有drive",t:"url"},
+     {n:"定員/利用定員",t:"number"},{n:"従業者数",t:"number"},{n:"常勤者数",t:"number"},
+     {n:"トライアル開始日",t:"date"},{n:"事業開始日",t:"date"},{n:"接触開始日",t:"date"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},
+     {n:"名刺一覧",t:"relation",to:"DB4"},{n:"商談一覧",t:"relation",to:"DB5"},{n:"契約一覧",t:"relation",to:"DB7"},
+     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+   ]},
+  {id:"DB4",name:"名刺情報（Contacts）",layer:"crm",
+   desc:"個人の連絡先管理。姓/名分離。カテゴリ・ステータス・連絡手段",
+   views:[{n:"全名刺",t:"table"},{n:"カテゴリ別",t:"board"},{n:"ギャラリー",t:"gallery"}],
+   props:[
+     {n:"氏名",t:"title"},{n:"名刺コード",t:"unique_id",x:"CON"},
+     {n:"ステータス",t:"select",o:["アクティブ","休眠","退職"]},
+     {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元"]},
+     {n:"接触元",t:"select",o:["紹介","展示会","HP問合せ","テレアポ","SNS","セミナー","その他"]},
+     {n:"レコードステータス",t:"select",o:["下書き","確定"]},
+     {n:"カテゴリ",t:"multi_select",o:["顧客","パートナー","投資家","チームメンバー","アドバイザー","メディア","行政"]},
+     {n:"主な連絡手段",t:"multi_select",o:["メール","電話","SMS","LINE","Facebook","Messenger","Slack"]},
+     {n:"姓",t:"rich_text"},{n:"名",t:"rich_text"},{n:"役職",t:"rich_text"},{n:"部署",t:"rich_text"},{n:"備考",t:"rich_text"},
+     {n:"電話番号",t:"phone_number"},{n:"メール",t:"email"},
+     {n:"プロフィール画像",t:"files"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},{n:"所属事業所",t:"relation",to:"DB3"},
+     {n:"関連商談",t:"relation",to:"DB5"},{n:"活動一覧",t:"relation",to:"DB6"},
+     {n:"タスク一覧",t:"relation",to:"DB10"},{n:"関連ドキュメント",t:"relation",to:"DB11"},{n:"関連商談報告",t:"relation",to:"DB12"},
+     {n:"紹介した取引先",t:"relation",to:"DB1"},{n:"紹介した施設",t:"relation",to:"DB2"},{n:"紹介した事業所",t:"relation",to:"DB3"},
+     {n:"紹介実績数���取引先）",t:"rollup",rp:"紹介した取引先",tp:"法人名",fn:"count"},
+     {n:"紹介実績数（施設）",t:"rollup",rp:"紹介した施設",tp:"施設名",fn:"count"},
+   ]},
+  {id:"DB5",name:"商談（Deals）",layer:"crm",
+   desc:"営業パイプライン。ステージ・確度・想定MRR・対象プロダクト・失注理由",
+   views:[{n:"全商談",t:"table"},{n:"パイプライン",t:"board"},{n:"タイムライン",t:"timeline"}],
+   props:[
+     {n:"商談名",t:"title"},{n:"商談コード",t:"unique_id",x:"DEL"},
+     {n:"パイプラインステージ",t:"select",o:["リード","アプローチ","ヒアリング","提案","見積","交渉","受注","失注"]},
+     {n:"確度",t:"select",o:["10%","25%","50%","75%","90%"]},
+     {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","日程調整中","アポ取得","商談済み","トライアル見込み","見送り"]},
+     {n:"営業ステータス（議事録）",t:"select",o:["同上"]},
+     {n:"失注理由",t:"select",o:["価格","機能不足","競合負け","タイミング","予算なし","その他"]},
+     {n:"対象プロダクト",t:"multi_select",o:["ながらかいご記録","ながらかいご議事録","決定版介護ソフト"]},
+     {n:"商談メモ",t:"rich_text"},{n:"備考",t:"rich_text"},
+     {n:"想定MRR",t:"number"},{n:"受注予定日",t:"date"},{n:"受注日",t:"date"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"PM",t:"people"},{n:"メンバー",t:"people"},{n:"営業担当",t:"people"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"対象事業所",t:"relation",to:"DB3"},
+     {n:"主担当者",t:"relation",to:"DB4"},{n:"活動一覧",t:"relation",to:"DB6"},{n:"契約",t:"relation",to:"DB7"},
+     {n:"タスク一覧",t:"relation",to:"DB10"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},{n:"報告一覧",t:"relation",to:"DB12"},
+   ]},
+  {id:"DB6",name:"MTG & Activity（活動記録）",layer:"crm",
+   desc:"全コミュニケーション記録ハブ。活動タイプ13種。統合アクティビティハブ構想の中心",
+   views:[{n:"全活動",t:"table"},{n:"活動タイプ別",t:"board"},{n:"カレンダー",t:"calendar"},{n:"未完了一覧",t:"table"}],
+   props:[
+     {n:"件名",t:"title"},{n:"活動コード",t:"unique_id",x:"ACT"},
+     {n:"活動タイプ",t:"select",o:["訪問","電話","メール","Web会議","デモ","社内MTG","作業","その他","Slack会話","Notta文字起こし","展示会・イベント","個人電話","カレンダー予定"]},
+     {n:"会議種別",t:"select",o:["営業商談","トライアルフォロー","PM会","定例MTG","1v1","経営会議","採用面接","勉強会","その他"]},
+     {n:"次のアクション",t:"rich_text"},{n:"備考",t:"rich_text"},
+     {n:"工数（h）",t:"number"},{n:"活動日時",t:"date"},{n:"完了",t:"checkbox"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"PM",t:"people"},{n:"メンバー",t:"people"},{n:"営業担当",t:"people"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
+     {n:"商談",t:"relation",to:"DB5"},{n:"参加者",t:"relation",to:"DB4"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},
+   ]},
+  {id:"DB7",name:"契約（Contracts）",layer:"crm",
+   desc:"契約ライフサイクル。MRR・契約方式・期間・プロダクト・自動更新・解約理由",
+   views:[{n:"全契約",t:"table"},{n:"ステータス別",t:"board"}],
+   props:[
+     {n:"契約名",t:"title"},{n:"契約コード",t:"unique_id",x:"CTR"},
+     {n:"契約ステータス",t:"select",o:["依頼中","準備中","送付済","締結完了","解約"]},
+     {n:"契約カテゴリ",t:"select",o:["サービス契約","NDA/秘密保持","トライアル契約","SLA","その他"]},
+     {n:"契約種別",t:"select",o:["新規","更新","変更"]},
+     {n:"契約方式",t:"select",o:["MF電子契約","紙"]},
+     {n:"支払方法",t:"select",o:["請求書","口座振替","クレジットカード"]},
+     {n:"請求サイクル",t:"select",o:["月次","年次","四半期","スポット"]},
+     {n:"解約理由",t:"select",o:["価格","機能不足","競合乗換","サービス終了","事業所閉鎖","その他"]},
+     {n:"対象プロダクト",t:"multi_select",o:["ながらかいご記録","ながらかいご議事録","決定版介護ソフト"]},
+     {n:"備考",t:"rich_text"},{n:"MRR",t:"number"},
+     {n:"契約開始日",t:"date"},{n:"契約終了日",t:"date"},
+     {n:"自動更新",t:"checkbox"},{n:"契約書ファイル",t:"files"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"対象事業所",t:"relation",to:"DB3"},{n:"商談",t:"relation",to:"DB5"},
+   ]},
+  {id:"DB16",name:"CRMタスク（Sales Tasks）",layer:"crm",
+   desc:"顧客に対する次のアクション管理。CRM専用タスク。2026-04-02作成",
+   views:[{n:"全CRMタスク",t:"table"},{n:"ステータス別",t:"board"},{n:"カレンダー",t:"calendar"},{n:"取引先別",t:"table"}],
+   props:[
+     {n:"タスク名",t:"title"},{n:"タスクコード",t:"unique_id",x:"STK"},
+     {n:"ステータス",t:"select",o:["未着手","Next Action","進行中","返信待ち","他者依頼中","完了"]},
+     {n:"優先度",t:"select",o:["至急","高","中","低"]},
+     {n:"活動タイプ",t:"select",o:["電話","メール","訪問","Web会議","資料送付","フォローアップ","その他"]},
+     {n:"特記事項",t:"rich_text"},{n:"締切",t:"date"},{n:"完了日",t:"date"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"担当者",t:"people"},{n:"PM",t:"people"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"事業所",t:"relation",to:"DB3"},
+     {n:"商談",t:"relation",to:"DB5"},{n:"関連先（名刺）",t:"relation",to:"DB4"},{n:"関連活動",t:"relation",to:"DB6"},
+   ]},
+  {id:"DB8",name:"部門（Departments v2）",layer:"general",
+   desc:"組織階層管理。上位/下位DEPTの自己参照。Lead/Members。Drive/Slackリンク",
+   views:[{n:"組織図",t:"table"}],
+   props:[
+     {n:"部門名",t:"title"},{n:"部署コード",t:"unique_id",x:"DPT"},
+     {n:"備考",t:"rich_text"},{n:"Google Drive",t:"url"},{n:"Slack",t:"url"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"Lead",t:"people"},{n:"Members",t:"people"},
+     {n:"上位DEPT",t:"relation",to:"DB8"},{n:"プロジェクト一覧",t:"relation",to:"DB9"},
+     {n:"タスク一覧",t:"relation",to:"DB10"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},
+   ]},
+  {id:"DB9",name:"プロジェクト（Projects v2）",layer:"general",
+   desc:"PJ管理。上位PJ自己参照で階層化。ステータス/優先度/タグ",
+   views:[{n:"全PJ",t:"table"},{n:"ステータス別",t:"board"},{n:"タイムライン",t:"timeline"}],
+   props:[
+     {n:"プロジェクト名",t:"title"},{n:"PJコード",t:"unique_id",x:"PRJ"},
+     {n:"ステータス",t:"select",o:["未着手","進行中","完了","保留","中止"]},
+     {n:"優先度",t:"select",o:["至急","高","中","低"]},
+     {n:"タグ",t:"multi_select",o:["PMF","営業","プロダクト","採用","資金調達"]},
+     {n:"備考",t:"rich_text"},{n:"開始日",t:"date"},{n:"終了日",t:"date"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"上位PJ",t:"relation",to:"DB9"},{n:"部門",t:"relation",to:"DB8"},
+     {n:"タスク一覧",t:"relation",to:"DB10"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},
+   ]},
+  {id:"DB10",name:"タスク（Tasks v2）",layer:"general",
+   desc:"社内運営タスク管理。GTDベース。5ステータス。親タスク階層化",
+   views:[{n:"全タスク",t:"table"},{n:"ステータス別ボード",t:"board"},{n:"カレンダー",t:"calendar"},{n:"担当者別",t:"table"}],
+   props:[
+     {n:"タスク名",t:"title"},{n:"タスクコード",t:"unique_id",x:"TSK"},
+     {n:"ステータス",t:"select",o:["未着手","Next Action","進行中","返信待ち","他者依頼中","完了"]},
+     {n:"優先度",t:"select",o:["至急","高","中","低"]},
+     {n:"特記事項",t:"rich_text"},{n:"締切",t:"date"},{n:"完了日",t:"date"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"担当者",t:"people"},{n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"親タスク",t:"relation",to:"DB10"},{n:"プロジェクト",t:"relation",to:"DB9"},{n:"部門",t:"relation",to:"DB8"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
+     {n:"商談",t:"relation",to:"DB5"},{n:"関連先",t:"relation",to:"DB4"},
+   ]},
+  {id:"DB11",name:"ドキュメント（Documents v2）",layer:"general",
+   desc:"統一ドキュメントDB。レイヤーselectでCRM/社内/経営/開発を絞り込み",
+   views:[{n:"全ドキュメント",t:"table"},{n:"種別別",t:"board"}],
+   props:[
+     {n:"ドキュメント名",t:"title"},{n:"ドキュメントコード",t:"unique_id",x:"DOC"},
+     {n:"種別",t:"select",o:["報告書","提案書","計画書","マニュアル","分析","議事録","Decision Log"]},
+     {n:"ステータス",t:"select",o:["下書き","レビュー中","確定","アーカイブ"]},
+     {n:"レイヤー",t:"select",o:["CRM","社内運営","経営","開発","マーケティング"]},
+     {n:"形式",t:"multi_select",o:["PDF","Google Docs","Google Spreadsheet","Canva","PowerPoint","Notion"]},
+     {n:"要約",t:"rich_text"},{n:"備考",t:"rich_text"},{n:"URL",t:"url"},
+     {n:"日付",t:"date"},{n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"オーナー",t:"people"},{n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"商談",t:"relation",to:"DB5"},
+     {n:"プロジェクト",t:"relation",to:"DB9"},{n:"部門",t:"relation",to:"DB8"},
+     {n:"関連先(名刺)",t:"relation",to:"DB4"},{n:"関連活動",t:"relation",to:"DB6"},
+   ]},
+  {id:"DB13",name:"発信コンテンツ（Contents）",layer:"marketing",
+   desc:"SNS投稿パイプライン。32エージェントの出力先。11アカウント対応",
+   views:[{n:"全コンテンツ",t:"table"},{n:"ステータス別",t:"board"},{n:"カレンダー",t:"calendar"}],
+   props:[
+     {n:"タイトル",t:"title"},{n:"コンテンツコード",t:"unique_id",x:"CNT"},
+     {n:"ステータス",t:"select",o:["企画","下書き","レビュー","承認済","公開済","アーカイブ"]},
+     {n:"カテゴリ",t:"select",o:["企業PR","CEO発信","業界洞察","プロダクト","採用","イベント","その他"]},
+     {n:"プラットフォーム",t:"multi_select",o:["X(@NAGARA_inc)","X(@itsuki_ok)","Instagram(法人)","Instagram(CEO)","LinkedIn(法人)","LinkedIn(CEO)","note(法人)","note(CEO)","Facebook(法人)","Facebook(CEO)","PR TIMES"]},
+     {n:"本文",t:"rich_text"},{n:"備考",t:"rich_text"},{n:"投稿URL",t:"url"},
+     {n:"エンゲージメント",t:"number"},{n:"インプレッション",t:"number"},
+     {n:"メディア",t:"files"},{n:"公開日時",t:"date"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"担当者",t:"people"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"プロジェクト",t:"relation",to:"DB9"},
+   ]},
+  {id:"DB14",name:"プロダクトバックログ（Backlog）",layer:"dev",
+   desc:"ながらかいご等の機能要望・バグ管理。5プロダクト対応",
+   views:[{n:"全バックログ",t:"table"},{n:"優先度別",t:"board"},{n:"プロダクト別",t:"table"}],
+   props:[
+     {n:"タイトル",t:"title"},{n:"バックログコード",t:"unique_id",x:"BLG"},
+     {n:"種別",t:"select",o:["機能要望","バグ","改善","技術負債","UI/UX"]},
+     {n:"優先度",t:"select",o:["P0(緊急)","P1(高)","P2(中)","P3(低)"]},
+     {n:"ステータス",t:"select",o:["未着手","検討中","開発中","テスト中","完了","却下"]},
+     {n:"プロダクト",t:"select",o:["ながらかいご記録","ながらかいご議事録","決定版介護ソフト","キクノート","共通基盤"]},
+     {n:"起票元",t:"select",o:["顧客要望","社内","バグ報告","市場調査"]},
+     {n:"詳細",t:"rich_text"},{n:"再現手順",t:"rich_text"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"報告者",t:"people"},{n:"担当者",t:"people"},
+     {n:"プロジェクト",t:"relation",to:"DB9"},{n:"取引先",t:"relation",to:"DB1"},
+   ]},
+  {id:"DB15",name:"1on1記録（One-on-One）",layer:"executive",
+   desc:"メンバー別1on1記録。ムード追跡。非公開Teamspaceで管理",
+   views:[{n:"全1on1",t:"table"},{n:"カレンダー",t:"calendar"}],
+   props:[
+     {n:"タイトル",t:"title"},{n:"1on1コード",t:"unique_id",x:"OOO"},
+     {n:"ムード",t:"select",o:["良好","普通","要注意"]},
+     {n:"議題",t:"rich_text"},{n:"決定事項",t:"rich_text"},{n:"次のアクション",t:"rich_text"},
+     {n:"日付",t:"date"},{n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"メンバー",t:"people"},{n:"マネージャー",t:"people"},
+     {n:"部門",t:"relation",to:"DB8"},{n:"関連タスク",t:"relation",to:"DB10"},
+   ]},
+  {id:"DB12",name:"商談報告フォーム（Sales Report）",layer:"form",
+   desc:"営業現場からの報告入力。文字起こし対応。処理ステータスで議事録生成フロー管理",
+   views:[{n:"全報告",t:"table"},{n:"処理ステータス別",t:"board"},{n:"報告フォーム",t:"form"}],
+   props:[
+     {n:"報告タイトル",t:"title"},{n:"報告コード",t:"unique_id",x:"RPT"},
+     {n:"活動タイプ",t:"select",o:["訪問","Web会議","電話","メール","デモ"]},
+     {n:"商談ステージ（報告時点）",t:"select",o:["リード","アプローチ","ヒアリング","提案","見積","交渉"]},
+     {n:"確度（報告時点）",t:"select",o:["10%","25%","50%","75%","90%"]},
+     {n:"処理ステータス",t:"select",o:["未処理","議事録生成中","完了","下書き"]},
+     {n:"報告内容",t:"rich_text"},{n:"文字起こし",t:"rich_text"},{n:"次のアクション（手入力）",t:"rich_text"},{n:"参加者メモ",t:"rich_text"},
+     {n:"文字起こし入力済み",t:"checkbox"},{n:"活動日時",t:"date"},
+     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
+     {n:"営業担当",t:"people"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
+     {n:"商談",t:"relation",to:"DB5"},{n:"関連先(名刺)",t:"relation",to:"DB4"},
+   ]},
+];
+
+const relations = [
+  {f:"DB1",t:"DB2",l:"施設一覧"},{f:"DB1",t:"DB3",l:"事業所一覧"},{f:"DB1",t:"DB4",l:"名刺一覧"},
+  {f:"DB1",t:"DB5",l:"商談一覧"},{f:"DB1",t:"DB6",l:"活動一覧"},{f:"DB1",t:"DB7",l:"契約一覧"},
+  {f:"DB2",t:"DB3",l:"事業所一覧"},{f:"DB2",t:"DB4",l:"所属メンバー"},
+  {f:"DB2",t:"DB5",l:"商談一覧"},{f:"DB2",t:"DB6",l:"関連活動"},{f:"DB2",t:"DB7",l:"契約一覧"},
+  {f:"DB3",t:"DB4",l:"名刺一覧"},{f:"DB3",t:"DB5",l:"商談一覧"},{f:"DB3",t:"DB7",l:"契約一覧"},
+  {f:"DB4",t:"DB5",l:"関連商談"},{f:"DB4",t:"DB6",l:"活動一覧"},
+  {f:"DB5",t:"DB6",l:"活動一覧"},{f:"DB5",t:"DB7",l:"契約"},
+  {f:"DB16",t:"DB1",l:"取引先"},{f:"DB16",t:"DB2",l:"施設"},{f:"DB16",t:"DB3",l:"事業所"},
+  {f:"DB16",t:"DB4",l:"名刺"},{f:"DB16",t:"DB5",l:"商談"},{f:"DB16",t:"DB6",l:"関連活動"},
+  {f:"DB12",t:"DB1",l:"取引先"},{f:"DB12",t:"DB2",l:"施設"},{f:"DB12",t:"DB4",l:"名刺"},{f:"DB12",t:"DB5",l:"商談"},
+  {f:"DB1",t:"DB10",l:"関連タスク"},{f:"DB1",t:"DB11",l:"ドキュメント"},{f:"DB1",t:"DB12",l:"報告"},
+  {f:"DB2",t:"DB10",l:"関連タスク"},{f:"DB2",t:"DB11",l:"ドキュメント"},{f:"DB2",t:"DB12",l:"報告"},
+  {f:"DB4",t:"DB10",l:"タスク"},{f:"DB4",t:"DB11",l:"ドキュメント"},{f:"DB4",t:"DB12",l:"報告"},
+  {f:"DB5",t:"DB10",l:"タスク"},{f:"DB5",t:"DB11",l:"ドキュメント"},{f:"DB5",t:"DB12",l:"報告"},
+  {f:"DB6",t:"DB11",l:"ドキュメント"},
+  {f:"DB8",t:"DB8",l:"上位DEPT"},{f:"DB8",t:"DB9",l:"PJ一覧"},{f:"DB8",t:"DB10",l:"タスク"},{f:"DB8",t:"DB11",l:"ドキュメント"},
+  {f:"DB9",t:"DB9",l:"上位PJ"},{f:"DB9",t:"DB10",l:"タスク"},{f:"DB9",t:"DB11",l:"ドキュメント"},
+  {f:"DB10",t:"DB10",l:"親タスク"},
+  {f:"DB13",t:"DB1",l:"取引先"},{f:"DB13",t:"DB9",l:"PJ"},
+  {f:"DB14",t:"DB1",l:"取引先"},{f:"DB14",t:"DB9",l:"PJ"},
+  {f:"DB15",t:"DB8",l:"部門"},{f:"DB15",t:"DB10",l:"タスク"},
+];
+
+const phases = [
+  {name:"Phase 0: 基盤確定",items:[
+    {l:"新WS MCP/API接続確立",s:"done"},{l:"DB1-12 スキーマ構築",s:"done"},
+    {l:"DB6 活動タイプ 13種拡張",s:"done"},{l:"DB13-15 新規作成",s:"done"},
+    {l:"DB16 CRMタスク新規作成",s:"done"},{l:"DB11 レイヤーselect追加",s:"done"},
+    {l:"42ビュー一括作成",s:"done"},{l:"DB Homeページ整理",s:"done"},
+    {l:"DB1/DB2/DB12 テンプレート作成",s:"done"},{l:"viewer HTML作成",s:"done"},
+    {l:"設計ドキュメント同期",s:"done"},{l:"Teamspace構造の決定",s:"pending"},
+    {l:"権限設計（17名）",s:"pending"},
+  ]},
+  {name:"Phase 1: テンプレート & データ投入",items:[
+    {l:"残りDB テンプレート作成（DB3-7等）",s:"pending"},{l:"既存データ移行（取引先37社）",s:"pending"},
+    {l:"名刺スキャナー→DB4連携テスト",s:"pending"},{l:"DB12 報告フォーム運用テスト",s:"pending"},
+    {l:"旧People DB→DB1-4正規化移行",s:"pending"},
+  ]},
+  {name:"Phase 2: 自動化 & 外部連携",items:[
+    {l:"Notta→Notion連携フロー（DB6/DB11）",s:"pending"},{l:"Notta→Zapier→自動パイプライン",s:"pending"},
+    {l:"Gmail→DB6 Skill構築",s:"pending"},{l:"Slack→DB6 Skill構築",s:"pending"},
+    {l:"Asana↔DB10 タスク同期",s:"pending"},
+  ]},
+  {name:"Phase 3: 発信 & 全社展開",items:[
+    {l:"32エージェント投稿パイプライン（DB13）",s:"pending"},{l:"統合ダッシュボード構築",s:"pending"},
+    {l:"D層権限設計・全社展開",s:"pending"},{l:"旧WS完全データ移行",s:"pending"},
+  ]},
+];
+
+const pillColors = ["#dbeafe","#fce7f3","#dcfce7","#fff7ed","#fef3c7","#f3e8ff","#fee2e2","#e0e7ff","#ccfbf1","#fdf2f8"];
+
+// ===== HELPER =====
+function getLayerColor(layerKey) { return layers[layerKey]?.color || "#888"; }
+function getLayerBg(layerKey) { return layers[layerKey]?.bg || "#f5f5f5"; }
+function dbById(id) { return dbs.find(d => d.id === id); }
+
+const viewIcons = {table:"\u{1F5C2}",board:"\u{1F4CB}",calendar:"\u{1F4C5}",timeline:"\u{23F3}",gallery:"\u{1F5BC}",form:"\u{1F4DD}"};
+
+function groupProps(props) {
+  const g = {relation:[],rollup:[],select:[],multi_select:[],text:[],date:[],number:[],other:[]};
+  for (const p of props) {
+    if (p.t === "relation") g.relation.push(p);
+    else if (p.t === "rollup") g.rollup.push(p);
+    else if (p.t === "select") g.select.push(p);
+    else if (p.t === "multi_select") g.multi_select.push(p);
+    else if (["title","rich_text","email","phone_number","url"].includes(p.t)) g.text.push(p);
+    else if (["date","created_time","last_edited_time"].includes(p.t)) g.date.push(p);
+    else if (["number","unique_id"].includes(p.t)) g.number.push(p);
+    else g.other.push(p);
+  }
+  return g;
+}
+
+// ===== RENDER OVERVIEW =====
+function renderStats() {
+  const grid = document.getElementById("statsGrid");
+  const totalProps = dbs.reduce((s, d) => s + d.props.length, 0);
+  const totalViews = dbs.reduce((s, d) => s + d.views.length, 0);
+  const totalRels = relations.length;
+  const items = [
+    {n:dbs.length, l:"Databases"}, {n:totalProps, l:"Properties"}, {n:totalViews, l:"Views"}, {n:totalRels, l:"Relations"},
+    {n:Object.keys(layers).length, l:"Layers"},
+  ];
+  grid.innerHTML = items.map(i => `<div class="stat-card"><div class="stat-num">${i.n}</div><div class="stat-label">${i.l}</div></div>`).join("");
+}
+
+function renderLayerSections(filter) {
+  const container = document.getElementById("layerSections");
+  const layerOrder = ["crm","general","marketing","dev","executive","form"];
+  let html = "";
+  for (const lk of layerOrder) {
+    const ly = layers[lk];
+    let layerDbs = dbs.filter(d => d.layer === lk);
+    if (filter) {
+      const q = filter.toLowerCase();
+      layerDbs = layerDbs.filter(d =>
+        d.name.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) ||
+        d.desc.toLowerCase().includes(q) || d.props.some(p => p.n.toLowerCase().includes(q))
+      );
+    }
+    if (layerDbs.length === 0 && filter) continue;
+    html += `<div class="layer-section">
+      <div class="layer-header" style="background:${ly.bg}">
+        <span class="layer-badge" style="background:${ly.color}">${ly.name}</span>
+        <h2>${ly.name}</h2>
+        <span class="layer-desc">${ly.desc} (${ly.count} DBs)</span>
+      </div>
+      <div class="cards-grid">`;
+    for (const db of layerDbs) {
+      html += renderCard(db, lk);
+    }
+    html += `</div></div>`;
+  }
+  container.innerHTML = html;
+}
+
+function renderCard(db, lk) {
+  const color = getLayerColor(lk);
+  const viewsHtml = db.views.map(v => `<span class="view-tag"><span class="view-icon">${viewIcons[v.t]||""}</span> ${v.n}</span>`).join("");
+  const gp = groupProps(db.props);
+  let expandedHtml = renderExpandedProps(gp, db);
+  return `<div class="db-card" data-id="${db.id}" onclick="toggleCard(event, this)">
+    <button class="close-btn" style="display:none" onclick="closeCard(event, this)">&#10005; 閉じる</button>
+    <div class="card-top">
+      <span class="db-id" style="background:${color}">${db.id}</span>
+      <span class="db-name">${db.name}</span>
+    </div>
+    <div class="db-desc">${db.desc}</div>
+    <div class="views-row">${viewsHtml}</div>
+    <div class="expanded-area">${expandedHtml}</div>
+  </div>`;
+}
+
+function renderExpandedProps(gp, db) {
+  let h = "";
+  // Relations
+  if (gp.relation.length) {
+    h += `<div class="prop-group"><div class="prop-group-title">\u{1F517} リレーション (${gp.relation.length})</div>`;
+    for (const p of gp.relation) {
+      const target = dbById(p.to);
+      const tc = target ? getLayerColor(target.layer) : "#888";
+      h += `<div class="prop-row"><span class="relation-badge" style="background:${tc}">\u2192 ${p.to}</span> <span class="prop-name">${p.n}</span></div>`;
+    }
+    h += `</div>`;
+  }
+  // Rollups
+  if (gp.rollup.length) {
+    h += `<div class="prop-group"><div class="prop-group-title">\u{1F4CA} ロールアップ (${gp.rollup.length})</div>`;
+    for (const p of gp.rollup) {
+      h += `<div class="prop-row"><span class="prop-type-badge">rollup</span> <span class="prop-name">${p.n}</span> <span class="rollup-detail">${p.rp}.${p.tp} (${p.fn})</span></div>`;
+    }
+    h += `</div>`;
+  }
+  // Select
+  if (gp.select.length) {
+    h += `<div class="prop-group"><div class="prop-group-title">\u{1F3F7}\uFE0F セレクト (${gp.select.length})</div>`;
+    for (const p of gp.select) {
+      const pills = (p.o||[]).map((o, i) => `<span class="prop-pill" style="background:${pillColors[i % pillColors.length]}">${o}</span>`).join("");
+      h += `<div class="prop-row"><span class="prop-type-badge">select</span> <span class="prop-name">${p.n}</span> <div class="prop-options">${pills}</div></div>`;
+    }
+    h += `</div>`;
+  }
+  // Multi-select
+  if (gp.multi_select.length) {
+    h += `<div class="prop-group"><div class="prop-group-title">\u{1F3F7}\uFE0F マルチセレクト (${gp.multi_select.length})</div>`;
+    for (const p of gp.multi_select) {
+      const pills = (p.o||[]).map((o, i) => `<span class="prop-pill" style="background:${pillColors[i % pillColors.length]}">${o}</span>`).join("");
+      h += `<div class="prop-row"><span class="prop-type-badge">multi_select</span> <span class="prop-name">${p.n}</span> <div class="prop-options">${pills}</div></div>`;
+    }
+    h += `</div>`;
+  }
+  // Text
+  if (gp.text.length) {
+    h += `<div class="prop-group"><div class="prop-group-title">\u{1F4DD} テキスト系 (${gp.text.length})</div>`;
+    for (const p of gp.text) {
+      h += `<div class="prop-row"><span class="prop-type-badge">${p.t}</span> <span class="prop-name">${p.n}</span></div>`;
+    }
+    h += `</div>`;
+  }
+  // Date
+  if (gp.date.length) {
+    h += `<div class="prop-group"><div class="prop-group-title">\u{1F4C5} 日付系 (${gp.date.length})</div>`;
+    for (const p of gp.date) {
+      h += `<div class="prop-row"><span class="prop-type-badge">${p.t}</span> <span class="prop-name">${p.n}</span></div>`;
+    }
+    h += `</div>`;
+  }
+  // Number / ID
+  if (gp.number.length) {
+    h += `<div class="prop-group"><div class="prop-group-title">\u{1F522} 数値・ID (${gp.number.length})</div>`;
+    for (const p of gp.number) {
+      const detail = p.x ? `prefix: ${p.x}` : "";
+      h += `<div class="prop-row"><span class="prop-type-badge">${p.t}</span> <span class="prop-name">${p.n}</span> <span class="prop-detail">${detail}</span></div>`;
+    }
+    h += `</div>`;
+  }
+  // Other
+  if (gp.other.length) {
+    h += `<div class="prop-group"><div class="prop-group-title">\u{1F4C1} その他 (${gp.other.length})</div>`;
+    for (const p of gp.other) {
+      h += `<div class="prop-row"><span class="prop-type-badge">${p.t}</span> <span class="prop-name">${p.n}</span></div>`;
+    }
+    h += `</div>`;
+  }
+  return h;
+}
+
+// ===== CARD EXPAND/CLOSE =====
+function toggleCard(e, el) {
+  // Don't toggle if clicking close button
+  if (e.target.closest('.close-btn')) return;
+  e.stopPropagation();
+  const wasExpanded = el.classList.contains("expanded");
+  // Close all
+  document.querySelectorAll(".db-card.expanded").forEach(c => {
+    c.classList.remove("expanded");
+    c.querySelector(".close-btn").style.display = "none";
+  });
+  if (!wasExpanded) {
+    el.classList.add("expanded");
+    el.querySelector(".close-btn").style.display = "block";
+    el.scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
+}
+
+function closeCard(e, btn) {
+  e.stopPropagation();
+  const card = btn.closest(".db-card");
+  card.classList.remove("expanded");
+  btn.style.display = "none";
+}
+
+// Close on background click
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".db-card")) {
+    document.querySelectorAll(".db-card.expanded").forEach(c => {
+      c.classList.remove("expanded");
+      c.querySelector(".close-btn").style.display = "none";
+    });
+  }
+});
+
+// ===== SEARCH =====
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  renderLayerSections(e.target.value.trim());
+});
+
+// ===== TABS =====
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+    if (tab.dataset.tab === "diagram") drawDiagram();
+  });
+});
+
+// ===== ACTION PLAN =====
+function renderActionPlan() {
+  const container = document.getElementById("actionPlan");
+  let html = "";
+  for (const ph of phases) {
+    const done = ph.items.filter(i => i.s === "done").length;
+    const total = ph.items.length;
+    const pct = Math.round(done / total * 100);
+    html += `<div class="phase"><h3>${ph.name} <span style="font-size:0.82rem;color:var(--text2);font-weight:400;margin-left:8px;">${done}/${total} (${pct}%)</span></h3>`;
+    html += `<div style="background:#e5e7eb;border-radius:6px;height:6px;margin-bottom:10px;"><div style="background:${pct===100?'#22c55e':'#5046e5'};height:100%;border-radius:6px;width:${pct}%;transition:width 0.3s;"></div></div>`;
+    for (const item of ph.items) {
+      html += `<div class="phase-item"><span class="status-dot ${item.s}"></span>${item.l}</div>`;
+    }
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+// ===== CANVAS DIAGRAM =====
+const nodePositions = {};
+let selectedNode = null;
+let canvasW = 1200, canvasH = 680;
+
+function layoutNodes() {
+  const nw = 120, nh = 48;
+  const padX = 60, padY = 30;
+  // Row definitions (y bands)
+  const rows = [
+    {y: 80, ids: ["DB1","DB2","DB3","DB7"]},       // CRM top
+    {y: 180, ids: ["DB4","DB5","DB6","DB16"]},      // CRM bottom
+    {y: 340, ids: ["DB8","DB9","DB10","DB11"]},     // General
+    {y: 500, ids: ["DB13","DB14","DB15","DB12"]},   // Others
+  ];
+  for (const row of rows) {
+    const count = row.ids.length;
+    const totalW = count * nw + (count - 1) * padX;
+    let startX = (canvasW - totalW) / 2;
+    for (let i = 0; i < count; i++) {
+      nodePositions[row.ids[i]] = {x: startX + i * (nw + padX), y: row.y, w: nw, h: nh};
+    }
+  }
+}
+
+function drawDiagram() {
+  const canvas = document.getElementById("archCanvas");
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvasW * dpr;
+  canvas.height = canvasH * dpr;
+  canvas.style.width = canvasW + "px";
+  canvas.style.height = canvasH + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, canvasW, canvasH);
+
+  layoutNodes();
+
+  // Draw layer bands
+  const bands = [
+    {y:40, h:210, layer:"crm"},
+    {y:300, h:110, layer:"general"},
+    {y:460, h:110, layer:"marketing"}, // shared row
+  ];
+  for (const b of bands) {
+    ctx.fillStyle = layers[b.layer].bg;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.roundRect(20, b.y, canvasW - 40, b.h, 12);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    // label
+    ctx.fillStyle = layers[b.layer].color;
+    ctx.font = "bold 11px Inter, sans-serif";
+    ctx.fillText(layers[b.layer].name, 30, b.y + 18);
+  }
+  // Others band (mixed)
+  ctx.fillStyle = "#f9fafb";
+  ctx.globalAlpha = 0.5;
+  ctx.beginPath();
+  ctx.roundRect(20, 460, canvasW - 40, 110, 12);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "#888";
+  ctx.font = "bold 11px Inter, sans-serif";
+  ctx.fillText("Marketing / Dev / Executive / Form", 30, 478);
+
+  // Draw relations
+  for (const rel of relations) {
+    const from = nodePositions[rel.f];
+    const to = nodePositions[rel.t];
+    if (!from || !to) continue;
+
+    const isSelf = rel.f === rel.t;
+    const isHighlighted = selectedNode && (rel.f === selectedNode || rel.t === selectedNode);
+    const isDimmed = selectedNode && !isHighlighted;
+
+    // Determine line style
+    const fromDb = dbById(rel.f);
+    const toDb = dbById(rel.t);
+    const isCrossLayer = fromDb && toDb && fromDb.layer !== toDb.layer;
+
+    ctx.save();
+    if (isDimmed) {
+      ctx.globalAlpha = 0.08;
+    } else if (isHighlighted) {
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = getLayerColor(fromDb.layer);
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#c0c5d4";
+      ctx.globalAlpha = 0.4;
+    }
+
+    if (isCrossLayer && !isHighlighted) {
+      ctx.setLineDash([4, 4]);
+    }
+
+    if (isSelf) {
+      // Self-reference arc
+      const cx = from.x + from.w + 8;
+      const cy = from.y + from.h / 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, -Math.PI * 0.5, Math.PI * 0.5);
+      ctx.stroke();
+    } else {
+      const fx = from.x + from.w / 2;
+      const fy = from.y + from.h / 2;
+      const tx = to.x + to.w / 2;
+      const ty = to.y + to.h / 2;
+      ctx.beginPath();
+      const midY = (fy + ty) / 2;
+      ctx.moveTo(fx, fy);
+      ctx.bezierCurveTo(fx, midY, tx, midY, tx, ty);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Draw nodes
+  for (const db of dbs) {
+    const pos = nodePositions[db.id];
+    if (!pos) continue;
+    const color = getLayerColor(db.layer);
+    const isSelected = selectedNode === db.id;
+    const isDimmed = selectedNode && !isSelected && !relations.some(r => (r.f === selectedNode && r.t === db.id) || (r.t === selectedNode && r.f === db.id));
+
+    ctx.save();
+    if (isDimmed) ctx.globalAlpha = 0.2;
+
+    // Shadow
+    ctx.shadowColor = "rgba(0,0,0,0.08)";
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
+
+    // Box
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = isSelected ? color : "#d0d5e0";
+    ctx.lineWidth = isSelected ? 2.5 : 1.2;
+    ctx.beginPath();
+    ctx.roundRect(pos.x, pos.y, pos.w, pos.h, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.shadowColor = "transparent";
+
+    // ID badge
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(pos.x + 6, pos.y + 6, 36, 16, 4);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 9px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(db.id, pos.x + 24, pos.y + 17);
+
+    // Name
+    ctx.fillStyle = "#1a1d2e";
+    ctx.font = "600 10px Inter, Hiragino Sans, sans-serif";
+    ctx.textAlign = "center";
+    const shortName = db.name.length > 10 ? db.name.substring(0, 10) + "..." : db.name;
+    ctx.fillText(shortName, pos.x + pos.w / 2, pos.y + 38);
+
+    ctx.restore();
+  }
+
+  // Legend
+  renderCanvasLegend();
+}
+
+function renderCanvasLegend() {
+  const el = document.getElementById("canvasLegend");
+  let html = "";
+  for (const [k, v] of Object.entries(layers)) {
+    html += `<span><span class="leg-dot" style="background:${v.color}"></span>${v.name}</span>`;
+  }
+  el.innerHTML = html;
+}
+
+// Canvas click handler
+document.getElementById("archCanvas").addEventListener("click", (e) => {
+  const canvas = e.target;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  let clicked = null;
+  for (const db of dbs) {
+    const pos = nodePositions[db.id];
+    if (!pos) continue;
+    if (x >= pos.x && x <= pos.x + pos.w && y >= pos.y && y <= pos.y + pos.h) {
+      clicked = db.id;
+      break;
+    }
+  }
+
+  if (clicked === selectedNode) {
+    selectedNode = null;
+  } else {
+    selectedNode = clicked;
+  }
+  drawDiagram();
+});
+
+// ===== IDEAL TAB =====
+const idealStatus = [
+  {db:"DB1",n:"取引先",schema:true,views:true,tpl:true,data:false,auto:false,
+   ideal:"Notta/Gmail連携でDB6活動と自動紐付け。顧客360°ビュー完成",
+   missing:["データ移行（旧People DB 法人分）","リンクドビュー配置（施設/名刺/商談/活動の一覧埋め込み）"]},
+  {db:"DB2",n:"施設",schema:true,views:true,tpl:true,data:false,auto:false,
+   ideal:"施設ページから配下事業所・導入状況が一目でわかる",
+   missing:["データ移行（旧People DB 施設分）","リンクドビュー配置"]},
+  {db:"DB3",n:"事業所",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"244K事業所マスタからTier1を投入。導入ステータス追跡が機能",
+   missing:["テンプレート作成","市場データCSV初期投入（Tier1 187法人分）"]},
+  {db:"DB4",n:"名刺",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"名刺スキャナーアプリから自動登録。法人/施設に自動紐付け",
+   missing:["テンプレート作成","名刺スキャナー連携テスト","旧People DB個人データ移行"]},
+  {db:"DB5",n:"商談",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"パイプラインボードでステージ管理。MRR予測。失注分析",
+   missing:["テンプレート作成","パイプライン自動化（ステージ変更→活動記録自動生成）"]},
+  {db:"DB6",n:"活動記録",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"全チャネル（Notta/Gmail/Slack/Zoom/訪問）の活動が自動集約される統合ハブ",
+   missing:["テンプレート作成","Notta→Zapier→DB6自動投入フロー","Gmail→DB6 Skill","Slack→DB6 Skill","Notta連携用プロパティ追加（文字起こしリンク/録音URL等）"]},
+  {db:"DB7",n:"契約",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"MRR追跡・自動更新通知・解約アラート。MF電子契約連携",
+   missing:["テンプレート作成","MF電子契約連携","自動更新リマインダー自動化"]},
+  {db:"DB16",n:"CRMタスク",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"顧客ごとの次のアクションが一目でわかる。AIエージェントが営業マンに次のアクションを提案",
+   missing:["テンプレート作成","AIエージェント連携（Notion AI / Claude Skills）"]},
+  {db:"DB8",n:"部門",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"組織図が自動表示。部門ページから配下PJ/タスク/メンバーが一覧",
+   missing:["テンプレート作成","部門データ投入（営業課/開発課/企画課/経営推進課等）","組織図ビュー拡充"]},
+  {db:"DB9",n:"PJ",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"タイムラインでPJ進捗を俯瞰。Asanaと双方向同期",
+   missing:["テンプレート作成","Asana↔Notion同期設計","旧Projects DB移行"]},
+  {db:"DB10",n:"タスク（社内）",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"GTDベースのタスク管理。Asanaと同期。社内運営タスクに専念",
+   missing:["テンプレート作成","Asana↔Notion同期","旧Tasks DB移行"]},
+  {db:"DB11",n:"ドキュメント",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"全レイヤー横断の統一ドキュメントDB。レイヤーselectでCRM/社内/経営/開発を絞り込み",
+   missing:["テンプレート作成","レイヤー別ビュー作成","旧Documents DB移行"]},
+  {db:"DB12",n:"商談報告",schema:true,views:true,tpl:true,data:false,auto:false,
+   ideal:"営業現場からフォーム入力→文字起こし→AI議事録自動生成→DB6/DB5に反映",
+   missing:["議事録自動生成フロー構築（Notta→DB12→Claude→DB6）","フォーム公開・運用テスト"]},
+  {db:"DB13",n:"発信コンテンツ",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"32エージェントがコンテンツ生成→レビュー→承認→各SNS自動投稿",
+   missing:["テンプレート作成","32エージェント投稿パイプライン設定","エンゲージメント自動取得"]},
+  {db:"DB14",n:"バックログ",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"顧客要望・バグをプロダクト別に管理。GitHub Issues連携",
+   missing:["テンプレート作成","GitHub Issues連携検討","顧客フィードバック自動取込み"]},
+  {db:"DB15",n:"1on1記録",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"メンバー別1on1をムード追跡。非公開Teamspaceで経営層のみアクセス",
+   missing:["テンプレート作成","旧6個の1on1 DB移行","Teamspace権限設定"]},
+];
+
+function renderIdealTab() {
+  const c = document.getElementById("idealContent");
+
+  // Summary cards
+  const totalDb = idealStatus.length;
+  const schemaOk = idealStatus.filter(d=>d.schema).length;
+  const viewsOk = idealStatus.filter(d=>d.views).length;
+  const tplOk = idealStatus.filter(d=>d.tpl).length;
+  const dataOk = idealStatus.filter(d=>d.data).length;
+  const autoOk = idealStatus.filter(d=>d.auto).length;
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:800;color:#22c55e;">${schemaOk}/${totalDb}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">スキーマ</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:800;color:#22c55e;">${viewsOk}/${totalDb}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">ビュー</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:800;color:${tplOk>0?'#f59e0b':'#ef4444'};">${tplOk}/${totalDb}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">テンプレート</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:800;color:${dataOk>0?'#f59e0b':'#ef4444'};">${dataOk}/${totalDb}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">データ投入</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:800;color:${autoOk>0?'#f59e0b':'#ef4444'};">${autoOk}/${totalDb}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">自動化</div>
+    </div>
+  </div>`;
+
+  // Comparison table
+  html += `<div style="overflow-x:auto;margin-bottom:28px;">
+  <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+    <thead><tr style="background:var(--surface2);">
+      <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">DB</th>
+      <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">スキーマ</th>
+      <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">ビュー</th>
+      <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">テンプレート</th>
+      <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">データ</th>
+      <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">自動化</th>
+      <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">理想の状態</th>
+    </tr></thead><tbody>`;
+
+  const icon = v => v ? '<span style="color:#22c55e;font-weight:700;">✅</span>' : '<span style="color:#ef4444;">❌</span>';
+
+  for (const d of idealStatus) {
+    const allDone = d.schema && d.views && d.tpl && d.data && d.auto;
+    const rowBg = allDone ? '#f0fdf4' : (d.missing.length<=2 ? '#fffbeb' : '');
+    html += `<tr style="background:${rowBg};border-bottom:1px solid var(--border);">
+      <td style="padding:10px;font-weight:700;">${d.db} ${d.n}</td>
+      <td style="padding:10px;text-align:center;">${icon(d.schema)}</td>
+      <td style="padding:10px;text-align:center;">${icon(d.views)}</td>
+      <td style="padding:10px;text-align:center;">${icon(d.tpl)}</td>
+      <td style="padding:10px;text-align:center;">${icon(d.data)}</td>
+      <td style="padding:10px;text-align:center;">${icon(d.auto)}</td>
+      <td style="padding:10px;font-size:0.8rem;color:var(--text2);max-width:300px;">${d.ideal}</td>
+    </tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  // Detailed cards per DB: what's missing
+  html += `<h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;">📋 各DBの理想状態 & 残タスク</h2>`;
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:14px;">`;
+
+  for (const d of idealStatus) {
+    const done = d.schema && d.views && d.tpl && d.data && d.auto;
+    const borderColor = done ? '#22c55e' : (d.missing.length <= 2 ? '#f59e0b' : '#ef4444');
+    const statusLabel = done ? '✅ 完成' : (d.missing.length <= 2 ? '⚠️ あと少し' : '🔧 構築中');
+
+    const missingHtml = d.missing.map(m => `<li style="font-size:0.8rem;color:var(--text2);margin-bottom:4px;">⬜ ${m}</li>`).join('');
+
+    // Find the DB's actual layer
+    const dbData = dbs.find(db => db.id === d.db);
+    const layerInfo = dbData ? layers[dbData.layer] : null;
+    const layerBadge = layerInfo ? `<span style="font-size:0.65rem;padding:2px 8px;border-radius:10px;background:${layerInfo.bg};color:${layerInfo.color};font-weight:700;">${layerInfo.name}</span>` : '';
+
+    html += `<div style="background:var(--surface);border:1px solid var(--border);border-left:4px solid ${borderColor};border-radius:12px;padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-weight:700;">${d.db} ${d.n}</span>
+        <span style="display:flex;gap:6px;align-items:center;">${layerBadge}<span style="font-size:0.75rem;color:${borderColor};font-weight:700;">${statusLabel}</span></span>
+      </div>
+      <div style="font-size:0.82rem;color:var(--accent);margin-bottom:8px;">🎯 ${d.ideal}</div>
+      ${d.missing.length ? `<div style="margin-top:6px;"><div style="font-size:0.72rem;font-weight:700;color:var(--text2);margin-bottom:4px;">残タスク (${d.missing.length})</div><ul style="list-style:none;padding:0;">${missingHtml}</ul></div>` : '<div style="font-size:0.8rem;color:#22c55e;">すべて完了！</div>'}
+    </div>`;
+  }
+  html += `</div>`;
+
+  c.innerHTML = html;
+}
+
+// ===== INIT =====
+renderStats();
+renderLayerSections("");
+renderIdealTab();
+renderActionPlan();
+</script>
+</body>
+</html>
