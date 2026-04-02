@@ -110,6 +110,45 @@ canvas#archCanvas { display:block; margin:0 auto; }
 .vt-timeline::before { content:""; }
 .vt-gallery::before { content:""; }
 .vt-form::before { content:""; }
+
+/* Rationale tab */
+.rationale-overview { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 24px; margin-bottom:28px; line-height:1.8; }
+.rationale-overview h2 { font-size:1.15rem; font-weight:700; margin-bottom:8px; color:var(--accent); }
+.rationale-overview p { font-size:0.88rem; color:var(--text2); }
+.rationale-section { margin-bottom:32px; }
+.rationale-section > h2 { font-size:1.2rem; font-weight:700; margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--border); }
+.rationale-category { margin-bottom:20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.rationale-category summary { padding:14px 18px; font-size:0.95rem; font-weight:700; cursor:pointer; background:var(--surface2); list-style:none; display:flex; align-items:center; gap:8px; }
+.rationale-category summary::-webkit-details-marker { display:none; }
+.rationale-category summary::before { content:"▶"; font-size:0.7rem; transition:transform 0.2s; }
+.rationale-category[open] summary::before { transform:rotate(90deg); }
+.rationale-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.rationale-table th { padding:10px 12px; text-align:left; background:var(--surface2); border-bottom:2px solid var(--border); font-weight:700; white-space:nowrap; }
+.rationale-table td { padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+.rationale-table tr:nth-child(even) { background:#fafbfd; }
+.rationale-table .db-list { display:flex; flex-wrap:wrap; gap:3px; }
+.rationale-table .db-pill { font-size:0.65rem; padding:1px 6px; border-radius:4px; color:#fff; font-weight:600; white-space:nowrap; }
+.rationale-table .reason-col { font-size:0.78rem; color:var(--text); line-height:1.5; max-width:280px; }
+.rationale-table .not-reason-col { font-size:0.78rem; color:var(--text2); line-height:1.5; max-width:280px; }
+
+/* 16x16 Matrix */
+.matrix-wrap { overflow-x:auto; margin-bottom:16px; }
+.matrix-table { border-collapse:collapse; }
+.matrix-table th, .matrix-table td { width:28px; height:28px; min-width:28px; text-align:center; font-size:0.6rem; font-weight:600; border:1px solid var(--border); padding:0; }
+.matrix-table th { background:var(--surface2); position:sticky; }
+.matrix-table th.corner { background:var(--surface); }
+.matrix-table td.cell-exists { background:#dcfce7; cursor:pointer; }
+.matrix-table td.cell-exists:hover { background:#bbf7d0; }
+.matrix-table td.cell-not { background:#f9fafb; cursor:pointer; }
+.matrix-table td.cell-not:hover { background:#f1f5f9; }
+.matrix-table td.cell-self { background:#dbeafe; cursor:pointer; }
+.matrix-table td.cell-self:hover { background:#bfdbfe; }
+.matrix-table td.cell-diag { background:var(--surface2); }
+.matrix-detail { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin-top:16px; display:none; }
+.matrix-detail.visible { display:block; }
+.matrix-detail h4 { font-size:0.95rem; font-weight:700; margin-bottom:6px; }
+.matrix-detail p { font-size:0.85rem; color:var(--text2); line-height:1.6; }
+.matrix-detail .detail-badge { display:inline-block; font-size:0.72rem; padding:2px 10px; border-radius:8px; font-weight:600; color:#fff; margin-right:6px; }
 </style>
 </head>
 <body>
@@ -125,6 +164,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
     <button class="tab" data-tab="ideal">理想のDB構成</button>
     <button class="tab" data-tab="diagram">リレーション図</button>
     <button class="tab" data-tab="action">アクションプラン</button>
+    <button class="tab" data-tab="rationale">設計根拠</button>
   </div>
 
   <div class="tab-content active" id="tab-overview">
@@ -147,6 +187,10 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
   <div class="tab-content" id="tab-action">
     <div id="actionPlan"></div>
+  </div>
+
+  <div class="tab-content" id="tab-rationale">
+    <div id="rationaleContent"></div>
   </div>
 </div>
 
@@ -1074,11 +1118,374 @@ function renderIdealTab() {
   c.innerHTML = html;
 }
 
+// ===== RATIONALE TAB =====
+function renderRationale() {
+  const container = document.getElementById("rationaleContent");
+
+  // --- Data ---
+  const propRationale = [
+    {
+      category: "人物・担当",
+      props: [
+        {name:"PM", has:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB16"], hasNot:["DB8","DB12","DB13","DB14","DB15"],
+         reason:"事業責任者の特定。ページオーナーとして管理責任を持つ",
+         notReason:"DB8はLead/Membersで代替。DB12は営業担当で代替。DB13-15は担当者で代替"},
+        {name:"メンバー", has:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB15"], hasNot:["DB8","DB12","DB13","DB14","DB16"],
+         reason:"複数人が関わるレコードのチームアサイン",
+         notReason:"DB8はMembersで同等。DB12は個人報告。DB13/14は担当者1人で十分。DB16はCRM個人タスク"},
+        {name:"担当者", has:["DB10","DB13","DB14","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB15"],
+         reason:"タスク・コンテンツ・バックログの実行責任者（1人）",
+         notReason:"DB1-9はPM/メンバーで管理。DB11はオーナーで代替。DB12は営業担当。DB15はメンバー/マネージャー"},
+        {name:"営業担当", has:["DB5","DB6","DB12"], hasNot:["DB1","DB2","DB3","DB4","DB7","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB16"],
+         reason:"営業活動に直結するDB（商談・活動・報告）にのみ必要",
+         notReason:"営業以外のDBには不要。取引先(DB1)はPMで代替"},
+      ]
+    },
+    {
+      category: "連絡先情報",
+      props: [
+        {name:"電話番号", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"法人・施設・事業所・個人の連絡先は直接紐付く実体",
+         notReason:"商談・活動・契約等は連絡先を持つ実体ではなく、DB1-4からリレーションで参照"},
+        {name:"メールアドレス/メール", has:["DB1","DB2","DB4"], hasNot:["DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"法人代表メール・施設メール・個人メール",
+         notReason:"DB3(事業所)は施設経由で連絡するため個別メール不要。他はリレーション参照"},
+        {name:"エリア（都道府県）", has:["DB1","DB2"], hasNot:["DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"法人・施設単位での地域営業管理。エリア別集計・フィルタ",
+         notReason:"DB3は所属施設からrollupで参照可能。DB4以降は実体の住所を持たない"},
+      ]
+    },
+    {
+      category: "ステータス管理",
+      props: [
+        {name:"営業ステータス（記録/議事録）", has:["DB1","DB2","DB5"], hasNot:["DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"営業パイプラインの進捗追跡。「記録」=現時点、「議事録」=報告時点のスナップショット",
+         notReason:"DB3は導入ステータスで代替。DB4は個人なのでステータス不要。DB6以降は営業進捗を直接持たない"},
+        {name:"導入ステータス（記録/議事録）", has:["DB3"], hasNot:["DB1","DB2","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"事業所単位でのプロダクト導入進捗（トライアル→契約）。事業所が最小導入単位",
+         notReason:"法人・施設レベルの導入状況は事業所のrollupで集計。他DBは導入と無関係"},
+        {name:"レコードステータス", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"CRMマスタデータの品質管理。「下書き」=未確認、「確定」=検証済み",
+         notReason:"DB5以降はトランザクションデータ（活動記録・契約等）なので品質管理不要"},
+        {name:"ステータス（汎用）", has:["DB4","DB9","DB10","DB11","DB13","DB14","DB16"], hasNot:["DB1","DB2","DB3","DB5","DB6","DB7","DB8","DB12","DB15"],
+         reason:"進捗管理が必要なレコード。未着手→進行中→完了のライフサイクル",
+         notReason:"DB1-3は営業/導入ステータスで代替。DB5はパイプラインステージ。DB6は完了チェックボックス。DB8は組織で進捗不要"},
+        {name:"処理ステータス", has:["DB12"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB16"],
+         reason:"報告の処理フロー管理（未処理→議事録生成中→完了）。ワークフロー制御用",
+         notReason:"DB12専用のワークフロー。他DBには処理フローがない"},
+      ]
+    },
+    {
+      category: "営業・CRM固有",
+      props: [
+        {name:"ランク", has:["DB1"], hasNot:["DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"取引先の重要度（S/A/B/C）。営業リソース配分の判断基準",
+         notReason:"ランクは法人単位でのみ意味がある。施設・個人は法人ランクから推定"},
+        {name:"取引種別", has:["DB1","DB4"], hasNot:["DB2","DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"顧客/ステークホルダー/パートナー/紹介元の分類。multi_selectで兼任対応",
+         notReason:"施設・事業所は法人に紐付くので法人の取引種別を参照。他DBは分類不要"},
+        {name:"接触元", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"リードソース追跡（紹介/展示会/HP等）。マーケティングROI測定",
+         notReason:"接触元はマスタデータ（法人/施設/事業所/個人）の属性。トランザクションには不要"},
+        {name:"確度", has:["DB5","DB12"], hasNot:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB16"],
+         reason:"商談の受注確率（10-90%）。パイプライン予測に使用",
+         notReason:"確度は商談（DB5）と報告時点スナップショット（DB12）にのみ意味がある"},
+        {name:"MRR", has:["DB7"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"月次経常収益の追跡。契約単位で管理し、取引先レベルではrollupで集計",
+         notReason:"MRRは契約に紐付く金額。他DBは金額を持たない"},
+        {name:"想定MRR", has:["DB5"], hasNot:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"商談段階でのMRR予測。受注前のパイプライン価値算出",
+         notReason:"商談が受注→契約(DB7)に移行したらMRRに変わる。他DBは予測不要"},
+      ]
+    },
+    {
+      category: "紹介元トラッキング",
+      props: [
+        {name:"紹介元（法人）", has:["DB1","DB2","DB3"], hasNot:["DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"どの法人が紹介してくれたかを追跡。紹介法人ランキングに使用",
+         notReason:"DB4(名刺)は個人なので「個人を紹介した法人」ではなく「名刺の所属法人」で管理。DB5以降はトランザクション"},
+        {name:"紹介元（個人）", has:["DB1","DB2","DB3"], hasNot:["DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"誰が紹介してくれたかを追跡。紹介者ランキングに使用",
+         notReason:"同上。名刺は紹介「元」であって紹介「先」ではない"},
+        {name:"紹介実績数", has:["DB1","DB4"], hasNot:["DB2","DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"紹介した件数をrollupで自動集計。ランキングビューのソートキー",
+         notReason:"DB2-3は紹介「先」であって「元」ではない。紹介元としてカウントされるのはDB1(法人)とDB4(個人)"},
+      ]
+    },
+    {
+      category: "タスク・PJ管理",
+      props: [
+        {name:"優先度", has:["DB9","DB10","DB14","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB11","DB12","DB13","DB15"],
+         reason:"タスク・PJ・バックログの実行順序決定。至急/高/中/低",
+         notReason:"CRMマスタ(DB1-4)は優先度ではなくランクで管理。活動(DB6)は日時で管理"},
+        {name:"締切/完了日", has:["DB10","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB14","DB15"],
+         reason:"タスクのデッドライン管理。カレンダービュー・リマインダーの基準",
+         notReason:"他DBは期間（開始日/終了日）や日付（活動日時等）で管理。締切はタスク固有"},
+        {name:"親タスク（自己参照）", has:["DB10"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"社内タスクの階層化（親タスク→サブタスク）。WBS構造",
+         notReason:"DB16(CRMタスク)は階層化不要（顧客対応は1アクション=1タスク）。他DBは階層を持たない"},
+      ]
+    },
+    {
+      category: "コンテンツ・発信",
+      props: [
+        {name:"プラットフォーム", has:["DB13"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB14","DB15","DB16"],
+         reason:"SNS 11アカウントのどこに投稿するか。マルチPF同時投稿管理",
+         notReason:"DB13専用。他DBはSNS投稿と無関係"},
+        {name:"エンゲージメント/インプレッション", has:["DB13"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB14","DB15","DB16"],
+         reason:"SNS投稿の効果測定。コンテンツ戦略の判断材料",
+         notReason:"DB13専用の指標"},
+      ]
+    },
+    {
+      category: "組織・1on1",
+      props: [
+        {name:"Lead/Members", has:["DB8"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"部門の責任者と所属メンバー。PM/メンバーの代わりに組織構造に特化した名前",
+         notReason:"他DBはPM/メンバーで統一。DB8だけ組織構造の文脈でLead/Membersを使用"},
+        {name:"ムード", has:["DB15"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB16"],
+         reason:"1on1でのメンバーのコンディション追跡。良好/普通/要注意",
+         notReason:"DB15専用。他DBは人のコンディションを追跡しない"},
+        {name:"Google Drive/Slack", has:["DB8"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+         reason:"部門ごとのDriveフォルダとSlackチャンネルへの直リンク",
+         notReason:"部門(DB8)だけが組織インフラのリンクを持つ。他DBは共有drive(DB1)等で個別管理"},
+      ]
+    },
+  ];
+
+  const relRationale = [
+    {from:"DB1",to:"DB2",exists:true,reason:"法人→施設の1:N。介護業界の基本構造。1法人が複数施設を運営"},
+    {from:"DB1",to:"DB3",exists:true,reason:"法人→事業所の1:N。施設を経由せず法人直下の事業所もある"},
+    {from:"DB1",to:"DB4",exists:true,reason:"法人→名刺の1:N。法人に所属する全キーパーソンを一覧"},
+    {from:"DB1",to:"DB5",exists:true,reason:"法人→商談の1:N。法人単位の全商談パイプラインを俯瞰"},
+    {from:"DB1",to:"DB6",exists:true,reason:"法人→活動の1:N。法人との全コミュニケーション履歴"},
+    {from:"DB1",to:"DB7",exists:true,reason:"法人→契約の1:N。法人との全契約・MRR管理"},
+    {from:"DB1",to:"DB10",exists:true,reason:"法人→社内タスク。法人関連の社内作業（提案書作成等）"},
+    {from:"DB1",to:"DB11",exists:true,reason:"法人→ドキュメント。法人関連の全資料（提案書・契約書等）"},
+    {from:"DB1",to:"DB12",exists:true,reason:"法人→報告。法人に関する全営業報告"},
+    {from:"DB1",to:"DB8",exists:false,reason:"法人と部門は直接関係しない。部門は社内組織、法人は外部顧客"},
+    {from:"DB1",to:"DB9",exists:false,reason:"法人とPJは直接関係しない。PJは社内管理単位。法人→商談→タスク→PJの経路で間接参照"},
+    {from:"DB1",to:"DB13",exists:true,reason:"取引先→コンテンツ。特定顧客事例のSNS発信"},
+    {from:"DB1",to:"DB14",exists:true,reason:"取引先→バックログ。顧客要望からのバグ・機能要望追跡"},
+    {from:"DB1",to:"DB15",exists:false,reason:"法人と1on1は無関係。1on1は社内メンバーのコンディション管理"},
+    {from:"DB1",to:"DB16",exists:true,reason:"法人→CRMタスク。「この法人に次何するか」の管理"},
+    {from:"DB2",to:"DB3",exists:true,reason:"施設→事業所の1:N。1施設が複数の介護サービス事業所を持つ"},
+    {from:"DB2",to:"DB4",exists:true,reason:"施設→名刺。施設に所属するキーパーソン"},
+    {from:"DB2",to:"DB5",exists:true,reason:"施設→商談。施設単位の商談管理（事業所レベルでの導入提案）"},
+    {from:"DB2",to:"DB6",exists:true,reason:"施設→活動。施設との全コミュニケーション履歴"},
+    {from:"DB2",to:"DB7",exists:true,reason:"施設→契約。施設単位の契約管理"},
+    {from:"DB2",to:"DB8",exists:false,reason:"施設は外部顧客。部門は社内組織。直接関係しない"},
+    {from:"DB2",to:"DB9",exists:false,reason:"施設とPJは直接関係しない。間接的にタスク経由"},
+    {from:"DB5",to:"DB10",exists:true,reason:"商談→社内タスク。商談に関連する社内作業（提案書作成・見積作成等）"},
+    {from:"DB5",to:"DB11",exists:true,reason:"商談→ドキュメント。商談に使う提案書・見積書等"},
+    {from:"DB4",to:"DB10",exists:true,reason:"名刺→社内タスク。特定キーパーソンに関するタスク"},
+    {from:"DB4",to:"DB11",exists:true,reason:"名刺→ドキュメント。特定キーパーソンに関する資料"},
+    {from:"DB6",to:"DB11",exists:true,reason:"活動→ドキュメント。会議の議事録・資料を紐付け"},
+    {from:"DB8",to:"DB9",exists:true,reason:"部門→PJ。部門がオーナーのプロジェクト一覧"},
+    {from:"DB8",to:"DB10",exists:true,reason:"部門→タスク。部門配下の全タスク"},
+    {from:"DB8",to:"DB11",exists:true,reason:"部門→ドキュメント。部門の成果物"},
+    {from:"DB9",to:"DB10",exists:true,reason:"PJ→タスク。PJ配下のタスク一覧。WBS管理"},
+    {from:"DB9",to:"DB11",exists:true,reason:"PJ→ドキュメント。PJの成果物"},
+    {from:"DB1",to:"DB1",exists:true,reason:"紹介元（法人）自己参照。法人Aが法人Bを紹介するケース"},
+    {from:"DB8",to:"DB8",exists:true,reason:"上位DEPT自己参照。部門の階層構造（経営→営業課→営業チーム等）"},
+    {from:"DB9",to:"DB9",exists:true,reason:"上位PJ自己参照。PJの階層構造（大PJ→サブPJ）"},
+    {from:"DB10",to:"DB10",exists:true,reason:"親タスク自己参照。タスクの階層化（GTDのサブタスク）"},
+    {from:"DB6",to:"DB7",exists:false,reason:"活動と契約は直接リンクしない。活動→商談→契約の経路で間接参照。活動は日々のコミュニケーション、契約は長期的な合意"},
+    {from:"DB6",to:"DB10",exists:false,reason:"活動とタスクは直接リンクしない。活動は「やったこと」、タスクは「やること」。次のアクションはDB6の富テキストで管理"},
+    {from:"DB7",to:"DB10",exists:false,reason:"契約とタスクは直接リンクしない。契約管理タスクはDB10→DB5→DB7の経路"},
+    {from:"DB7",to:"DB11",exists:false,reason:"契約とドキュメントは直接リンクしない。契約書ファイルはDB7のfilesプロパティで管理。関連ドキュメントはDB5(商談)経由"},
+    {from:"DB13",to:"DB4",exists:false,reason:"コンテンツと名刺は直接リンクしない。SNS投稿に個人名を紐付ける必要がない"},
+    {from:"DB13",to:"DB6",exists:false,reason:"コンテンツと活動は別レイヤー。SNS投稿は営業活動ではなくマーケティング"},
+    {from:"DB14",to:"DB10",exists:false,reason:"バックログと社内タスクは別管理。バックログは開発要望、タスクは日常業務。混ぜると優先度が破綻する"},
+    {from:"DB14",to:"DB4",exists:false,reason:"バックログと名刺は直接リンクしない。顧客要望はDB14→DB1(取引先)で追跡"},
+    {from:"DB15",to:"DB9",exists:false,reason:"1on1とPJは直接リンクしない。1on1は人のコンディション管理、PJは業務管理"},
+    {from:"DB15",to:"DB11",exists:false,reason:"1on1とドキュメントは直接リンクしない。1on1の記録はDB15自体がドキュメント"},
+    {from:"DB16",to:"DB7",exists:false,reason:"CRMタスクと契約は直接リンクしない。CRMタスクは「次に何するか」、契約は「合意した内容」。CRMタスク→商談→契約の経路"},
+    {from:"DB16",to:"DB10",exists:false,reason:"CRMタスクと社内タスクは意図的に分離。AIエージェントのスコープ制御。CRM用AIが社内タスクを触らないように"},
+    {from:"DB16",to:"DB11",exists:false,reason:"CRMタスクとドキュメントは直接リンクしない。CRMタスクは短命なアクション。ドキュメントが必要な場合はDB11→DB5(商談)経由"},
+  ];
+
+  const dbOrder = ["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB16","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB12"];
+
+  // Build lookup for relation rationale
+  const relLookup = {};
+  for (const r of relRationale) {
+    const key1 = r.from + "-" + r.to;
+    const key2 = r.to + "-" + r.from;
+    relLookup[key1] = r;
+    if (r.from !== r.to) relLookup[key2] = r;
+  }
+
+  // Also build lookup from actual relations data
+  const actualRelSet = new Set();
+  for (const rel of relations) {
+    actualRelSet.add(rel.f + "-" + rel.t);
+    if (rel.f !== rel.t) actualRelSet.add(rel.t + "-" + rel.f);
+  }
+
+  // Helper: get DB pill color
+  function dbPillColor(dbId) {
+    const db = dbById(dbId);
+    return db ? getLayerColor(db.layer) : "#888";
+  }
+
+  function dbPills(dbIds) {
+    return dbIds.map(id => `<span class="db-pill" style="background:${dbPillColor(id)}">${id}</span>`).join("");
+  }
+
+  let html = "";
+
+  // --- Overview ---
+  html += `<div class="rationale-overview">
+    <h2>SSOT設計の原則</h2>
+    <p><strong>Single Source of Truth（唯一の情報源）</strong> - 各情報は1箇所にのみ存在し、他のDBからはリレーション/ロールアップで参照する。</p>
+    <p>このタブでは、16個のDBのプロパティとリレーションが<strong>なぜその設計になっているか</strong>を説明します。</p>
+    <p style="margin-top:8px;">
+      <strong>設計判断の3つの軸:</strong><br>
+      1. <strong>実体が持つべきか？</strong> - 連絡先は法人/施設/個人（実体）が持ち、商談（トランザクション）は持たない<br>
+      2. <strong>重複を避けられるか？</strong> - 事業所のエリアは施設からrollupで取得可能なので持たない<br>
+      3. <strong>スコープを分離すべきか？</strong> - CRMタスクと社内タスクはAIエージェントの制御境界として分離
+    </p>
+  </div>`;
+
+  // --- Section A: Property Rationale ---
+  html += `<div class="rationale-section">
+    <h2>Section A: プロパティ設計根拠（なぜあるか / なぜないか）</h2>`;
+
+  for (const cat of propRationale) {
+    html += `<details class="rationale-category" open>
+      <summary>${cat.category}</summary>
+      <div style="overflow-x:auto;">
+        <table class="rationale-table">
+          <thead><tr>
+            <th style="min-width:120px;">プロパティ</th>
+            <th style="min-width:140px;">あるDB</th>
+            <th class="reason-col" style="min-width:200px;">ある理由</th>
+            <th style="min-width:140px;">ないDB</th>
+            <th class="not-reason-col" style="min-width:200px;">ない理由</th>
+          </tr></thead>
+          <tbody>`;
+    for (const p of cat.props) {
+      html += `<tr>
+        <td style="font-weight:600;">${p.name}</td>
+        <td><div class="db-list">${dbPills(p.has)}</div></td>
+        <td class="reason-col">${p.reason}</td>
+        <td><div class="db-list">${dbPills(p.hasNot)}</div></td>
+        <td class="not-reason-col">${p.notReason}</td>
+      </tr>`;
+    }
+    html += `</tbody></table></div></details>`;
+  }
+  html += `</div>`;
+
+  // --- Section B: Relation Matrix ---
+  html += `<div class="rationale-section">
+    <h2>Section B: リレーション設計根拠（16x16 マトリクス）</h2>
+    <p style="font-size:0.85rem;color:var(--text2);margin-bottom:16px;">セルをクリックすると下に根拠が表示されます。色凡例: <span style="background:#dcfce7;padding:2px 8px;border-radius:4px;font-size:0.8rem;">リレーションあり</span> <span style="background:#f9fafb;border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:0.8rem;">リレーションなし</span> <span style="background:#dbeafe;padding:2px 8px;border-radius:4px;font-size:0.8rem;">自己参照</span></p>`;
+
+  // Build 16x16 matrix
+  html += `<div class="matrix-wrap"><table class="matrix-table"><thead><tr><th class="corner"></th>`;
+  for (const id of dbOrder) {
+    const db = dbById(id);
+    const c = db ? getLayerColor(db.layer) : "#888";
+    html += `<th style="color:${c};font-size:0.6rem;">${id.replace("DB","")}</th>`;
+  }
+  html += `</tr></thead><tbody>`;
+
+  for (let ri = 0; ri < dbOrder.length; ri++) {
+    const rowId = dbOrder[ri];
+    const rowDb = dbById(rowId);
+    const rc = rowDb ? getLayerColor(rowDb.layer) : "#888";
+    html += `<tr><th style="color:${rc};font-size:0.6rem;">${rowId.replace("DB","")}</th>`;
+    for (let ci = 0; ci < dbOrder.length; ci++) {
+      const colId = dbOrder[ci];
+      if (ri === ci) {
+        // Self - check if self-reference exists
+        const selfKey = rowId + "-" + rowId;
+        const hasSelf = actualRelSet.has(selfKey);
+        if (hasSelf) {
+          const info = relLookup[selfKey];
+          const tooltip = info ? info.reason : "自己参照";
+          html += `<td class="cell-self" data-from="${rowId}" data-to="${colId}" title="${tooltip}">&#x1F504;</td>`;
+        } else {
+          html += `<td class="cell-diag">-</td>`;
+        }
+      } else {
+        const key = rowId + "-" + colId;
+        const hasRel = actualRelSet.has(key);
+        const info = relLookup[key];
+        if (hasRel) {
+          const tooltip = info ? info.reason : "リレーションあり";
+          html += `<td class="cell-exists" data-from="${rowId}" data-to="${colId}" title="${tooltip}">&#x2705;</td>`;
+        } else if (info && !info.exists) {
+          const tooltip = info.reason;
+          html += `<td class="cell-not" data-from="${rowId}" data-to="${colId}" title="${tooltip}">&#x2796;</td>`;
+        } else if (hasRel) {
+          html += `<td class="cell-exists" data-from="${rowId}" data-to="${colId}" title="リレーションあり">&#x2705;</td>`;
+        } else {
+          html += `<td class="cell-not" data-from="${rowId}" data-to="${colId}" title="">&#x2796;</td>`;
+        }
+      }
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  // Detail panel
+  html += `<div class="matrix-detail" id="matrixDetail">
+    <h4 id="matrixDetailTitle"></h4>
+    <p id="matrixDetailText"></p>
+  </div>`;
+
+  html += `</div>`;
+
+  container.innerHTML = html;
+
+  // --- Matrix click handler ---
+  container.querySelectorAll(".matrix-table td[data-from]").forEach(cell => {
+    cell.addEventListener("click", () => {
+      const from = cell.dataset.from;
+      const to = cell.dataset.to;
+      const key = from + "-" + to;
+      const info = relLookup[key];
+      const detailEl = document.getElementById("matrixDetail");
+      const titleEl = document.getElementById("matrixDetailTitle");
+      const textEl = document.getElementById("matrixDetailText");
+
+      const fromDb = dbById(from);
+      const toDb = dbById(to);
+      const fromName = fromDb ? fromDb.name : from;
+      const toName = toDb ? toDb.name : to;
+      const fromColor = fromDb ? getLayerColor(fromDb.layer) : "#888";
+      const toColor = toDb ? getLayerColor(toDb.layer) : "#888";
+
+      const hasRel = actualRelSet.has(key) || (from === to && actualRelSet.has(key));
+      const statusBadge = hasRel
+        ? `<span class="detail-badge" style="background:#22c55e;">リレーションあり</span>`
+        : `<span class="detail-badge" style="background:#94a3b8;">リレーションなし</span>`;
+
+      titleEl.innerHTML = `${statusBadge} <span class="detail-badge" style="background:${fromColor}">${from}</span> ${fromName} ↔ <span class="detail-badge" style="background:${toColor}">${to}</span> ${toName}`;
+
+      if (info) {
+        textEl.textContent = info.reason;
+      } else if (hasRel) {
+        textEl.textContent = "リレーションが存在しますが、詳細な設計根拠はまだ記載されていません。";
+      } else {
+        textEl.textContent = "リレーションは存在しません。設計根拠の詳細はまだ記載されていません。";
+      }
+
+      detailEl.classList.add("visible");
+      detailEl.scrollIntoView({behavior:"smooth", block:"nearest"});
+    });
+  });
+}
+
 // ===== INIT =====
 renderStats();
 renderLayerSections("");
 renderIdealTab();
 renderActionPlan();
+renderRationale();
 </script>
 </body>
 </html>
