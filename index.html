@@ -1253,56 +1253,175 @@ function renderRationale() {
     },
   ];
 
+  // Complete relation rationale for ALL 16x16 pairs
   const relRationale = [
+    // === DB1 取引先 ↔ 全DB ===
+    {from:"DB1",to:"DB1",exists:true,reason:"🔄 紹介元（法人）自己参照。法人Aが法人Bを紹介するケース。紹介法人ランキングに使用"},
     {from:"DB1",to:"DB2",exists:true,reason:"法人→施設の1:N。介護業界の基本構造。1法人が複数施設を運営"},
-    {from:"DB1",to:"DB3",exists:true,reason:"法人→事業所の1:N。施設を経由せず法人直下の事業所もある"},
-    {from:"DB1",to:"DB4",exists:true,reason:"法人→名刺の1:N。法人に所属する全キーパーソンを一覧"},
+    {from:"DB1",to:"DB3",exists:true,reason:"法人→事業所の1:N。施設を経由せず法人直下の事業所もあるため直接リレーション"},
+    {from:"DB1",to:"DB4",exists:true,reason:"法人→名刺の1:N。法人に所属する全キーパーソンを一覧。紹介元（個人）のdual参照にも使用"},
     {from:"DB1",to:"DB5",exists:true,reason:"法人→商談の1:N。法人単位の全商談パイプラインを俯瞰"},
-    {from:"DB1",to:"DB6",exists:true,reason:"法人→活動の1:N。法人との全コミュニケーション履歴"},
+    {from:"DB1",to:"DB6",exists:true,reason:"法人→活動の1:N。法人との全コミュニケーション履歴。統合アクティビティハブの入口"},
     {from:"DB1",to:"DB7",exists:true,reason:"法人→契約の1:N。法人との全契約・MRR管理"},
-    {from:"DB1",to:"DB10",exists:true,reason:"法人→社内タスク。法人関連の社内作業（提案書作成等）"},
-    {from:"DB1",to:"DB11",exists:true,reason:"法人→ドキュメント。法人関連の全資料（提案書・契約書等）"},
-    {from:"DB1",to:"DB12",exists:true,reason:"法人→報告。法人に関する全営業報告"},
-    {from:"DB1",to:"DB8",exists:false,reason:"法人と部門は直接関係しない。部門は社内組織、法人は外部顧客"},
-    {from:"DB1",to:"DB9",exists:false,reason:"法人とPJは直接関係しない。PJは社内管理単位。法人→商談→タスク→PJの経路で間接参照"},
-    {from:"DB1",to:"DB13",exists:true,reason:"取引先→コンテンツ。特定顧客事例のSNS発信"},
-    {from:"DB1",to:"DB14",exists:true,reason:"取引先→バックログ。顧客要望からのバグ・機能要望追跡"},
-    {from:"DB1",to:"DB15",exists:false,reason:"法人と1on1は無関係。1on1は社内メンバーのコンディション管理"},
-    {from:"DB1",to:"DB16",exists:true,reason:"法人→CRMタスク。「この法人に次何するか」の管理"},
-    {from:"DB2",to:"DB3",exists:true,reason:"施設→事業所の1:N。1施設が複数の介護サービス事業所を持つ"},
-    {from:"DB2",to:"DB4",exists:true,reason:"施設→名刺。施設に所属するキーパーソン"},
-    {from:"DB2",to:"DB5",exists:true,reason:"施設→商談。施設単位の商談管理（事業所レベルでの導入提案）"},
+    {from:"DB1",to:"DB8",exists:false,reason:"法人は外部顧客、部門は社内組織。直接のビジネス関係がない。部門が担当する法人はPM/メンバーのpeopleプロパティで管理"},
+    {from:"DB1",to:"DB9",exists:false,reason:"法人とPJは直接関係しない。PJは社内管理単位。法人→商談→タスク→PJの経路で間接参照可能"},
+    {from:"DB1",to:"DB10",exists:true,reason:"法人→社内タスク。法人関連の社内作業（提案書作成・調査等）。CRMと社内運営の橋渡し"},
+    {from:"DB1",to:"DB11",exists:true,reason:"法人→ドキュメント。法人関連の全資料（提案書・契約書・報告書等）"},
+    {from:"DB1",to:"DB12",exists:true,reason:"法人→報告。法人に関する全営業報告。商談報告フォームの入口"},
+    {from:"DB1",to:"DB13",exists:true,reason:"取引先→コンテンツ。顧客事例のSNS発信や導入事例記事の紐付け"},
+    {from:"DB1",to:"DB14",exists:true,reason:"取引先→バックログ。顧客要望からの機能要望・バグ報告の追跡"},
+    {from:"DB1",to:"DB15",exists:false,reason:"法人と1on1は無関係。1on1は社内メンバーのコンディション管理であり、外部顧客とは無関係"},
+    {from:"DB1",to:"DB16",exists:true,reason:"法人→CRMタスク。「この法人に次何するか」の管理。営業アクション管理の中核"},
+
+    // === DB2 施設 ↔ 残りDB ===
+    {from:"DB2",to:"DB2",exists:false,reason:"施設間の直接リレーションは不要。同じ法人の施設はDB1経由で参照可能"},
+    {from:"DB2",to:"DB3",exists:true,reason:"施設→事業所の1:N。1施設が複数の介護サービス事業所を持つ（特養+デイ+ショートステイ等）"},
+    {from:"DB2",to:"DB4",exists:true,reason:"施設→名刺。施設に所属するキーパーソン（施設長・管理者等）"},
+    {from:"DB2",to:"DB5",exists:true,reason:"施設→商談。施設単位の商談管理。事業所レベルでの導入提案"},
     {from:"DB2",to:"DB6",exists:true,reason:"施設→活動。施設との全コミュニケーション履歴"},
     {from:"DB2",to:"DB7",exists:true,reason:"施設→契約。施設単位の契約管理"},
-    {from:"DB2",to:"DB8",exists:false,reason:"施設は外部顧客。部門は社内組織。直接関係しない"},
-    {from:"DB2",to:"DB9",exists:false,reason:"施設とPJは直接関係しない。間接的にタスク経由"},
-    {from:"DB5",to:"DB10",exists:true,reason:"商談→社内タスク。商談に関連する社内作業（提案書作成・見積作成等）"},
-    {from:"DB5",to:"DB11",exists:true,reason:"商談→ドキュメント。商談に使う提案書・見積書等"},
-    {from:"DB4",to:"DB10",exists:true,reason:"名刺→社内タスク。特定キーパーソンに関するタスク"},
-    {from:"DB4",to:"DB11",exists:true,reason:"名刺→ドキュメント。特定キーパーソンに関する資料"},
-    {from:"DB6",to:"DB11",exists:true,reason:"活動→ドキュメント。会議の議事録・資料を紐付け"},
+    {from:"DB2",to:"DB8",exists:false,reason:"施設は外部顧客、部門は社内組織。直接関係しない"},
+    {from:"DB2",to:"DB9",exists:false,reason:"施設とPJは直接関係しない。施設→商談→タスク→PJの経路で間接参照"},
+    {from:"DB2",to:"DB10",exists:true,reason:"施設→社内タスク。施設関連の社内作業"},
+    {from:"DB2",to:"DB11",exists:true,reason:"施設→ドキュメント。施設関連の資料"},
+    {from:"DB2",to:"DB12",exists:true,reason:"施設→報告。施設に関する営業報告"},
+    {from:"DB2",to:"DB13",exists:false,reason:"施設とコンテンツは直接リンクしない。SNS投稿は法人(DB1)レベルで紐付け"},
+    {from:"DB2",to:"DB14",exists:false,reason:"施設とバックログは直接リンクしない。顧客要望は法人(DB1)で追跡"},
+    {from:"DB2",to:"DB15",exists:false,reason:"施設と1on1は無関係。1on1は社内のみ"},
+    {from:"DB2",to:"DB16",exists:true,reason:"施設→CRMタスク。「この施設に次何するか」の管理"},
+
+    // === DB3 事業所 ↔ 残りDB ===
+    {from:"DB3",to:"DB3",exists:false,reason:"事業所間の直接リレーションは不要。同一施設の事業所はDB2経由で参照"},
+    {from:"DB3",to:"DB4",exists:true,reason:"事業所→名刺。事業所に所属する管理者・職員の連絡先"},
+    {from:"DB3",to:"DB5",exists:true,reason:"事業所→商談。事業所単位の導入商談（最小の導入単位が事業所）"},
+    {from:"DB3",to:"DB6",exists:false,reason:"事業所と活動は直接リンクしない。活動は法人(DB1)・施設(DB2)レベルで記録。事業所レベルの活動は施設経由で参照"},
+    {from:"DB3",to:"DB7",exists:true,reason:"事業所→契約。事業所が契約の最小単位（サービス種別ごとに契約）"},
+    {from:"DB3",to:"DB8",exists:false,reason:"事業所は外部顧客、部門は社内組織。直接関係しない"},
+    {from:"DB3",to:"DB9",exists:false,reason:"事業所とPJは直接関係しない"},
+    {from:"DB3",to:"DB10",exists:false,reason:"事業所と社内タスクは直接リンクしない。タスクは法人(DB1)・施設(DB2)レベルで紐付け"},
+    {from:"DB3",to:"DB11",exists:false,reason:"事業所とドキュメントは直接リンクしない。ドキュメントは法人・施設・商談レベルで紐付け"},
+    {from:"DB3",to:"DB12",exists:false,reason:"事業所と報告は直接リンクしない。報告は法人(DB1)・施設(DB2)レベル"},
+    {from:"DB3",to:"DB13",exists:false,reason:"事業所とコンテンツは無関係"},
+    {from:"DB3",to:"DB14",exists:false,reason:"事業所とバックログは無関係。顧客要望は法人(DB1)で管理"},
+    {from:"DB3",to:"DB15",exists:false,reason:"事業所と1on1は無関係"},
+    {from:"DB3",to:"DB16",exists:true,reason:"事業所→CRMタスク。事業所レベルの導入タスク（トライアル準備等）"},
+
+    // === DB4 名刺 ↔ 残りDB ===
+    {from:"DB4",to:"DB4",exists:false,reason:"名刺間の直接リレーションは不要。同一法人の名刺はDB1経由で参照"},
+    {from:"DB4",to:"DB5",exists:true,reason:"名刺→商談。商談の主担当者（キーパーソン）を紐付け"},
+    {from:"DB4",to:"DB6",exists:true,reason:"名刺→活動。活動の参加者を紐付け。「この人と最後に何を話した？」に回答"},
+    {from:"DB4",to:"DB7",exists:false,reason:"名刺と契約は直接リンクしない。契約は法人・施設・事業所単位。個人は商談(DB5)経由で間接参照"},
+    {from:"DB4",to:"DB8",exists:false,reason:"名刺は外部連絡先、部門は社内組織。直接関係しない"},
+    {from:"DB4",to:"DB9",exists:false,reason:"名刺とPJは直接関係しない"},
+    {from:"DB4",to:"DB10",exists:true,reason:"名刺→社内タスク。特定キーパーソンに関するタスク（資料送付・フォロー等）"},
+    {from:"DB4",to:"DB11",exists:true,reason:"名刺→ドキュメント。特定キーパーソン向けの資料"},
+    {from:"DB4",to:"DB12",exists:true,reason:"名刺→報告。報告に関連する参加者の紐付け"},
+    {from:"DB4",to:"DB13",exists:false,reason:"名刺とコンテンツは直接リンクしない。SNS投稿に個人を紐付ける必要がない"},
+    {from:"DB4",to:"DB14",exists:false,reason:"名刺とバックログは直接リンクしない。顧客要望はDB14→DB1(取引先)で追跡"},
+    {from:"DB4",to:"DB15",exists:false,reason:"名刺と1on1は無関係。名刺は外部連絡先、1on1は社内メンバー"},
+    {from:"DB4",to:"DB16",exists:true,reason:"名刺→CRMタスク。「この人に次何するか」の管理。フォローアップの紐付け"},
+
+    // === DB5 商談 ↔ 残りDB ===
+    {from:"DB5",to:"DB5",exists:false,reason:"商談間の直接リレーションは不要。同一法人の商談はDB1経由で参照"},
+    {from:"DB5",to:"DB6",exists:true,reason:"商談→活動。商談に紐づく全活動（訪問・電話・Web会議等）"},
+    {from:"DB5",to:"DB7",exists:true,reason:"商談→契約。受注した商談から契約を生成。1商談=1契約の紐付け"},
+    {from:"DB5",to:"DB8",exists:false,reason:"商談と部門は直接関係しない。営業担当はpeopleプロパティで管理"},
+    {from:"DB5",to:"DB9",exists:false,reason:"商談とPJは直接関係しない。商談は営業、PJは社内管理"},
+    {from:"DB5",to:"DB10",exists:true,reason:"商談→社内タスク。商談に関連する社内作業（提案書作成・見積作成・デモ準備等）"},
+    {from:"DB5",to:"DB11",exists:true,reason:"商談→ドキュメント。提案書・見積書・NDA等の商談関連資料"},
+    {from:"DB5",to:"DB12",exists:true,reason:"商談→報告。商談に紐づく全営業報告"},
+    {from:"DB5",to:"DB13",exists:false,reason:"商談とコンテンツは直接リンクしない。レイヤーが異なる（CRM vs Marketing）"},
+    {from:"DB5",to:"DB14",exists:false,reason:"商談とバックログは直接リンクしない。商談で出た要望はDB14→DB1(取引先)経由"},
+    {from:"DB5",to:"DB15",exists:false,reason:"商談と1on1は無関係"},
+    {from:"DB5",to:"DB16",exists:true,reason:"商談→CRMタスク。商談の次のアクション管理"},
+
+    // === DB6 活動 ↔ 残りDB ===
+    {from:"DB6",to:"DB6",exists:false,reason:"活動間の直接リレーションは不要。時系列は活動日時でソート"},
+    {from:"DB6",to:"DB7",exists:false,reason:"活動と契約は直接リンクしない。活動→商談→契約の経路で間接参照。活動=日々の行動、契約=長期的合意"},
+    {from:"DB6",to:"DB8",exists:false,reason:"活動と部門は直接リンクしない。活動は顧客との接点、部門は社内組織"},
+    {from:"DB6",to:"DB9",exists:false,reason:"活動とPJは直接リンクしない。活動は営業行動、PJは社内管理"},
+    {from:"DB6",to:"DB10",exists:false,reason:"活動とタスクは直接リンクしない。活動=「やったこと」、タスク=「やること」。次のアクションはDB6のテキストプロパティまたはDB16で管理"},
+    {from:"DB6",to:"DB11",exists:true,reason:"活動→ドキュメント。会議の議事録・配布資料を紐付け"},
+    {from:"DB6",to:"DB12",exists:false,reason:"活動と報告は直接リンクしない。報告(DB12)から活動(DB6)を生成するフローだが、直接の逆参照は報告→商談→活動の経路"},
+    {from:"DB6",to:"DB13",exists:false,reason:"活動とコンテンツは別レイヤー。活動=営業行動、コンテンツ=マーケティング"},
+    {from:"DB6",to:"DB14",exists:false,reason:"活動とバックログは無関係"},
+    {from:"DB6",to:"DB15",exists:false,reason:"活動と1on1は無関係"},
+    {from:"DB6",to:"DB16",exists:true,reason:"活動→CRMタスク。活動から派生するCRMタスクの紐付け"},
+
+    // === DB7 契約 ↔ 残りDB ===
+    {from:"DB7",to:"DB7",exists:false,reason:"契約間の直接リレーションは不要。更新契約は契約種別=「更新」で管理"},
+    {from:"DB7",to:"DB8",exists:false,reason:"契約と部門は無関係"},
+    {from:"DB7",to:"DB9",exists:false,reason:"契約とPJは無関係。契約管理はDB7内で完結"},
+    {from:"DB7",to:"DB10",exists:false,reason:"契約とタスクは直接リンクしない。契約関連タスクはDB10→DB5→DB7の経路"},
+    {from:"DB7",to:"DB11",exists:false,reason:"契約とドキュメントは直接リンクしない。契約書ファイルはDB7のfilesプロパティで管理。提案書等はDB11→DB5(商談)経由"},
+    {from:"DB7",to:"DB12",exists:false,reason:"契約と報告は無関係"},
+    {from:"DB7",to:"DB13",exists:false,reason:"契約とコンテンツは無関係"},
+    {from:"DB7",to:"DB14",exists:false,reason:"契約とバックログは無関係"},
+    {from:"DB7",to:"DB15",exists:false,reason:"契約と1on1は無関係"},
+    {from:"DB7",to:"DB16",exists:false,reason:"CRMタスクと契約は直接リンクしない。CRMタスク→商談→契約の経路。CRMタスクは短命なアクション"},
+
+    // === DB8 部門 ↔ 残りDB ===
+    {from:"DB8",to:"DB8",exists:true,reason:"🔄 上位DEPT自己参照。部門の階層構造（経営→営業課→営業チーム等）"},
     {from:"DB8",to:"DB9",exists:true,reason:"部門→PJ。部門がオーナーのプロジェクト一覧"},
-    {from:"DB8",to:"DB10",exists:true,reason:"部門→タスク。部門配下の全タスク"},
-    {from:"DB8",to:"DB11",exists:true,reason:"部門→ドキュメント。部門の成果物"},
+    {from:"DB8",to:"DB10",exists:true,reason:"部門→タスク。部門配下の全タスク一覧"},
+    {from:"DB8",to:"DB11",exists:true,reason:"部門→ドキュメント。部門の成果物（マニュアル・報告書等）"},
+    {from:"DB8",to:"DB12",exists:false,reason:"部門と報告は直接リンクしない。報告は法人/施設単位。部門別の報告はPM(people)でフィルタ"},
+    {from:"DB8",to:"DB13",exists:false,reason:"部門とコンテンツは直接リンクしない。コンテンツはPJ(DB9)経由で紐付け可能"},
+    {from:"DB8",to:"DB14",exists:false,reason:"部門とバックログは直接リンクしない。バックログはPJ(DB9)経由"},
+    {from:"DB8",to:"DB15",exists:true,reason:"部門→1on1。メンバーの所属部門を紐付け。部門別の1on1一覧"},
+    {from:"DB8",to:"DB16",exists:false,reason:"部門とCRMタスクは直接リンクしない。CRMタスクはCRM層内で完結。担当者はpeopleで管理"},
+
+    // === DB9 PJ ↔ 残りDB ===
+    {from:"DB9",to:"DB9",exists:true,reason:"🔄 上位PJ自己参照。PJの階層構造（大PJ→サブPJ）"},
     {from:"DB9",to:"DB10",exists:true,reason:"PJ→タスク。PJ配下のタスク一覧。WBS管理"},
-    {from:"DB9",to:"DB11",exists:true,reason:"PJ→ドキュメント。PJの成果物"},
-    {from:"DB1",to:"DB1",exists:true,reason:"紹介元（法人）自己参照。法人Aが法人Bを紹介するケース"},
-    {from:"DB8",to:"DB8",exists:true,reason:"上位DEPT自己参照。部門の階層構造（経営→営業課→営業チーム等）"},
-    {from:"DB9",to:"DB9",exists:true,reason:"上位PJ自己参照。PJの階層構造（大PJ→サブPJ）"},
-    {from:"DB10",to:"DB10",exists:true,reason:"親タスク自己参照。タスクの階層化（GTDのサブタスク）"},
-    {from:"DB6",to:"DB7",exists:false,reason:"活動と契約は直接リンクしない。活動→商談→契約の経路で間接参照。活動は日々のコミュニケーション、契約は長期的な合意"},
-    {from:"DB6",to:"DB10",exists:false,reason:"活動とタスクは直接リンクしない。活動は「やったこと」、タスクは「やること」。次のアクションはDB6の富テキストで管理"},
-    {from:"DB7",to:"DB10",exists:false,reason:"契約とタスクは直接リンクしない。契約管理タスクはDB10→DB5→DB7の経路"},
-    {from:"DB7",to:"DB11",exists:false,reason:"契約とドキュメントは直接リンクしない。契約書ファイルはDB7のfilesプロパティで管理。関連ドキュメントはDB5(商談)経由"},
-    {from:"DB13",to:"DB4",exists:false,reason:"コンテンツと名刺は直接リンクしない。SNS投稿に個人名を紐付ける必要がない"},
-    {from:"DB13",to:"DB6",exists:false,reason:"コンテンツと活動は別レイヤー。SNS投稿は営業活動ではなくマーケティング"},
-    {from:"DB14",to:"DB10",exists:false,reason:"バックログと社内タスクは別管理。バックログは開発要望、タスクは日常業務。混ぜると優先度が破綻する"},
-    {from:"DB14",to:"DB4",exists:false,reason:"バックログと名刺は直接リンクしない。顧客要望はDB14→DB1(取引先)で追跡"},
-    {from:"DB15",to:"DB9",exists:false,reason:"1on1とPJは直接リンクしない。1on1は人のコンディション管理、PJは業務管理"},
-    {from:"DB15",to:"DB11",exists:false,reason:"1on1とドキュメントは直接リンクしない。1on1の記録はDB15自体がドキュメント"},
-    {from:"DB16",to:"DB7",exists:false,reason:"CRMタスクと契約は直接リンクしない。CRMタスクは「次に何するか」、契約は「合意した内容」。CRMタスク→商談→契約の経路"},
-    {from:"DB16",to:"DB10",exists:false,reason:"CRMタスクと社内タスクは意図的に分離。AIエージェントのスコープ制御。CRM用AIが社内タスクを触らないように"},
-    {from:"DB16",to:"DB11",exists:false,reason:"CRMタスクとドキュメントは直接リンクしない。CRMタスクは短命なアクション。ドキュメントが必要な場合はDB11→DB5(商談)経由"},
+    {from:"DB9",to:"DB11",exists:true,reason:"PJ→ドキュメント。PJの成果物（計画書・報告書等）"},
+    {from:"DB9",to:"DB12",exists:false,reason:"PJと報告は直接リンクしない。営業報告はCRM層(DB1/DB5)で管理"},
+    {from:"DB9",to:"DB13",exists:true,reason:"PJ→コンテンツ。PRプロジェクトからのSNS投稿紐付け"},
+    {from:"DB9",to:"DB14",exists:true,reason:"PJ→バックログ。開発PJのバックログ管理"},
+    {from:"DB9",to:"DB15",exists:false,reason:"PJと1on1は直接リンクしない。1on1は人のコンディション管理、PJは業務管理"},
+    {from:"DB9",to:"DB16",exists:false,reason:"PJとCRMタスクは直接リンクしない。CRMタスクはCRM層内で完結"},
+
+    // === DB10 タスク ↔ 残りDB ===
+    {from:"DB10",to:"DB10",exists:true,reason:"🔄 親タスク自己参照。タスクの階層化（GTDのサブタスク構造）"},
+    {from:"DB10",to:"DB11",exists:false,reason:"タスクとドキュメントは直接リンクしない。タスクの成果物はDB11→DB9(PJ)経由で管理"},
+    {from:"DB10",to:"DB12",exists:false,reason:"タスクと報告は直接リンクしない。レイヤーが異なる"},
+    {from:"DB10",to:"DB13",exists:false,reason:"タスクとコンテンツは直接リンクしない。レイヤーが異なる"},
+    {from:"DB10",to:"DB14",exists:false,reason:"タスクとバックログは意図的に分離。タスク=日常業務、バックログ=開発要望。混ぜると優先度が破綻する"},
+    {from:"DB10",to:"DB15",exists:true,reason:"タスク→1on1。1on1で話題になったタスクの紐付け"},
+    {from:"DB10",to:"DB16",exists:false,reason:"社内タスクとCRMタスクは意図的に分離。AIエージェントのスコープ制御。CRM用AIが社内タスクを触らないように"},
+
+    // === DB11 ドキュメント ↔ 残りDB ===
+    {from:"DB11",to:"DB11",exists:false,reason:"ドキュメント間の直接リレーションは不要。関連ドキュメントはPJ(DB9)や商談(DB5)経由で参照"},
+    {from:"DB11",to:"DB12",exists:false,reason:"ドキュメントと報告は直接リンクしない。報告はDB12内で完結し、議事録化されたらDB11に新規作成"},
+    {from:"DB11",to:"DB13",exists:false,reason:"ドキュメントとコンテンツは直接リンクしない。コンテンツはDB13内で完結"},
+    {from:"DB11",to:"DB14",exists:false,reason:"ドキュメントとバックログは直接リンクしない。仕様書等はDB14→DB9(PJ)→DB11の経路"},
+    {from:"DB11",to:"DB15",exists:false,reason:"ドキュメントと1on1は直接リンクしない。1on1の記録はDB15自体がドキュメント"},
+    {from:"DB11",to:"DB16",exists:false,reason:"ドキュメントとCRMタスクは直接リンクしない。CRMタスクは短命なアクション"},
+
+    // === DB12 報告 ↔ 残りDB ===
+    {from:"DB12",to:"DB12",exists:false,reason:"報告間の直接リレーションは不要"},
+    {from:"DB12",to:"DB13",exists:false,reason:"報告とコンテンツは無関係"},
+    {from:"DB12",to:"DB14",exists:false,reason:"報告とバックログは無関係"},
+    {from:"DB12",to:"DB15",exists:false,reason:"報告と1on1は無関係"},
+    {from:"DB12",to:"DB16",exists:false,reason:"報告とCRMタスクは直接リンクしない。報告→商談→CRMタスクの経路で次のアクションを管理"},
+
+    // === DB13 コンテンツ ↔ 残りDB ===
+    {from:"DB13",to:"DB13",exists:false,reason:"コンテンツ間の直接リレーションは不要。シリーズ管理はタグで対応"},
+    {from:"DB13",to:"DB14",exists:false,reason:"コンテンツとバックログは無関係。レイヤーが異なる（Marketing vs Dev）"},
+    {from:"DB13",to:"DB15",exists:false,reason:"コンテンツと1on1は無関係"},
+    {from:"DB13",to:"DB16",exists:false,reason:"コンテンツとCRMタスクは無関係。レイヤーが異なる（Marketing vs CRM）"},
+
+    // === DB14 バックログ ↔ 残りDB ===
+    {from:"DB14",to:"DB14",exists:false,reason:"バックログ間の直接リレーションは不要。依存関係はステータスとテキストで管理"},
+    {from:"DB14",to:"DB15",exists:false,reason:"バックログと1on1は無関係"},
+    {from:"DB14",to:"DB16",exists:false,reason:"バックログとCRMタスクは無関係。レイヤーが異なる（Dev vs CRM）"},
+
+    // === DB15 1on1 ↔ 残りDB ===
+    {from:"DB15",to:"DB15",exists:false,reason:"1on1間の直接リレーションは不要。時系列は日付でソート"},
+    {from:"DB15",to:"DB16",exists:false,reason:"1on1とCRMタスクは無関係。レイヤーが異なる（Executive vs CRM）"},
+
+    // === DB16 CRMタスク ↔ 残りDB ===
+    {from:"DB16",to:"DB16",exists:false,reason:"CRMタスク間の直接リレーションは不要。階層化はCRMタスクでは不要（1アクション=1タスク）"},
   ];
 
   const dbOrder = ["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB16","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB12"];
@@ -1414,16 +1533,15 @@ function renderRationale() {
         const key = rowId + "-" + colId;
         const hasRel = actualRelSet.has(key);
         const info = relLookup[key];
-        if (hasRel) {
-          const tooltip = info ? info.reason : "リレーションあり";
-          html += `<td class="cell-exists" data-from="${rowId}" data-to="${colId}" title="${tooltip}">&#x2705;</td>`;
-        } else if (info && !info.exists) {
-          const tooltip = info.reason;
-          html += `<td class="cell-not" data-from="${rowId}" data-to="${colId}" title="${tooltip}">&#x2796;</td>`;
-        } else if (hasRel) {
-          html += `<td class="cell-exists" data-from="${rowId}" data-to="${colId}" title="リレーションあり">&#x2705;</td>`;
+        if (hasRel && info) {
+          html += `<td class="cell-exists" data-from="${rowId}" data-to="${colId}" title="${info.reason}">&#x2705;</td>`;
+        } else if (hasRel && !info) {
+          // WARNING: relation exists but no rationale defined
+          html += `<td class="cell-exists" data-from="${rowId}" data-to="${colId}" title="⚠️ 根拠未定義" style="background:#fef2f2;outline:2px solid #ef4444;">&#x26A0;</td>`;
+        } else if (info && info.exists === false) {
+          html += `<td class="cell-not" data-from="${rowId}" data-to="${colId}" title="${info.reason}">&#x2796;</td>`;
         } else {
-          html += `<td class="cell-not" data-from="${rowId}" data-to="${colId}" title="">&#x2796;</td>`;
+          html += `<td class="cell-not" data-from="${rowId}" data-to="${colId}" title="リレーションなし">&#x2796;</td>`;
         }
       }
     }
@@ -1467,11 +1585,17 @@ function renderRationale() {
       titleEl.innerHTML = `${statusBadge} <span class="detail-badge" style="background:${fromColor}">${from}</span> ${fromName} ↔ <span class="detail-badge" style="background:${toColor}">${to}</span> ${toName}`;
 
       if (info) {
-        textEl.textContent = info.reason;
+        textEl.innerHTML = info.reason;
+        // Warning if relation exists but rationale says it shouldn't, or vice versa
+        if (hasRel && info.exists === false) {
+          textEl.innerHTML += '<br><br><span style="background:#fef2f2;color:#dc2626;padding:4px 10px;border-radius:6px;font-weight:700;font-size:0.85rem;">⚠️ 警告: リレーションが実際に存在するが、設計上は不要と判断。削除を検討してください。</span>';
+        } else if (!hasRel && info.exists === true) {
+          textEl.innerHTML += '<br><br><span style="background:#fffbeb;color:#d97706;padding:4px 10px;border-radius:6px;font-weight:700;font-size:0.85rem;">⚠️ 注意: 設計上必要だが、実際のリレーションが未作成です。</span>';
+        }
       } else if (hasRel) {
-        textEl.textContent = "リレーションが存在しますが、詳細な設計根拠はまだ記載されていません。";
+        textEl.innerHTML = '<span style="background:#fef2f2;color:#dc2626;padding:6px 12px;border-radius:8px;font-weight:700;">⚠️ 警告: リレーションが存在するが、設計根拠が定義されていません。このリレーションが本当に必要か検討してください。</span>';
       } else {
-        textEl.textContent = "リレーションは存在しません。設計根拠の詳細はまだ記載されていません。";
+        textEl.textContent = "リレーションなし（設計上も不要）";
       }
 
       detailEl.classList.add("visible");
