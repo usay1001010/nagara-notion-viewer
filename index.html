@@ -176,6 +176,44 @@ canvas#archCanvas { display:block; margin:0 auto; }
 .critical-path-chain { display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-size:0.82rem; }
 .critical-path-node { background:#fff; border:2px solid #ef4444; border-radius:8px; padding:4px 10px; font-weight:600; font-size:0.78rem; }
 .critical-path-arrow { color:#ef4444; font-weight:700; }
+
+/* Hub tab */
+.hub-channel { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; }
+.hub-channel-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.hub-channel-icon { font-size:1.8rem; }
+.hub-channel-name { font-size:1.1rem; font-weight:700; }
+.hub-diff { font-size:0.7rem; padding:3px 10px; border-radius:20px; font-weight:700; color:#fff; }
+.hub-diff-easy { background:#22c55e; }
+.hub-diff-medium { background:#f59e0b; }
+.hub-diff-hard { background:#ef4444; }
+.hub-flow { list-style:none; padding:0; }
+.hub-flow li { padding:6px 0 6px 24px; position:relative; font-size:0.85rem; color:var(--text2); border-left:2px solid var(--border); margin-left:8px; }
+.hub-flow li::before { content:''; position:absolute; left:-5px; top:12px; width:8px; height:8px; border-radius:50%; background:var(--accent); }
+.hub-section-title { font-size:0.75rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px; margin:12px 0 6px; }
+.hub-props { display:flex; flex-wrap:wrap; gap:4px; }
+.hub-prop { font-size:0.72rem; padding:2px 8px; border-radius:4px; background:var(--surface2); color:var(--text2); }
+.hub-blocker { font-size:0.8rem; color:#ef4444; padding:4px 0; }
+.hub-callout { background:linear-gradient(135deg, #eef2ff, #ecfeff); border:2px solid var(--accent); border-radius:12px; padding:20px; margin-bottom:28px; }
+.hub-callout h3 { font-size:1rem; font-weight:700; color:var(--accent); margin-bottom:10px; }
+.hub-callout li { font-size:0.88rem; color:var(--text2); line-height:1.8; }
+.hub-prop-table { width:100%; border-collapse:collapse; font-size:0.82rem; margin-bottom:28px; }
+.hub-prop-table th { padding:10px 12px; text-align:left; background:var(--surface2); border-bottom:2px solid var(--border); font-weight:700; white-space:nowrap; }
+.hub-prop-table td { padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+.hub-prop-table tr:nth-child(even) { background:#fafbfd; }
+.hub-group-row td { background:var(--surface2) !important; font-weight:700; color:var(--accent); }
+.hub-notion-ai { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:28px; }
+.hub-notion-ai h3 { font-size:1.05rem; font-weight:700; margin-bottom:12px; }
+.hub-notion-ai li { font-size:0.88rem; color:var(--text2); line-height:1.8; padding:4px 0; }
+.hub-notion-ai code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size:0.82rem; }
+.hub-roadmap { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:28px; }
+.hub-roadmap h3 { font-size:1.05rem; font-weight:700; margin-bottom:12px; }
+.hub-roadmap-item { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.88rem; }
+.hub-roadmap-item:last-child { border-bottom:none; }
+.hub-roadmap-week { font-weight:700; color:var(--accent); min-width:70px; }
+.hub-roadmap-desc { color:var(--text); }
+.hub-roadmap-note { color:var(--text2); font-size:0.78rem; margin-left:auto; }
+.hub-page-content li { font-size:0.82rem; color:var(--text2); line-height:1.6; }
+.hub-notion-role { font-size:0.82rem; color:var(--text2); padding:4px 0; font-style:italic; }
 </style>
 </head>
 <body>
@@ -193,6 +231,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
     <button class="tab" data-tab="action">アクションプラン</button>
     <button class="tab" data-tab="rationale">設計根拠</button>
     <button class="tab" data-tab="issues">課題一覧</button>
+    <button class="tab" data-tab="hub">統合ハブ構想</button>
   </div>
 
   <div class="tab-content active" id="tab-overview">
@@ -223,6 +262,10 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
   <div class="tab-content" id="tab-issues">
     <div id="issuesContent"></div>
+  </div>
+
+  <div class="tab-content" id="tab-hub">
+    <div id="hubContent"></div>
   </div>
 </div>
 
@@ -372,6 +415,9 @@ const dbs = [
      {n:"PM",t:"people"},{n:"メンバー",t:"people"},{n:"営業担当",t:"people"},
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
      {n:"商談",t:"relation",to:"DB5"},{n:"参加者",t:"relation",to:"DB4"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},
+     {n:"ソースURL",t:"url"},{n:"ソースID",t:"rich_text"},{n:"ソースチャネル",t:"select",o:["Zoom Phone","Gmail","Slack","Notta","DB12報告","手動入力"]},
+     {n:"文字起こし",t:"rich_text"},{n:"サマリ",t:"rich_text"},{n:"自動生成",t:"checkbox"},
+     {n:"通話時間(秒)",t:"number"},{n:"通話方向",t:"select",o:["着信","発信","不在着信"]},{n:"通話結果",t:"select",o:["応答","不在","留守電","転送"]},
    ]},
   {id:"DB7",name:"契約（Contracts）",layer:"crm",
    desc:"契約ライフサイクル。MRR・契約方式・期間・プロダクト・自動更新・解約理由",
@@ -1876,6 +1922,277 @@ function scrollToIssue(id) {
   }
 }
 
+// ===== HUB TAB =====
+function renderHub() {
+  const c = document.getElementById("hubContent");
+
+  const channels = [
+    {
+      id:"zoom", name:"Zoom Phone", icon:"\u{1F4DE}", color:"#2D8CFF", difficulty:"Easy", time:"2-3\u6642\u9593",
+      method:"Python + GitHub Actions (\u65E2\u5B58sync.py\u62E1\u5F35)",
+      existing:"~/project/zoom-phone-notion/ \u306B\u65E2\u5B58cron\u7A3C\u50CD\u4E2D",
+      flow:[
+        "Zoom API \u2192 \u901A\u8A71\u30ED\u30B0\u53D6\u5F97\uFF0815\u5206cron\uFF09",
+        "\u96FB\u8A71\u756A\u53F7\u3067DB1/DB4\u30DE\u30C3\u30C1\u30F3\u30B0 \u2192 \u9867\u5BA2\u7279\u5B9A",
+        "DB6\u306B\u6295\u5165\uFF08\u6D3B\u52D5\u30BF\u30A4\u30D7=\u96FB\u8A71\u3001\u901A\u8A71\u65B9\u5411/\u7D50\u679C/\u6642\u9593\uFF09",
+        "\u30DA\u30FC\u30B8\u672C\u6587\u306B: \u767A\u4FE1\u5143/\u5148\u756A\u53F7, \u30C7\u30D0\u30A4\u30B9, \u30B3\u30FC\u30EBID",
+        "Notion AI \u2192 \u30B5\u30DE\u30EA\u81EA\u52D5\u751F\u6210\u3001\u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3\u62BD\u51FA"
+      ],
+      propsUsed:["\u6D3B\u52D5\u30BF\u30A4\u30D7=\u96FB\u8A71","\u901A\u8A71\u65B9\u5411","\u901A\u8A71\u7D50\u679C","\u901A\u8A71\u6642\u9593(\u79D2)","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=Zoom Phone","\u30BD\u30FC\u30B9ID=\u30B3\u30FC\u30EBID","\u81EA\u52D5\u751F\u6210=true"],
+      pageContent:["\u901A\u8A71\u8A73\u7D30\uFF08\u767A\u4FE1\u5143/\u5148\u3001\u30C7\u30D0\u30A4\u30B9\u3001\u30B3\u30FC\u30EBID/\u30D1\u30B9ID\uFF09","\u6587\u5B57\u8D77\u3053\u3057\u5168\u6587\uFF08Zoom\u9332\u97F3\u304B\u3089\uFF09","Notion AI\u81EA\u52D5\u8981\u7D04"],
+      notionAi:"\u30B5\u30DE\u30EA\u81EA\u52D5\u751F\u6210 / \u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3\u62BD\u51FA / DB16(CRM\u30BF\u30B9\u30AF)\u81EA\u52D5\u4F5C\u6210",
+      blockers:["Zoom Marketplace\u3067recording_transcript\u30B9\u30B3\u30FC\u30D7\u8FFD\u52A0\u304C\u5FC5\u8981"]
+    },
+    {
+      id:"gmail", name:"Gmail", icon:"\u2709\uFE0F", color:"#EA4335", difficulty:"Medium", time:"1-2\u65E5",
+      method:"Python + Google Workspace Service Account + \u30C9\u30E1\u30A4\u30F3\u5168\u4F53\u59D4\u4EFB",
+      existing:"Google Workspace\u5951\u7D04\u6E08\u307F\u3002Gmail MCP\u63A5\u7D9A\u6E08\u307F\uFF08CEO\u5206\u306E\u307F\uFF09",
+      flow:[
+        "Service Account + \u30C9\u30E1\u30A4\u30F3\u5168\u4F53\u59D4\u4EFB\u3067\u516817\u540D\u306EGmail\u306BAPI\u30A2\u30AF\u30BB\u30B9",
+        "DB1/DB2/DB4\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9/\u30C9\u30E1\u30A4\u30F3\u3067\u9867\u5BA2\u30E1\u30FC\u30EB\u30EA\u30B9\u30C8\u751F\u6210",
+        "Gmail API\u691C\u7D22: from/to \u304C\u9867\u5BA2\u30EA\u30B9\u30C8\u306B\u30DE\u30C3\u30C1\u3059\u308B\u30E1\u30FC\u30EB\u3060\u3051\u62BD\u51FA",
+        "\u9664\u5916: \u30E1\u30EB\u30DE\u30AC(unsubscribe), \u793E\u5185(@nagara.co.jp), noreply",
+        "DB6\u306B\u6295\u5165\uFF08\u6D3B\u52D5\u30BF\u30A4\u30D7=\u30E1\u30FC\u30EB\uFF09",
+        "\u30DA\u30FC\u30B8\u672C\u6587\u306B: \u30E1\u30FC\u30EB\u5168\u6587, CC/BCC, \u30B9\u30EC\u30C3\u30C9\u5C65\u6B74",
+        "Notion AI \u2192 \u30E1\u30FC\u30EB\u8981\u7D04\u3001\u91CD\u8981\u5EA6\u5224\u5B9A\u3001\u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3"
+      ],
+      propsUsed:["\u6D3B\u52D5\u30BF\u30A4\u30D7=\u30E1\u30FC\u30EB","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=Gmail","\u30BD\u30FC\u30B9URL=Gmail\u30EA\u30F3\u30AF","\u30BD\u30FC\u30B9ID=\u30B9\u30EC\u30C3\u30C9ID","\u81EA\u52D5\u751F\u6210=true"],
+      pageContent:["\u30E1\u30FC\u30EB\u672C\u6587\uFF08\u5168\u6587\uFF09","CC/BCC\u4E00\u89A7","\u6DFB\u4ED8\u30D5\u30A1\u30A4\u30EB\u540D","\u30B9\u30EC\u30C3\u30C9\u5185\u306E\u904E\u53BB\u30E1\u30FC\u30EB"],
+      notionAi:"\u30E1\u30FC\u30EB\u8981\u7D04 / \u91CD\u8981\u5EA6\u5224\u5B9A / \u8FD4\u4FE1\u304C\u5FC5\u8981\u304B\u306E\u5224\u65AD / DB16\u81EA\u52D5\u4F5C\u6210",
+      blockers:["Google Cloud Console\u3067Service Account\u4F5C\u6210\uFF081\u56DE\uFF09","Workspace\u7BA1\u7406\u30B3\u30F3\u30BD\u30FC\u30EB\u3067\u30C9\u30E1\u30A4\u30F3\u59D4\u4EFB\u8A2D\u5B9A\uFF081\u56DE\uFF09"]
+    },
+    {
+      id:"slack", name:"Slack", icon:"\u{1F4AC}", color:"#4A154B", difficulty:"Medium", time:"1-2\u65E5",
+      method:"Python + Slack API + GitHub Actions",
+      existing:"Slack MCP\u63A5\u7D9A\u6E08\u307F\u3002\u9867\u5BA2\u30C1\u30E3\u30F3\u30CD\u30EB10+",
+      flow:[
+        "\u9867\u5BA2\u30C1\u30E3\u30F3\u30CD\u30EB\u4E00\u89A7\u3092\u547D\u540D\u898F\u5247(#client-XXX)\u3067\u81EA\u52D5\u8B58\u5225",
+        "Slack API\u3067\u524D\u56DE\u4EE5\u964D\u306E\u65B0\u30E1\u30C3\u30BB\u30FC\u30B8\u3092\u53D6\u5F97",
+        "\u30B9\u30EC\u30C3\u30C9\u5358\u4F4D\u3067\u307E\u3068\u3081\u3066DB6\u306B\u6295\u5165",
+        "\u30DA\u30FC\u30B8\u672C\u6587\u306B: \u4F1A\u8A71\u5168\u6587\uFF08\u8A71\u8005\u4ED8\u304D\uFF09, \u30EA\u30A2\u30AF\u30B7\u30E7\u30F3",
+        "Notion AI \u2192 \u4F1A\u8A71\u8981\u7D04\u3001\u30A2\u30AF\u30B7\u30E7\u30F3\u30A2\u30A4\u30C6\u30E0\u62BD\u51FA"
+      ],
+      propsUsed:["\u6D3B\u52D5\u30BF\u30A4\u30D7=Slack\u4F1A\u8A71","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=Slack","\u30BD\u30FC\u30B9URL=\u30D1\u30FC\u30DE\u30EA\u30F3\u30AF","\u81EA\u52D5\u751F\u6210=true"],
+      pageContent:["\u4F1A\u8A71\u5168\u6587\uFF08\u8A71\u8005\u540D\u4ED8\u304D\uFF09","\u30B9\u30EC\u30C3\u30C9\u5185\u5BB9","\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3","\u6DFB\u4ED8\u30D5\u30A1\u30A4\u30EB"],
+      notionAi:"\u4F1A\u8A71\u8981\u7D04 / \u6C7A\u5B9A\u4E8B\u9805\u62BD\u51FA / \u30D5\u30A9\u30ED\u30FC\u30A2\u30C3\u30D7\u5FC5\u8981\u6027\u5224\u5B9A",
+      blockers:["\u9867\u5BA2\u30C1\u30E3\u30F3\u30CD\u30EB\u547D\u540D\u898F\u5247\u306E\u7D71\u4E00\u304C\u5FC5\u8981"]
+    },
+    {
+      id:"notta", name:"Notta\uFF08\u4F1A\u8B70\u6587\u5B57\u8D77\u3053\u3057\uFF09", icon:"\u{1F399}\uFE0F", color:"#00C853", difficulty:"Easy", time:"30\u5206-2\u6642\u9593",
+      method:"Zapier\uFF08Notta Business \u2192 Notion\uFF09",
+      existing:"Notta\u30D3\u30B8\u30CD\u30B9\u30D7\u30E9\u30F3\u5951\u7D04\u6E08\u307F\u3002Notion\u9023\u643A\u6E08\u307F\u3002Zapier\u5229\u7528\u53EF\u80FD",
+      flow:[
+        "Notta Zapier\u30C8\u30EA\u30AC\u30FC: \u65B0\u3057\u3044\u9332\u97F3\u304C\u6587\u5B57\u8D77\u3053\u3057\u5B8C\u4E86",
+        "Zapier\u30A2\u30AF\u30B7\u30E7\u30F3: DB6\u306B\u30DA\u30FC\u30B8\u4F5C\u6210",
+        "\u4F1A\u8B70\u30BF\u30A4\u30C8\u30EB, \u6587\u5B57\u8D77\u3053\u3057\u5168\u6587, \u53C2\u52A0\u8005, \u6642\u9593\u3092\u30DE\u30C3\u30D4\u30F3\u30B0",
+        "Notion AI \u2192 \u8B70\u4E8B\u9332\u8981\u7D04\u3001\u6C7A\u5B9A\u4E8B\u9805\u3001\u30A2\u30AF\u30B7\u30E7\u30F3\u30A2\u30A4\u30C6\u30E0"
+      ],
+      propsUsed:["\u6D3B\u52D5\u30BF\u30A4\u30D7=Web\u4F1A\u8B70 or Notta\u6587\u5B57\u8D77\u3053\u3057","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=Notta","\u6587\u5B57\u8D77\u3053\u3057=\u5168\u6587","\u81EA\u52D5\u751F\u6210=true"],
+      pageContent:["\u6587\u5B57\u8D77\u3053\u3057\u5168\u6587\uFF08\u8A71\u8005\u5206\u96E2\u4ED8\u304D\uFF09","\u53C2\u52A0\u8005\u4E00\u89A7","\u4F1A\u8B70\u30E1\u30BF\u30C7\u30FC\u30BF\uFF08\u6642\u9593/\u30D7\u30E9\u30C3\u30C8\u30D5\u30A9\u30FC\u30E0\uFF09"],
+      notionAi:"\u8B70\u4E8B\u9332\u8981\u7D04 / \u6C7A\u5B9A\u4E8B\u9805\u30EA\u30B9\u30C8 / \u30A2\u30AF\u30B7\u30E7\u30F3\u30A2\u30A4\u30C6\u30E0\u62BD\u51FA / DB16\u81EA\u52D5\u4F5C\u6210",
+      blockers:["Zapier\u306ENotta\u9023\u643A\u30C6\u30B9\u30C8\u304C\u5FC5\u8981"]
+    },
+    {
+      id:"db12", name:"\u5546\u8AC7\u5831\u544A\u30D5\u30A9\u30FC\u30E0\uFF08DB12\uFF09", icon:"\u{1F4DD}", color:"#EC4899", difficulty:"Easy", time:"30\u5206",
+      method:"Notion\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u30AA\u30FC\u30C8\u30E1\u30FC\u30B7\u30E7\u30F3\uFF08Notion\u5185\u3067\u5B8C\u7D50\uFF09",
+      existing:"DB12\u4F5C\u6210\u6E08\u307F\u3002\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u4F5C\u6210\u6E08\u307F\u3002\u30D5\u30A9\u30FC\u30E0\u30D3\u30E5\u30FC\u4F5C\u6210\u6E08\u307F",
+      flow:[
+        "\u55B6\u696D\u30DE\u30F3\u304CDB12\u306B\u30D5\u30A9\u30FC\u30E0\u5165\u529B\uFF08\u53D6\u5F15\u5148/\u65BD\u8A2D/\u6D3B\u52D5\u30BF\u30A4\u30D7/\u5831\u544A\u5185\u5BB9\uFF09",
+        "Notion\u30AA\u30FC\u30C8\u30E1\u30FC\u30B7\u30E7\u30F3: \u30DA\u30FC\u30B8\u8FFD\u52A0\u30C8\u30EA\u30AC\u30FC \u2192 DB6\u306B\u81EA\u52D5\u4F5C\u6210",
+        "\u53D6\u5F15\u5148/\u65BD\u8A2D/\u540D\u523A\u30EA\u30EC\u30FC\u30B7\u30E7\u30F3\u3092\u81EA\u52D5\u30B3\u30D4\u30FC",
+        "Notion AI \u2192 \u8B70\u4E8B\u9332\u751F\u6210\u3001\u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3\u62BD\u51FA"
+      ],
+      propsUsed:["DB12\u306E\u6D3B\u52D5\u30BF\u30A4\u30D7/\u53D6\u5F15\u5148/\u65BD\u8A2D/\u540D\u523A\u3092\u30B3\u30D4\u30FC","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=DB12\u5831\u544A","\u81EA\u52D5\u751F\u6210=true"],
+      pageContent:["\u5831\u544A\u5185\u5BB9","\u6587\u5B57\u8D77\u3053\u3057\uFF08\u3042\u308C\u3070\uFF09","\u53C2\u52A0\u8005\u30E1\u30E2","Notion AI\u8B70\u4E8B\u9332"],
+      notionAi:"\u8B70\u4E8B\u9332\u81EA\u52D5\u751F\u6210 / \u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3\u62BD\u51FA / \u55B6\u696D\u30B9\u30C6\u30FC\u30BF\u30B9\u66F4\u65B0\u63D0\u6848",
+      blockers:["Notion\u30AA\u30FC\u30C8\u30E1\u30FC\u30B7\u30E7\u30F3\u306E\u8A2D\u5B9A\uFF08GUI\u64CD\u4F5C\u3002API\u4E0D\u53EF\uFF09"]
+    },
+    {
+      id:"sns", name:"SNS\u6295\u7A3F\u8A18\u9332", icon:"\u{1F4E2}", color:"#F59E0B", difficulty:"Hard", time:"3-5\u65E5",
+      method:"Buffer/Hootsuite \u2192 Zapier \u2192 DB13\u3002DB6\u306B\u306F\u5165\u308C\u306A\u3044",
+      existing:"SNS 11\u30A2\u30AB\u30A6\u30F3\u30C8\u904B\u7528\u4E2D\u3002Mac Mini\u56FA\u5B9A\u7832\u53F0",
+      flow:[
+        "SNS\u6295\u7A3F\u306FDB13(\u767A\u4FE1\u30B3\u30F3\u30C6\u30F3\u30C4DB)\u3067\u7BA1\u7406\uFF08DB6\u3067\u306F\u306A\u3044\uFF09",
+        "\u7406\u7531: SNS\u6295\u7A3F\u306F\u300C\u6D3B\u52D5\u300D\u3067\u306F\u306A\u304F\u300C\u30B3\u30F3\u30C6\u30F3\u30C4\u300D\u3002\u9867\u5BA2\u3068\u306E1:1\u30B3\u30DF\u30E5\u30CB\u30B1\u30FC\u30B7\u30E7\u30F3\u3067\u306F\u306A\u3044",
+        "\u30A8\u30F3\u30B2\u30FC\u30B8\u30E1\u30F3\u30C8\uFF08\u3044\u3044\u306D/RT/\u30B3\u30E1\u30F3\u30C8\uFF09\u306FDB13\u3067\u8FFD\u8DE1",
+        "\u9867\u5BA2\u304B\u3089\u306EDM/\u30B3\u30E1\u30F3\u30C8\u3078\u306E\u8FD4\u4FE1\u306F\u5225\u9014DB6\u306B\u624B\u52D5\u8A18\u9332"
+      ],
+      propsUsed:["DB13\u3067\u7BA1\u7406\u3002DB6\u306B\u306F\u5165\u3089\u306A\u3044"],
+      pageContent:[],
+      notionAi:"DB13\u3067\u30A8\u30F3\u30B2\u30FC\u30B8\u30E1\u30F3\u30C8\u5206\u6790 / \u6295\u7A3F\u52B9\u679C\u6E2C\u5B9A",
+      blockers:["note.com\u306F\u516C\u5F0FAPI\u7121\u3057\uFF08\u624B\u52D5\u306E\u307F\uFF09","X API\u30E1\u30C8\u30EA\u30AF\u30B9\u306FBasic $200/\u6708","LinkedIn\u5BE9\u67FB\u306B\u6570\u9031\u9593"]
+    }
+  ];
+
+  const db6Props = [
+    {group:"\u57FA\u672C\u60C5\u5831", count:7, props:[
+      {n:"\u4EF6\u540D",t:"title",d:"\u6D3B\u52D5\u306E\u30BF\u30A4\u30C8\u30EB"},
+      {n:"\u6D3B\u52D5\u30B3\u30FC\u30C9",t:"unique_id",d:"\u81EA\u52D5\u63A1\u756A ACT-XXXX"},
+      {n:"\u6D3B\u52D5\u30BF\u30A4\u30D7",t:"select",d:"\u8A2A\u554F/\u96FB\u8A71/\u30E1\u30FC\u30EB/Web\u4F1A\u8B70/\u30C7\u30E2/Slack\u4F1A\u8A71/Notta\u6587\u5B57\u8D77\u3053\u3057\u7B4913\u7A2E"},
+      {n:"\u4F1A\u8B70\u7A2E\u5225",t:"select",d:"\u55B6\u696D\u5546\u8AC7/\u30C8\u30E9\u30A4\u30A2\u30EB\u30D5\u30A9\u30ED\u30FC/PM\u4F1A/\u5B9A\u4F8BMTG\u7B49"},
+      {n:"\u6D3B\u52D5\u65E5\u6642",t:"date",d:"\u6D3B\u52D5\u304C\u884C\u308F\u308C\u305F\u65E5\u6642"},
+      {n:"\u5B8C\u4E86",t:"checkbox",d:"\u6D3B\u52D5\u306E\u5B8C\u4E86\u30D5\u30E9\u30B0"},
+      {n:"\u5DE5\u6570(h)",t:"number",d:"\u6D3B\u52D5\u306B\u304B\u304B\u3063\u305F\u6642\u9593"}
+    ]},
+    {group:"CRM\u30EA\u30EC\u30FC\u30B7\u30E7\u30F3", count:5, props:[
+      {n:"\u53D6\u5F15\u5148",t:"relation\u2192DB1",d:"\u95A2\u9023\u3059\u308B\u6CD5\u4EBA"},
+      {n:"\u65BD\u8A2D",t:"relation\u2192DB2",d:"\u95A2\u9023\u3059\u308B\u65BD\u8A2D"},
+      {n:"\u5546\u8AC7",t:"relation\u2192DB5",d:"\u95A2\u9023\u3059\u308B\u5546\u8AC7"},
+      {n:"\u53C2\u52A0\u8005",t:"relation\u2192DB4",d:"\u53C2\u52A0\u3057\u305F\u540D\u523A\uFF08\u4EBA\u7269\uFF09"},
+      {n:"\u30C9\u30AD\u30E5\u30E1\u30F3\u30C8\u4E00\u89A7",t:"relation\u2192DB11",d:"\u95A2\u9023\u30C9\u30AD\u30E5\u30E1\u30F3\u30C8"}
+    ]},
+    {group:"\u4EBA\u7269", count:3, props:[
+      {n:"PM",t:"people",d:"\u62C5\u5F53PM"},
+      {n:"\u30E1\u30F3\u30D0\u30FC",t:"people",d:"\u53C2\u52A0\u30E1\u30F3\u30D0\u30FC"},
+      {n:"\u55B6\u696D\u62C5\u5F53",t:"people",d:"\u55B6\u696D\u62C5\u5F53\u8005"}
+    ]},
+    {group:"\u30BD\u30FC\u30B9\u60C5\u5831", count:6, props:[
+      {n:"\u30BD\u30FC\u30B9URL",t:"url",d:"\u5143\u30C7\u30FC\u30BF\u3078\u306E\u30EA\u30F3\u30AF\uFF08Gmail/Slack\u7B49\uFF09"},
+      {n:"\u30BD\u30FC\u30B9ID",t:"rich_text",d:"\u5143\u30C7\u30FC\u30BF\u306EID\uFF08\u30B9\u30EC\u30C3\u30C9ID/\u30B3\u30FC\u30EBID\u7B49\uFF09"},
+      {n:"\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB",t:"select",d:"Zoom Phone/Gmail/Slack/Notta/DB12\u5831\u544A/\u624B\u52D5\u5165\u529B"},
+      {n:"\u6587\u5B57\u8D77\u3053\u3057",t:"rich_text",d:"\u901A\u8A71\u30FB\u4F1A\u8B70\u306E\u6587\u5B57\u8D77\u3053\u3057\u5168\u6587"},
+      {n:"\u30B5\u30DE\u30EA",t:"rich_text",d:"Notion AI\u304C\u81EA\u52D5\u751F\u6210\u3059\u308B\u8981\u7D04"},
+      {n:"\u81EA\u52D5\u751F\u6210",t:"checkbox",d:"\u81EA\u52D5\u6295\u5165\u3055\u308C\u305F\u30EC\u30B3\u30FC\u30C9\u304Btrue"}
+    ]},
+    {group:"\u96FB\u8A71\u56FA\u6709", count:3, props:[
+      {n:"\u901A\u8A71\u6642\u9593(\u79D2)",t:"number",d:"\u901A\u8A71\u306E\u9577\u3055\uFF08\u79D2\u5358\u4F4D\uFF09"},
+      {n:"\u901A\u8A71\u65B9\u5411",t:"select",d:"\u7740\u4FE1/\u767A\u4FE1/\u4E0D\u5728\u7740\u4FE1"},
+      {n:"\u901A\u8A71\u7D50\u679C",t:"select",d:"\u5FDC\u7B54/\u4E0D\u5728/\u7559\u5B88\u96FB/\u8EE2\u9001"}
+    ]},
+    {group:"\u30E1\u30BF", count:2, props:[
+      {n:"\u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3",t:"rich_text",d:"\u6B21\u306B\u3084\u308B\u3079\u304D\u3053\u3068"},
+      {n:"\u5099\u8003",t:"rich_text",d:"\u81EA\u7531\u8A18\u8FF0\u6B04"}
+    ]},
+    {group:"\u30B7\u30B9\u30C6\u30E0", count:2, props:[
+      {n:"\u4F5C\u6210\u65E5\u6642",t:"created_time",d:"\u30EC\u30B3\u30FC\u30C9\u4F5C\u6210\u65E5\u6642"},
+      {n:"\u6700\u7D42\u66F4\u65B0\u65E5\u6642",t:"last_edited_time",d:"\u6700\u7D42\u66F4\u65B0\u65E5\u6642"}
+    ]}
+  ];
+
+  let html = "";
+
+  // A. 設計方針
+  html += `<div class="hub-callout">
+    <h3>\u{1F3AF} \u8A2D\u8A08\u65B9\u91DD</h3>
+    <ul>
+      <li><strong>\u30C7\u30FC\u30BF\u6295\u5165 = Python + GitHub Actions</strong>\uFF08\u5404\u30C1\u30E3\u30CD\u30EB\u304B\u3089\u53D6\u5F97\u2192\u6295\u5165\u3059\u308B\u3060\u3051\uFF09</li>
+      <li><strong>\u8981\u7D04\u30FB\u5206\u6790\u30FB\u63D0\u6848 = Notion AI</strong>\uFF08DB\u5185\u3067\u81EA\u52D5\u51E6\u7406\uFF09</li>
+      <li><strong>Claude\u7B49\u306E\u5916\u90E8AI\u306F\u9023\u7D9A\u81EA\u52D5\u5B9F\u884C\u3067\u304D\u306A\u3044\u305F\u3081\u3001Notion AI\u3092\u3075\u3093\u3060\u3093\u306B\u6D3B\u7528</strong></li>
+    </ul>
+  </div>`;
+
+  // B. DB6 プロパティ構成
+  html += `<div style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--border);">\u{1F4CB} DB6 \u30D7\u30ED\u30D1\u30C6\u30A3\u69CB\u6210\uFF0828\u500B\uFF09</h2>
+    <table class="hub-prop-table">
+      <thead><tr><th>\u30D7\u30ED\u30D1\u30C6\u30A3\u540D</th><th>\u30BF\u30A4\u30D7</th><th>\u8AAC\u660E</th></tr></thead>
+      <tbody>`;
+  for (const g of db6Props) {
+    html += `<tr class="hub-group-row"><td colspan="3">${g.group}\uFF08${g.count}\uFF09</td></tr>`;
+    for (const p of g.props) {
+      html += `<tr><td style="font-weight:600;">${p.n}</td><td><span class="prop-type-badge">${p.t}</span></td><td style="color:var(--text2);font-size:0.8rem;">${p.d}</td></tr>`;
+    }
+  }
+  html += `</tbody></table></div>`;
+
+  // C. チャネル別投入フロー
+  html += `<h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--border);">\u{1F504} \u30C1\u30E3\u30CD\u30EB\u5225\u6295\u5165\u30D5\u30ED\u30FC</h2>`;
+  for (const ch of channels) {
+    const diffClass = ch.difficulty === "Easy" ? "hub-diff-easy" : ch.difficulty === "Medium" ? "hub-diff-medium" : "hub-diff-hard";
+    html += `<div class="hub-channel" style="border-left:4px solid ${ch.color};">`;
+    html += `<div class="hub-channel-header">
+      <span class="hub-channel-icon">${ch.icon}</span>
+      <span class="hub-channel-name">${ch.name}</span>
+      <span class="hub-diff ${diffClass}">${ch.difficulty}</span>
+      <span style="font-size:0.82rem;color:var(--text2);">\u2248 ${ch.time}</span>
+    </div>`;
+    html += `<div style="font-size:0.82rem;color:var(--text2);margin-bottom:4px;"><strong>\u65B9\u6CD5:</strong> ${ch.method}</div>`;
+    html += `<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px;"><strong>\u65E2\u5B58\u74B0\u5883:</strong> ${ch.existing}</div>`;
+
+    // Flow
+    html += `<div class="hub-section-title">\u30D5\u30ED\u30FC</div><ul class="hub-flow">`;
+    for (const step of ch.flow) {
+      html += `<li>${step}</li>`;
+    }
+    html += `</ul>`;
+
+    // Props used
+    html += `<div class="hub-section-title">DB6\u306B\u5165\u308B\u30D7\u30ED\u30D1\u30C6\u30A3</div><div class="hub-props">`;
+    for (const p of ch.propsUsed) {
+      html += `<span class="hub-prop">${p}</span>`;
+    }
+    html += `</div>`;
+
+    // Page content
+    if (ch.pageContent.length > 0) {
+      html += `<div class="hub-section-title">\u30DA\u30FC\u30B8\u672C\u6587\u306B\u5165\u308B\u3082\u306E</div><ul class="hub-page-content">`;
+      for (const pc of ch.pageContent) {
+        html += `<li>${pc}</li>`;
+      }
+      html += `</ul>`;
+    }
+
+    // Notion AI role
+    html += `<div class="hub-section-title">Notion AI\u306E\u5F79\u5272</div><div class="hub-notion-role">${ch.notionAi}</div>`;
+
+    // Blockers
+    if (ch.blockers.length > 0) {
+      html += `<div class="hub-section-title" style="color:#ef4444;">\u30D6\u30ED\u30C3\u30AB\u30FC</div>`;
+      for (const b of ch.blockers) {
+        html += `<div class="hub-blocker">\u26A0\uFE0F ${b}</div>`;
+      }
+    }
+
+    html += `</div>`;
+  }
+
+  // D. Notion AIの活用ポイント
+  html += `<div class="hub-notion-ai">
+    <h3>\u{1F916} Notion AI\u306E\u6D3B\u7528\u30DD\u30A4\u30F3\u30C8</h3>
+    <ol>
+      <li><strong>AI Autofill:</strong> \u300C\u30B5\u30DE\u30EA\u300D\u30D7\u30ED\u30D1\u30C6\u30A3\u306B\u30DA\u30FC\u30B8\u672C\u6587\u306E\u81EA\u52D5\u8981\u7D04</li>
+      <li><strong>Notion\u30AA\u30FC\u30C8\u30E1\u30FC\u30B7\u30E7\u30F3 + AI:</strong> \u30EC\u30B3\u30FC\u30C9\u8FFD\u52A0 \u2192 AI\u51E6\u7406 \u2192 \u30D7\u30ED\u30D1\u30C6\u30A3\u81EA\u52D5\u5165\u529B</li>
+      <li><strong>Custom AI\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8:</strong>
+        <ul>
+          <li><code>\u300C\u3053\u306E\u9867\u5BA2\u3068\u6700\u5F8C\u306B\u4F55\u8A71\u3057\u305F\uFF1F\u300D</code> \u2192 DB6\u30D5\u30A3\u30EB\u30BF \u2192 \u30DA\u30FC\u30B8\u672C\u6587\u304B\u3089\u56DE\u7B54</li>
+          <li><code>\u300C\u4ECA\u9031\u30D5\u30A9\u30ED\u30FC\u3059\u3079\u304D\u9867\u5BA2\u306F\uFF1F\u300D</code> \u2192 DB6+DB16\u6A2A\u65AD\u5206\u6790</li>
+          <li><code>\u300C\u798F\u5BFF\u5712\u306E\u30C8\u30E9\u30A4\u30A2\u30EB\u72B6\u6CC1\u306F\uFF1F\u300D</code> \u2192 DB1+DB3+DB6+DB7\u6A2A\u65AD</li>
+        </ul>
+      </li>
+    </ol>
+  </div>`;
+
+  // E. 実装優先順位
+  html += `<div class="hub-roadmap">
+    <h3>\u{1F4C5} \u5B9F\u88C5\u512A\u5148\u9806\u4F4D</h3>
+    <div class="hub-roadmap-item">
+      <span class="hub-roadmap-week">Week 1</span>
+      <span class="hub-roadmap-desc">DB12\u2192DB6 (30\u5206) + Notta\u2192DB6 (2h)</span>
+      <span class="hub-roadmap-note">\u2192 \u5373\u52B9\u6027</span>
+    </div>
+    <div class="hub-roadmap-item">
+      <span class="hub-roadmap-week">Week 2</span>
+      <span class="hub-roadmap-desc">Zoom Phone\u62E1\u5F35 (3h)</span>
+      <span class="hub-roadmap-note">\u2192 \u65E2\u5B58\u57FA\u76E4\u6D3B\u7528</span>
+    </div>
+    <div class="hub-roadmap-item">
+      <span class="hub-roadmap-week">Week 3</span>
+      <span class="hub-roadmap-desc">Gmail\u9023\u643A (2\u65E5)</span>
+      <span class="hub-roadmap-note">\u2192 \u5168\u54E1\u5206\u30E1\u30FC\u30EB\u7D71\u5408</span>
+    </div>
+    <div class="hub-roadmap-item">
+      <span class="hub-roadmap-week">Week 4</span>
+      <span class="hub-roadmap-desc">Slack\u9023\u643A (2\u65E5)</span>
+      <span class="hub-roadmap-note">\u2192 \u9867\u5BA2\u30C1\u30E3\u30F3\u30CD\u30EB\u7D71\u5408</span>
+    </div>
+    <div style="margin-top:12px;padding:10px 16px;background:linear-gradient(135deg,#ecfdf5,#f0fdf4);border-radius:8px;font-size:0.9rem;font-weight:600;color:#16a34a;">
+      \u2192 \u3053\u3053\u307E\u3067\u3067\u7D71\u5408\u30CF\u30D6\u306E80%\u304C\u5B8C\u6210
+    </div>
+  </div>`;
+
+  c.innerHTML = html;
+}
+
 // ===== INIT =====
 renderStats();
 renderLayerSections("");
@@ -1883,6 +2200,7 @@ renderIdealTab();
 renderActionPlan();
 renderRationale();
 renderIssues();
+renderHub();
 </script>
 </body>
 </html>
