@@ -194,6 +194,24 @@ canvas#archCanvas { display:block; margin:0 auto; }
 .hub-roadmap-note { color:var(--text2); font-size:0.78rem; margin-left:auto; }
 .hub-page-content li { font-size:0.82rem; color:var(--text2); line-height:1.6; }
 .hub-notion-role { font-size:0.82rem; color:var(--text2); padding:4px 0; font-style:italic; }
+
+/* Agents tab */
+.agent-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
+.agent-card h3 { font-size:1rem; font-weight:700; margin-bottom:6px; }
+.agent-trigger { font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:600; }
+.trigger-schedule { background:#dcfce7; color:#16a34a; }
+.trigger-event { background:#dbeafe; color:#2563eb; }
+.trigger-mention { background:#fef3c7; color:#d97706; }
+.agent-access { display:flex; gap:3px; flex-wrap:wrap; margin:6px 0; }
+.agent-access-pill { font-size:0.62rem; padding:1px 6px; border-radius:3px; font-weight:600; color:#fff; }
+.agent-caps { list-style:none; padding:0; }
+.agent-caps li { font-size:0.82rem; color:var(--text2); padding:2px 0 2px 16px; position:relative; }
+.agent-caps li::before { content:'→'; position:absolute; left:0; color:var(--accent); }
+.limitation-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:10px; }
+.limitation-card.cat-automation { border-left:4px solid #f59e0b; }
+.limitation-card.cat-agent { border-left:4px solid #2563eb; }
+.limitation-card.cat-human { border-left:4px solid #ef4444; }
+.limitation-card.cat-unverified { border-left:4px solid #8b5cf6; }
 </style>
 </head>
 <body>
@@ -212,6 +230,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
     <button class="tab" data-tab="rationale">設計根拠</button>
     <button class="tab" data-tab="issues">課題一覧</button>
     <button class="tab" data-tab="hub">統合ハブ構想</button>
+    <button class="tab" data-tab="agents">Notionエージェント</button>
   </div>
 
   <div class="tab-content active" id="tab-overview">
@@ -246,6 +265,10 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
   <div class="tab-content" id="tab-hub">
     <div id="hubContent"></div>
+  </div>
+
+  <div class="tab-content" id="tab-agents">
+    <div id="agentsContent"></div>
   </div>
 </div>
 
@@ -2261,6 +2284,473 @@ function renderHub() {
   c.innerHTML = html;
 }
 
+// ===== AGENTS TAB =====
+const dbAutomations = [
+  // === SSOT基盤 ===
+  {db:"DB1",name:"法人",automations:[
+    {type:"automation",trigger:"プロパティ変更: 営業ステータス",action:"DB9にCRMタスク自動作成（次のアクション提案）",status:"可能"},
+    {type:"automation",trigger:"ページ追加",action:"DB23にドキュメント自動作成（法人概要テンプレート）",status:"可能"},
+    {type:"autofill",trigger:"ページ内容更新",action:"取引先サマリを自動生成",status:"可能"},
+  ],agents:[
+    {name:"法人360°エージェント",desc:"法人ページを開いたとき、配下の施設/事業所/名刺/商談/活動/契約の最新状況をサマリ生成。次のアクションを提案",access:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9"],trigger:"メンション or スケジュール（毎朝）"},
+  ]},
+  {db:"DB2",name:"施設",automations:[
+    {type:"automation",trigger:"プロパティ変更: 営業ステータス",action:"親法人(DB1)のステータスも連動更新を検討",status:"要検討"},
+    {type:"autofill",trigger:"ページ内容更新",action:"施設サマリを自動生成",status:"可能"},
+  ],agents:[]},
+  {db:"DB3",name:"事業所",automations:[
+    {type:"automation",trigger:"プロパティ変更: 導入ステータス=トライアル中",action:"DB8に契約レコード自動作成（トライアル契約）",status:"可能"},
+    {type:"automation",trigger:"プロパティ変更: 導入ステータス=契約中",action:"DB8の契約ステータスを締結完了に更新。DB1/DB2の営業ステータスも契約法人/契約施設に更新",status:"可能"},
+  ],agents:[]},
+  {db:"DB4",name:"人・名刺",automations:[
+    {type:"automation",trigger:"ページ追加",action:"取引種別に基づいてDB9(CRMタスク)に初回フォロータスク自動作成",status:"可能"},
+    {type:"autofill",trigger:"ページ内容更新",action:"カテゴリを自動判定（ページ内容から顧客/投資家/採用候補等）",status:"可能"},
+  ],agents:[]},
+  {db:"DB5",name:"支店",automations:[],agents:[]},
+
+  // === CRM ===
+  {db:"DB6",name:"商談",automations:[
+    {type:"automation",trigger:"プロパティ変更: パイプラインステージ=受注",action:"DB8に契約レコード自動作成。想定MRR→MRRにコピー。取引先/施設リレーションもコピー",status:"可能"},
+    {type:"automation",trigger:"プロパティ変更: パイプラインステージ=失注",action:"DB9にフォローアップタスク作成（3ヶ月後に再アプローチ）",status:"可能"},
+    {type:"automation",trigger:"プロパティ変更: パイプラインステージ変更(全て)",action:"DB1/DB2の営業ステータスを連動更新",status:"可能"},
+    {type:"automation",trigger:"ページ追加",action:"DB9にCRMタスク自動作成（初回商談準備）",status:"可能"},
+  ],agents:[
+    {name:"商談進捗エージェント",desc:"毎朝全商談をスキャンし、1週間以上活動がない商談をSlackに通知。確度×MRRでパイプライン予測レポートを自動生成",access:["DB6","DB7","DB9"],trigger:"スケジュール（毎朝9:00）"},
+  ]},
+  {db:"DB7",name:"活動(CRM)",automations:[
+    {type:"automation",trigger:"ページ追加（自動生成=true）",action:"Slackの営業チャンネルに通知「新しい活動が記録されました」",status:"可能"},
+    {type:"autofill",trigger:"ページ内容更新（文字起こしが入力された時）",action:"サマリを自動生成。次のアクションを抽出",status:"可能"},
+  ],agents:[
+    {name:"活動→タスク変換エージェント",desc:"新しい活動が追加されたら、内容を読んで次のアクションをDB9(CRMタスク)に自動作成。取引先/施設/名刺のリレーションも自動設定",access:["DB7","DB9","DB1","DB2","DB4"],trigger:"Notionイベント（DB7にページ追加）"},
+    {name:"顧客コンテキストエージェント",desc:"「この顧客と最後に何を話した？」に即答。DB7の全活動を時系列でサマリ化。フォローアップ漏れを検出",access:["DB1","DB2","DB4","DB6","DB7","DB8"],trigger:"メンション"},
+  ]},
+  {db:"DB8",name:"契約",automations:[
+    {type:"automation",trigger:"プロパティ変更: 契約ステータス=締結完了",action:"DB1の営業ステータスを契約法人に更新。Slackに契約締結通知",status:"可能"},
+    {type:"automation",trigger:"プロパティ変更: 契約ステータス=解約",action:"DB9にフォローアップタスク作成（解約理由ヒアリング）。Slackに解約アラート",status:"可能"},
+    {type:"automation",trigger:"スケジュール（毎月1日）",action:"契約終了日が30日以内の契約をリストアップ→DB9にタスク作成",status:"可能"},
+  ],agents:[
+    {name:"MRRレポートエージェント",desc:"毎月の全契約MRR合計、新規/解約/変更を集計してレポート生成。Slackに投稿",access:["DB8","DB1"],trigger:"スケジュール（毎月1日）"},
+  ]},
+  {db:"DB9",name:"CRMタスク",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=完了",action:"完了日を自動入力",status:"可能"},
+    {type:"automation",trigger:"スケジュール（毎朝）",action:"締切が今日のタスクをSlack通知",status:"可能"},
+  ],agents:[]},
+  {db:"DB10",name:"商談報告",automations:[
+    {type:"automation",trigger:"ページ追加",action:"DB7(CRM活動)にページ自動作成。取引先/施設/名刺リレーションをコピー。処理ステータスを議事録生成中に更新",status:"可能"},
+  ],agents:[
+    {name:"議事録生成エージェント",desc:"DB10に報告が追加されたら、文字起こし/報告内容を読んで議事録を生成。決定事項・次のアクションを抽出。DB9にタスク自動作成。DB6の商談ステータスを更新提案",access:["DB10","DB7","DB9","DB6","DB1","DB4"],trigger:"Notionイベント（DB10にページ追加）"},
+  ]},
+
+  // === HR ===
+  {db:"DB11",name:"面談(HR)",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=採用",action:"DB13(雇契約)にページ自動作成。候補者リレーションをコピー",status:"可能"},
+    {type:"automation",trigger:"プロパティ変更: ステータス変更(全て)",action:"Slackの人事チャンネルに通知",status:"可能"},
+  ],agents:[]},
+  {db:"DB12",name:"活動(HR)",automations:[
+    {type:"autofill",trigger:"ページ内容更新",action:"面談サマリを自動生成",status:"可能"},
+  ],agents:[]},
+  {db:"DB13",name:"雇契約",automations:[],agents:[]},
+  {db:"DB14",name:"人事タスク",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=完了",action:"完了日を自動入力",status:"可能"},
+  ],agents:[]},
+
+  // === IR ===
+  {db:"DB15",name:"面談(IR)",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=クロージング",action:"DB17(IR契約)にページ自動作成",status:"可能"},
+  ],agents:[]},
+  {db:"DB16",name:"活動(IR)",automations:[
+    {type:"autofill",trigger:"ページ内容更新",action:"面談サマリを自動生成",status:"可能"},
+  ],agents:[]},
+  {db:"DB17",name:"契約(IR)",automations:[],agents:[]},
+  {db:"DB18",name:"タスク(IR)",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=完了",action:"完了日を自動入力",status:"可能"},
+  ],agents:[]},
+
+  // === Corporate ===
+  {db:"DB19",name:"発信コンテンツ",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=公開済",action:"Slackに公開通知。エンゲージメント追跡タスクを自動作成",status:"可能"},
+  ],agents:[
+    {name:"コンテンツ企画エージェント",desc:"DB7(CRM活動)やDB6(商談)から成功事例を検出し、SNSコンテンツの企画案をDB19に自動作成。プラットフォーム別に本文ドラフト生成",access:["DB19","DB6","DB7","DB1","DB2"],trigger:"スケジュール（毎週月曜）"},
+  ]},
+
+  // === General ===
+  {db:"DB20",name:"部門",automations:[],agents:[]},
+  {db:"DB21",name:"プロジェクト",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=完了",action:"配下タスク(DB22)の未完了をリストアップ→Slack通知",status:"可能"},
+  ],agents:[]},
+  {db:"DB22",name:"タスク(General)",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=完了",action:"完了日を自動入力",status:"可能"},
+    {type:"automation",trigger:"スケジュール（毎朝）",action:"締切が今日のタスクをSlack通知",status:"可能"},
+  ],agents:[]},
+  {db:"DB23",name:"ドキュメント",automations:[
+    {type:"autofill",trigger:"ページ内容更新",action:"要約を自動生成。レイヤーを自動判定",status:"可能"},
+  ],agents:[]},
+  {db:"DB24",name:"プロダクト",automations:[],agents:[]},
+
+  // === Executive ===
+  {db:"DB25",name:"1on1記録",automations:[
+    {type:"autofill",trigger:"ページ内容更新",action:"議事サマリ・決定事項・次のアクションを自動抽出",status:"可能"},
+  ],agents:[]},
+];
+
+const customAgents = [
+  {
+    name: "法人360°エージェント",
+    layer: "CRM",
+    trigger: "メンション or 毎朝9:00",
+    access: ["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9"],
+    capabilities: [
+      "法人配下の全情報（施設/事業所/名刺/商談/活動/契約）をサマリ化",
+      "直近の活動・商談の進捗を時系列でまとめ",
+      "次のアクション提案（フォロー漏れ検出）",
+      "紹介元からの紹介実績サマリ",
+    ],
+    humanNeeded: "メンションで起動。結果の最終判断は人間",
+  },
+  {
+    name: "商談進捗エージェント",
+    layer: "CRM",
+    trigger: "毎朝9:00スケジュール",
+    access: ["DB6","DB7","DB9"],
+    capabilities: [
+      "全商談をスキャンし、1週間以上活動がない商談を検出",
+      "確度×MRRでパイプライン予測レポート生成",
+      "Slackに毎朝サマリ投稿",
+      "滞留商談のフォローアップタスク自動作成",
+    ],
+    humanNeeded: "レポートの確認。タスクの優先度調整",
+  },
+  {
+    name: "活動→タスク変換エージェント",
+    layer: "CRM",
+    trigger: "DB7にページ追加時",
+    access: ["DB7","DB9","DB1","DB2","DB4"],
+    capabilities: [
+      "活動内容を読んで次のアクションを抽出",
+      "DB9にCRMタスクを自動作成（担当者/締切/取引先を自動設定）",
+      "取引先/施設/名刺のリレーションを自動補完",
+    ],
+    humanNeeded: "抽出されたタスクの確認・修正",
+  },
+  {
+    name: "顧客コンテキストエージェント",
+    layer: "CRM",
+    trigger: "メンション",
+    access: ["DB1","DB2","DB4","DB6","DB7","DB8"],
+    capabilities: [
+      "「この顧客と最後に何を話した？」に即答",
+      "全活動を時系列サマリ化",
+      "フォローアップ漏れ検出",
+      "商談/契約の現在ステータス横断表示",
+    ],
+    humanNeeded: "なし（情報提供のみ）",
+  },
+  {
+    name: "議事録生成エージェント",
+    layer: "CRM",
+    trigger: "DB10にページ追加時",
+    access: ["DB10","DB7","DB9","DB6","DB1","DB4"],
+    capabilities: [
+      "文字起こし/報告内容から議事録を自動生成",
+      "決定事項・次のアクションを抽出",
+      "DB9にタスク自動作成",
+      "DB6の商談ステータス更新を提案",
+      "参加者のリレーションを自動設定",
+    ],
+    humanNeeded: "議事録の最終確認。ステータス更新の承認",
+  },
+  {
+    name: "MRRレポートエージェント",
+    layer: "CRM",
+    trigger: "毎月1日スケジュール",
+    access: ["DB8","DB1"],
+    capabilities: [
+      "全契約のMRR合計を集計",
+      "新規/解約/変更の内訳",
+      "法人別MRRランキング",
+      "Slackにレポート投稿",
+    ],
+    humanNeeded: "レポートの確認",
+  },
+  {
+    name: "コンテンツ企画エージェント",
+    layer: "Corporate",
+    trigger: "毎週月曜スケジュール",
+    access: ["DB19","DB6","DB7","DB1","DB2"],
+    capabilities: [
+      "CRM活動から成功事例を検出",
+      "SNSコンテンツの企画案をDB19に自動作成",
+      "プラットフォーム別に本文ドラフト生成",
+    ],
+    humanNeeded: "企画案のレビュー・承認。実際の投稿",
+  },
+  {
+    name: "全社タスクリマインダー",
+    layer: "General",
+    trigger: "毎朝8:30スケジュール",
+    access: ["DB9","DB14","DB18","DB22"],
+    capabilities: [
+      "CRM/人事/投資家/社内の全タスクDBを横断スキャン",
+      "締切が今日・期限切れのタスクをSlack通知",
+      "担当者別にメンション付きで通知",
+    ],
+    humanNeeded: "なし（通知のみ）",
+  },
+];
+
+const limitations = [
+  {
+    category: "オートメーションの制限",
+    catKey: "automation",
+    items: [
+      {issue:"オートメーション同士のチェーンが不可能",detail:"Automation A がページを作成 → Automation B がそのページをトリガーにして動く、ということはできない。代わりにCustom Agentで1つのワークフローとして実装する",workaround:"Custom Agentで代替"},
+      {issue:"Recurring triggerでEdit propertyが使えない",detail:"定期実行のトリガーでは「プロパティ編集」アクションが使えない。定期チェック→更新はCustom Agentで行う",workaround:"Custom Agentで代替"},
+      {issue:"エラー時に自動停止する",detail:"オートメーションがエラーで失敗すると、一時停止状態になり手動で再開が必要",workaround:"定期的にオートメーション状態を確認する運用ルール"},
+    ]
+  },
+  {
+    category: "Custom Agentの制限",
+    catKey: "agent",
+    items: [
+      {issue:"プライベートSlackチャンネル/DMにアクセス不可",detail:"Custom AgentはパブリックSlackチャンネルのみ。プライベートチャンネルやDMは読み書きできない",workaround:"顧客チャンネルをパブリックにするか、手動で情報転記"},
+      {issue:"ファイル添付のアップロード不可",detail:"Agentはページ本文やプロパティにテキストを書けるが、ファイル（画像/PDF等）のアップロードはできない",workaround:"ファイルURLを貼り付ける。または手動アップロード"},
+      {issue:"課金が発生する（2026年5月4日以降）",detail:"1,000クレジットで$10。1回のAgent実行で11-22クレジット消費。月間の実行回数に上限が出る",workaround:"シンプルな処理はDB Automationで。Agentは本当にAI判断が必要なものだけに使う"},
+      {issue:"MCP接続は1Agent1接続",detail:"1つのAgentに複数のMCPサーバーを接続できない",workaround:"用途別にAgentを分ける"},
+    ]
+  },
+  {
+    category: "人間の手が絶対に必要な領域",
+    catKey: "human",
+    items: [
+      {issue:"営業の最終判断",detail:"商談のステージ変更（提案→見積→受注/失注）は営業マン本人が判断する。Agentは提案はできるが最終決定は人間",workaround:"Agentが「この商談は1週間動きがありません。ステージを進めますか？」と提案→人間が承認"},
+      {issue:"契約書の確認・署名",detail:"契約内容の確認と署名は法的に人間が行う必要がある",workaround:"契約レコードは自動作成。内容確認→署名→締結完了の最終ステップは人間"},
+      {issue:"投資家との交渉",detail:"投資条件の交渉はCEOが直接行う。Agentは準備・記録・フォローアップを支援",workaround:"面談前の準備資料自動生成。面談後の議事録自動生成。次のアクション自動作成"},
+      {issue:"採用の最終判断",detail:"採用可否の判断は面接官が行う",workaround:"Agent が候補者情報のサマリ生成・面談スケジュール調整を支援"},
+      {issue:"センシティブ情報の公開判断",detail:"個人のメール/電話の内容を全社公開DBに流すかどうかは本人が判断",workaround:"自動投入は顧客メールマッチのもののみ。それ以外は本人がOK/NGを判断"},
+      {issue:"Notionページ構造の設計変更",detail:"DB追加/プロパティ変更/リレーション変更はAgentではできない",workaround:"Claude Code + Notion APIで実装"},
+      {issue:"リンクドビューの配置",detail:"ページ内にリンクドビューを埋め込む操作はAPI不可",workaround:"内部API(saveTransactions)またはブラウザ操作"},
+      {issue:"権限・Teamspace設定",detail:"DBの権限設定やTeamspace構成はAPI不可",workaround:"Notion UIから手動設定"},
+    ]
+  },
+  {
+    category: "現時点で未検証・検証が必要な領域",
+    catKey: "unverified",
+    items: [
+      {issue:"Agentのリレーション自動補完の精度",detail:"Agentが「この活動は福寿園に関するものだ」と判断してDB1のリレーションを自動設定する精度が未検証",workaround:"初期はAgentの設定を「確認モード」にして人間が承認。精度が安定したら自動実行に切り替え"},
+      {issue:"大量レコード処理時のクレジット消費",detail:"3,000+レコードを処理できるとされるが、実際のクレジット消費量が未検証",workaround:"少量テストから開始して消費量を測定"},
+      {issue:"Notta→Zapier→Notion→Agent の連携チェーン",detail:"外部ツールからNotionにデータが入った後、Agentが自動で起動するかの動作確認が必要",workaround:"「ページ追加」トリガーで動くはず。テスト必要"},
+      {issue:"複数Agentの同時実行時の競合",detail:"同じDBに複数のAgentがアクセスした場合の競合やデータ不整合の可能性",workaround:"Agent間の実行タイミングをずらす"},
+    ]
+  },
+];
+
+function renderAgents() {
+  const c = document.getElementById('agentsContent');
+  if (!c) return;
+
+  // Layer color lookup for DB pills
+  const dbLayerMap = {
+    DB1:"#7c3aed",DB2:"#7c3aed",DB3:"#7c3aed",DB4:"#7c3aed",DB5:"#7c3aed",
+    DB6:"#2563eb",DB7:"#2563eb",DB8:"#2563eb",DB9:"#2563eb",DB10:"#2563eb",
+    DB11:"#059669",DB12:"#059669",DB13:"#059669",DB14:"#059669",
+    DB15:"#dc2626",DB16:"#dc2626",DB17:"#dc2626",DB18:"#dc2626",
+    DB19:"#f59e0b",
+    DB20:"#0ea5e9",DB21:"#0ea5e9",DB22:"#0ea5e9",DB23:"#0ea5e9",DB24:"#0ea5e9",
+    DB25:"#ec4899",
+  };
+
+  function layerColorForName(layer) {
+    const map = {CRM:"#2563eb",Corporate:"#f59e0b",General:"#0ea5e9",HR:"#059669",IR:"#dc2626",SSOT:"#7c3aed",Executive:"#ec4899"};
+    return map[layer] || "#6b7294";
+  }
+
+  function triggerClass(trigger) {
+    if (trigger.includes("スケジュール") || trigger.includes("毎朝") || trigger.includes("毎月") || trigger.includes("毎週")) return "trigger-schedule";
+    if (trigger.includes("メンション")) return "trigger-mention";
+    return "trigger-event";
+  }
+
+  function accessPills(accessArr) {
+    return accessArr.map(db => {
+      const color = dbLayerMap[db] || "#6b7294";
+      return `<span class="agent-access-pill" style="background:${color}">${db}</span>`;
+    }).join('');
+  }
+
+  function typeBadge(type) {
+    if (type === "automation") return `<span style="font-size:0.65rem;padding:1px 7px;border-radius:4px;font-weight:700;background:#dbeafe;color:#2563eb;">Automation</span>`;
+    if (type === "autofill") return `<span style="font-size:0.65rem;padding:1px 7px;border-radius:4px;font-weight:700;background:#dcfce7;color:#16a34a;">AI Autofill</span>`;
+    return `<span style="font-size:0.65rem;padding:1px 7px;border-radius:4px;font-weight:700;background:#f1f5f9;color:#6b7294;">${type}</span>`;
+  }
+
+  function statusBadge(status) {
+    if (status === "可能") return `<span style="font-size:0.65rem;padding:1px 7px;border-radius:4px;font-weight:700;background:#dcfce7;color:#16a34a;">可能</span>`;
+    if (status === "要検討") return `<span style="font-size:0.65rem;padding:1px 7px;border-radius:4px;font-weight:700;background:#fef3c7;color:#d97706;">要検討</span>`;
+    return `<span style="font-size:0.65rem;padding:1px 7px;border-radius:4px;font-weight:700;background:#f1f5f9;color:#6b7294;">${status}</span>`;
+  }
+
+  // Layer grouping for Section B
+  const layerGroups = [
+    {key:"ssot", label:"SSOT基盤", color:"#7c3aed", dbs:["DB1","DB2","DB3","DB4","DB5"]},
+    {key:"crm", label:"CRM・営業", color:"#2563eb", dbs:["DB6","DB7","DB8","DB9","DB10"]},
+    {key:"hr", label:"人事・採用", color:"#059669", dbs:["DB11","DB12","DB13","DB14"]},
+    {key:"ir", label:"投資家関係", color:"#dc2626", dbs:["DB15","DB16","DB17","DB18"]},
+    {key:"corporate", label:"コーポレート", color:"#f59e0b", dbs:["DB19"]},
+    {key:"general", label:"General", color:"#0ea5e9", dbs:["DB20","DB21","DB22","DB23","DB24"]},
+    {key:"executive", label:"Executive", color:"#ec4899", dbs:["DB25"]},
+  ];
+
+  let html = '';
+
+  // === Section A: 設計方針 ===
+  html += `<div style="background:linear-gradient(135deg,#eef2ff,#ecfeff);border:2px solid var(--accent);border-radius:14px;padding:24px;margin-bottom:32px;">
+    <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent);margin-bottom:14px;">設計方針</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:16px;">
+      <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid var(--border);">
+        <div style="font-size:0.78rem;font-weight:700;color:#2563eb;margin-bottom:4px;">Database Automation</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;">シンプルなルールベースの自動化（トリガー→アクション）。チェーン不可だが高速・安定</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid var(--border);">
+        <div style="font-size:0.78rem;font-weight:700;color:#7c3aed;margin-bottom:4px;">Custom Agent</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;">AI推論を含む複雑な自動化。マルチDB横断・自然言語指示・MCP連携。24/7稼働</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid var(--border);">
+        <div style="font-size:0.78rem;font-weight:700;color:#16a34a;margin-bottom:4px;">AI Autofill</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;">ページ内容からプロパティを自動抽出。5分後に自動更新</div>
+      </div>
+    </div>
+    <div style="background:#fff;border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;font-size:0.88rem;color:var(--text);line-height:1.7;">
+      <strong>方針:</strong> まずDB Automationでできることは全てAutomationで。AIの判断が必要なものだけCustom Agent
+    </div>
+  </div>`;
+
+  // === Section B: DB別オートメーション設計 ===
+  html += `<h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--border);">DB別オートメーション設計</h2>`;
+
+  for (const lg of layerGroups) {
+    const layerDbs = dbAutomations.filter(d => lg.dbs.includes(d.db));
+    const hasContent = layerDbs.some(d => d.automations.length > 0 || d.agents.length > 0);
+
+    html += `<details style="margin-bottom:12px;" ${hasContent ? 'open' : ''}>
+      <summary style="cursor:pointer;padding:12px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:10px;list-style:none;font-weight:700;font-size:1rem;">
+        <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${lg.color};flex-shrink:0;"></span>
+        ${lg.label}
+        <span style="font-size:0.72rem;font-weight:600;background:${lg.color};color:#fff;padding:2px 10px;border-radius:20px;margin-left:4px;">${lg.dbs.length} DBs</span>
+      </summary>
+      <div style="padding:14px 4px 4px;">`;
+
+    for (const dbItem of layerDbs) {
+      const hasAuto = dbItem.automations.length > 0;
+      const hasAgents = dbItem.agents.length > 0;
+
+      html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;border-left:4px solid ${lg.color};">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="background:${lg.color};color:#fff;font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:6px;">${dbItem.db}</span>
+          <span style="font-size:0.95rem;font-weight:700;">${dbItem.name}</span>
+        </div>`;
+
+      if (hasAuto) {
+        html += `<div style="font-size:0.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Automations</div>
+          <div style="overflow-x:auto;margin-bottom:12px;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+            <thead>
+              <tr style="background:var(--surface2);">
+                <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:700;white-space:nowrap;">トリガー</th>
+                <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:700;">アクション</th>
+                <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:700;white-space:nowrap;">種別</th>
+                <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:700;white-space:nowrap;">ステータス</th>
+              </tr>
+            </thead>
+            <tbody>`;
+        for (const auto of dbItem.automations) {
+          html += `<tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:6px 10px;color:var(--text2);">${auto.trigger}</td>
+              <td style="padding:6px 10px;color:var(--text);">${auto.action}</td>
+              <td style="padding:6px 10px;white-space:nowrap;">${typeBadge(auto.type)}</td>
+              <td style="padding:6px 10px;white-space:nowrap;">${statusBadge(auto.status)}</td>
+            </tr>`;
+        }
+        html += `</tbody></table></div>`;
+      }
+
+      if (hasAgents) {
+        html += `<div style="font-size:0.75rem;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Custom Agents</div>`;
+        for (const agent of dbItem.agents) {
+          const tClass = triggerClass(agent.trigger);
+          html += `<div class="agent-card" style="border-left:4px solid #7c3aed;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+              <h3 style="margin:0;">${agent.name}</h3>
+              <span class="agent-trigger ${tClass}">${agent.trigger}</span>
+            </div>
+            <p style="font-size:0.82rem;color:var(--text2);margin-bottom:8px;line-height:1.6;">${agent.desc}</p>
+            <div class="agent-access">${accessPills(agent.access)}</div>
+          </div>`;
+        }
+      }
+
+      if (!hasAuto && !hasAgents) {
+        html += `<p style="font-size:0.82rem;color:var(--text2);font-style:italic;">自動化なし（手動運用）</p>`;
+      }
+
+      html += `</div>`;
+    }
+
+    html += `</div></details>`;
+  }
+
+  // === Section C: カスタムエージェント一覧 ===
+  html += `<h2 style="font-size:1.2rem;font-weight:700;margin:32px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border);">カスタムエージェント一覧</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px;margin-bottom:32px;">`;
+
+  for (const agent of customAgents) {
+    const lColor = layerColorForName(agent.layer);
+    const tClass = triggerClass(agent.trigger);
+    html += `<div class="agent-card" style="border-top:4px solid ${lColor};">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+        <h3 style="margin:0;color:${lColor};">${agent.name}</h3>
+        <span style="font-size:0.65rem;padding:1px 8px;border-radius:20px;font-weight:700;background:${lColor};color:#fff;">${agent.layer}</span>
+      </div>
+      <div style="margin-bottom:8px;">
+        <span class="agent-trigger ${tClass}">${agent.trigger}</span>
+      </div>
+      <div class="agent-access">${accessPills(agent.access)}</div>
+      <ul class="agent-caps" style="margin:8px 0;">
+        ${agent.capabilities.map(cap => `<li>${cap}</li>`).join('')}
+      </ul>
+      <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:0.78rem;">
+        <span style="font-weight:700;color:var(--text);">人間の手が必要: </span>
+        <span style="color:var(--text2);">${agent.humanNeeded}</span>
+      </div>
+    </div>`;
+  }
+
+  html += `</div>`;
+
+  // === Section D: できないこと・制限 ===
+  html += `<h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--border);">できないこと・人間の手が必要な領域</h2>`;
+
+  for (const group of limitations) {
+    const catClass = `cat-${group.catKey}`;
+    const catColors = {automation:"#f59e0b", agent:"#2563eb", human:"#ef4444", unverified:"#8b5cf6"};
+    const catColor = catColors[group.catKey] || "#6b7294";
+
+    html += `<div style="margin-bottom:24px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;padding:8px 14px;background:var(--surface2);border-radius:8px;border-left:4px solid ${catColor};">${group.category}</h3>`;
+
+    for (const item of group.items) {
+      html += `<div class="limitation-card ${catClass}">
+        <div style="font-weight:700;font-size:0.88rem;margin-bottom:4px;">${item.issue}</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;margin-bottom:8px;">${item.detail}</div>
+        <div style="font-size:0.82rem;color:#2563eb;line-height:1.6;">💡 ${item.workaround}</div>
+      </div>`;
+    }
+
+    html += `</div>`;
+  }
+
+  c.innerHTML = html;
+}
+
 // ===== INIT =====
 renderStats();
 renderLayerSections("");
@@ -2269,6 +2759,7 @@ renderActionPlan();
 renderRationale();
 renderIssues();
 renderHub();
+renderAgents();
 </script>
 </body>
 </html>
