@@ -2406,6 +2406,54 @@ const customAgents = [
       "紹介元からの紹介実績サマリ",
     ],
     humanNeeded: "メンションで起動。結果の最終判断は人間",
+    prompt: `あなたはNAGARA Inc.のCRM営業支援エージェントです。
+
+## 役割
+法人（取引先）の360°情報をサマリ化し、営業チームに次のアクションを提案します。
+
+## 実行手順
+1. @DB1 法人 の全レコードをスキャンします
+2. 各法人について以下の情報を収集します:
+   - @DB2 施設: 配下の施設一覧と各施設の営業ステータス
+   - @DB3 事業所: 配下の事業所一覧とプロダクト導入状況
+   - @DB4 人・名刺: キーパーソン一覧と役職
+   - @DB6 商談: 進行中の商談とパイプラインステージ
+   - @DB7 活動: 直近30日の活動履歴（時系列）
+   - @DB8 契約: 有効な契約とMRR
+   - @DB9 CRMタスク: 未完了のタスク
+
+3. 以下の形式でサマリを生成します:
+
+### 🏢 {法人名}（{ランク}）
+**営業ステータス**: {ステータス}
+**施設数**: {数} / **事業所数**: {数}
+**進行中商談**: {件数}（合計想定MRR: ¥{金額}）
+**直近活動**: {最新の活動の件名と日付}
+**有効契約**: {件数}（MRR合計: ¥{金額}）
+
+#### ⚠️ 注意事項
+- {7日以上活動がない場合: "フォロー漏れの可能性"}
+- {未完了タスクがある場合: タスク一覧}
+
+#### 💡 次のアクション提案
+- {商談ステージに応じた具体的アクション}
+
+4. フォロー漏れ（7日以上活動なし）がある法人は赤字で強調します
+5. 結果をSlackの #sales チャンネルに投稿します
+6. 対象法人が0件の場合は「本日の注意法人はありません」と投稿します`,
+    setup: [
+      "Agent Builder → New Agent → AI Chatで上記プロンプトを入力",
+      "Triggers: スケジュール（毎朝9:00 JST）+ メンション",
+      "Tools and Access: DB1(Can view), DB2(Can view), DB3(Can view), DB4(Can view), DB6(Can view), DB7(Can view), DB8(Can view), DB9(Can view)",
+      "Slack: #sales チャンネルにCan post",
+      "Model: Auto（推奨）",
+      "テスト: まず手動Runで1法人分のサマリを確認",
+    ],
+    concerns: [
+      "全法人スキャンはクレジット消費が大きい。最初はランクS/Aのみに絞って実行し、消費量を測定してから拡大",
+      "毎朝実行するとクレジットが月100-200程度消費される見込み。$1-2/月",
+      "法人数が増えるとサマリが長くなりすぎる→上位20社に絞る or ランク別に分けて実行",
+    ],
   },
   {
     name: "商談進捗エージェント",
@@ -2419,6 +2467,57 @@ const customAgents = [
       "滞留商談のフォローアップタスク自動作成",
     ],
     humanNeeded: "レポートの確認。タスクの優先度調整",
+    prompt: `あなたはNAGARA Inc.の商談パイプライン管理エージェントです。
+
+## 役割
+毎朝、全商談の進捗をチェックし、滞留商談の検出とパイプライン予測レポートを生成します。
+
+## 実行手順
+1. @DB6 商談 の全レコードをスキャンします（パイプラインステージが「受注」「失注」以外）
+
+2. 滞留商談の検出:
+   - @DB7 活動 で、各商談に紐づく最新の活動日を確認
+   - 最終活動日から7日以上経過している商談を「滞留商談」としてリストアップ
+   - 各滞留商談に対して @DB9 CRMタスク に以下を作成:
+     - タスク名: 「フォローアップ: {商談名}」
+     - 締切: 本日から3日後
+     - 取引先: 商談の取引先リレーションをコピー
+     - ステータス: Next Action
+
+3. パイプライン予測レポート:
+   - ステージ別の商談件数と想定MRR合計を集計
+   - 確度加重MRR = Σ(想定MRR × 確度%) を計算
+   - 今月の受注見込み金額を算出
+
+4. Slackの #sales チャンネルに以下を投稿:
+
+📊 商談パイプライン日報（{日付}）
+
+**滞留商談**: {件数}件（要フォロー）
+{滞留商談リスト: 商談名 / 取引先 / 最終活動日 / 担当}
+
+**パイプライン状況**:
+| ステージ | 件数 | 想定MRR |
+|---------|------|---------|
+| リード | {n} | ¥{金額} |
+| ...
+
+**確度加重MRR（受注見込み）**: ¥{金額}
+
+5. 滞留商談が0件の場合は「フォロー漏れなし 👍」と投稿します`,
+    setup: [
+      "Agent Builder → New Agent → AI Chatで上記プロンプトを入力",
+      "Triggers: スケジュール（毎朝9:00 JST）",
+      "Tools and Access: DB6(Can view), DB7(Can view), DB9(Can edit)",
+      "Slack: #sales チャンネルにCan post",
+      "Model: Auto",
+      "テスト: 手動Runで滞留商談が正しく検出されるか確認",
+    ],
+    concerns: [
+      "商談数が多い場合、全件スキャン+活動DB照合でクレジット消費が増加",
+      "「7日」の閾値は業界・商談フェーズによって調整が必要。初期運用で最適値を検証",
+      "自動作成されたタスクが重複する可能性→既存の未完了タスクをチェックしてから作成",
+    ],
   },
   {
     name: "活動→タスク変換エージェント",
@@ -2431,6 +2530,51 @@ const customAgents = [
       "取引先/施設/名刺のリレーションを自動補完",
     ],
     humanNeeded: "抽出されたタスクの確認・修正",
+    prompt: `あなたはNAGARA Inc.の活動記録からタスクを自動生成するエージェントです。
+
+## 役割
+@DB7 活動(CRM) に新しいレコードが追加されたら、その内容を読んで次のアクションをDB9にタスクとして自動作成します。
+
+## 実行手順
+1. トリガー: @DB7 にページが追加された時
+
+2. 追加されたページの以下を確認:
+   - ページ本文（議事録/メモ）
+   - サマリプロパティ
+   - 活動タイプ
+   - 取引先/施設/名刺のリレーション
+
+3. ページ本文またはサマリから「次のアクション」を抽出:
+   - 「〜する」「〜を送る」「〜に連絡する」「〜を確認する」等のアクション表現を検出
+   - 各アクションについて1つずつ @DB9 CRMタスク にページを作成:
+     - タスク名: 抽出したアクション内容
+     - 取引先: DB7のレコードから取引先リレーションをコピー
+     - 施設: 同上
+     - 関連先: DB7の参加者リレーションをコピー
+     - 商談: DB7の商談リレーションをコピー
+     - ステータス: 「Next Action」
+     - 優先度: 「中」（「急ぎ」「至急」等の表現があれば「高」or「至急」）
+     - 締切: テキストに日付が含まれていればその日付。なければ本日から7日後
+
+4. 次のアクションが抽出できなかった場合は何もしない（タスクを作成しない）
+
+5. 作成したタスクの件数をDB7のレコードにコメントとして追加:
+   「次のアクションとして{n}件のCRMタスクを作成しました: {タスク名リスト}」
+
+## 注意事項
+- 社内MTGや作業タイプの活動からはタスクを作成しない（活動タイプが「社内MTG」「作業」の場合はスキップ）
+- 既に同じ内容のタスクがDB9に存在する場合は重複作成しない`,
+    setup: [
+      "Triggers: Notionイベント（DB7にページ追加）",
+      "Tools and Access: DB7(Can view+comment), DB9(Can edit), DB1(Can view), DB2(Can view), DB4(Can view)",
+      "Model: Auto",
+      "テスト: DB7に手動で活動レコードを作成し、DB9にタスクが生成されるか確認",
+    ],
+    concerns: [
+      "自動生成の精度が重要。初期は「確認モード」にして人間が承認してからタスク作成に切り替え",
+      "活動タイプが「手動」で人間が書いた活動メモからの抽出は精度が高いが、ZoomPhoneやGmailからの自動投入活動は文字起こし品質に依存",
+      "タスクの重複チェック: 「同じ内容のタスク」の判定精度が課題",
+    ],
   },
   {
     name: "顧客コンテキストエージェント",
@@ -2444,6 +2588,65 @@ const customAgents = [
       "商談/契約の現在ステータス横断表示",
     ],
     humanNeeded: "なし（情報提供のみ）",
+    prompt: `あなたはNAGARA Inc.の顧客情報検索エージェントです。
+
+## 役割
+営業メンバーから@メンションされた時に、指定された顧客の全コンテキストを即座に提供します。
+
+## 実行手順
+1. メンションされたメッセージから顧客名（法人名/施設名/個人名）を特定
+
+2. 該当する顧客を検索:
+   - @DB1 法人 で法人名を検索
+   - @DB2 施設 で施設名を検索
+   - @DB4 人・名刺 で氏名を検索
+
+3. 見つかった顧客について以下を収集:
+
+   **基本情報**: 法人名/施設名/ランク/営業ステータス/エリア/PM
+   **キーパーソン**: DB4から所属する名刺一覧（氏名/役職/連絡先）
+   **商談状況**: DB6から進行中の商談（ステージ/確度/想定MRR）
+   **活動履歴**: DB7から直近10件の活動（日付/タイプ/サマリ）を時系列で
+   **契約状況**: DB8から有効な契約（プロダクト/MRR/契約期間）
+   **未完了タスク**: DB9から未完了のCRMタスク
+
+4. 以下の形式で回答:
+
+🏢 **{顧客名}** の全コンテキスト
+
+📋 基本情報
+{基本情報}
+
+👤 キーパーソン
+{名刺一覧}
+
+💼 商談
+{商談情報}
+
+📅 活動履歴（直近10件）
+{活動リスト: 日付 | タイプ | サマリ}
+
+📝 契約
+{契約情報}
+
+✅ 未完了タスク
+{タスクリスト}
+
+💡 推奨アクション
+{状況に基づく次のアクション提案}
+
+5. 顧客が見つからない場合: 「{検索語}に該当する顧客が見つかりませんでした。法人名/施設名/個人名で再度お試しください。」`,
+    setup: [
+      "Triggers: メンション",
+      "Tools and Access: DB1(Can view), DB2(Can view), DB4(Can view), DB6(Can view), DB7(Can view), DB8(Can view), DB9(Can view)",
+      "Model: Auto",
+      "共有: 営業チーム全員にCan View and Interact",
+    ],
+    concerns: [
+      "直近10件の活動を取得する際、DB7のレコード数が多いと処理時間とクレジットが増加",
+      "顧客名の表記ゆれ（「社会福祉法人福寿園」vs「福寿園」）に対する検索精度",
+      "Closed TeamsapceのDB（IR系）にはアクセスさせない→投資家情報が漏れない",
+    ],
   },
   {
     name: "議事録生成エージェント",
@@ -2458,6 +2661,76 @@ const customAgents = [
       "参加者のリレーションを自動設定",
     ],
     humanNeeded: "議事録の最終確認。ステータス更新の承認",
+    prompt: `あなたはNAGARA Inc.の議事録自動生成エージェントです。
+
+## 役割
+@DB10 商談報告フォーム に新しい報告が追加されたら、その内容から議事録を生成し、関連DBを自動更新します。
+
+## 実行手順
+1. トリガー: @DB10 にページが追加された時
+
+2. 追加されたページから以下を取得:
+   - 報告内容（rich_text）
+   - 文字起こし（rich_text）
+   - 活動タイプ
+   - 取引先/施設/商談/名刺のリレーション
+   - 営業担当
+
+3. 報告内容と文字起こしから議事録を生成:
+
+## 議事録: {報告タイトル}
+**日時**: {活動日時}
+**参加者**: {参加者メモ + 名刺リレーション}
+**活動タイプ**: {活動タイプ}
+
+### 議事概要
+{報告内容/文字起こしを3-5行に要約}
+
+### 議題と討議内容
+{主要な議題を箇条書きで整理}
+
+### 決定事項
+{明確な決定事項を箇条書きで抽出}
+
+### 次のアクション
+{具体的なアクションアイテムを担当者付きで抽出}
+
+4. @DB7 活動(CRM) にページを作成:
+   - 件名: DB10の報告タイトル
+   - 活動タイプ: DB10の活動タイプ
+   - 取引先: DB10の取引先リレーションをコピー
+   - 施設: 同上
+   - 商談: 同上
+   - 参加者: DB10の名刺リレーションをコピー
+   - サマリ: 生成した議事概要
+   - ソースチャネル: 「DB10報告」
+   - 自動生成: true
+   - ページ本文: 生成した議事録全文
+
+5. 次のアクションから @DB9 CRMタスク にタスクを作成:
+   - 各アクションにつき1タスク
+   - 取引先/施設/名刺リレーションをDB10からコピー
+   - ステータス: Next Action
+   - 締切: テキストに日付があればそれ、なければ7日後
+
+6. DB10の処理ステータスを「完了」に更新
+
+7. DB6 商談のパイプラインステージ更新を提案:
+   - 議事録の内容からステージ変更が必要か判断
+   - 必要な場合はDB10のページにコメント: 「商談ステージを{現在}→{提案}に更新することを推奨します」
+   - ※ 実際のステージ変更は人間が行う`,
+    setup: [
+      "Triggers: Notionイベント（DB10にページ追加）",
+      "Tools and Access: DB10(Can view+edit), DB7(Can edit), DB9(Can edit), DB6(Can view+comment), DB1(Can view), DB2(Can view), DB4(Can view)",
+      "Model: Claude Opus（議事録品質が重要なため）",
+      "テスト: DB10に手動でテスト報告を入力し、生成される議事録の品質を確認",
+    ],
+    concerns: [
+      "文字起こしの品質に議事録の品質が依存。Nottaの文字起こし精度が低い場合、議事録も不正確に",
+      "商談ステージの変更提案は「提案」のみ。自動変更はしない（営業判断が必要）",
+      "1回の実行で3つのDB（DB7/DB9/DB10）を更新するため、クレジット消費が大きい（推定20-30クレジット/回）",
+      "テスト時はDB10に手動でテスト報告を入力し、生成される議事録の品質を確認すること",
+    ],
   },
   {
     name: "MRRレポートエージェント",
@@ -2471,6 +2744,60 @@ const customAgents = [
       "Slackにレポート投稿",
     ],
     humanNeeded: "レポートの確認",
+    prompt: `あなたはNAGARA Inc.の月次MRRレポート生成エージェントです。
+
+## 役割
+毎月1日に全契約のMRRを集計し、レポートを生成してSlackに投稿します。
+
+## 実行手順
+1. @DB8 契約 の全レコードをスキャンします
+
+2. 集計:
+   - 契約ステータス=「締結完了」の契約のMRR合計
+   - 先月と比較した増減
+   - 新規契約（今月開始）のMRR
+   - 解約契約（今月終了）のMRR
+   - 法人別MRRランキング（上位10社）
+
+3. @DB1 法人 から各法人の情報を補足:
+   - ランク
+   - 施設数
+   - エリア
+
+4. Slackの #executive チャンネルに以下を投稿:
+
+📊 月次MRRレポート（{年月}）
+
+**MRR合計**: ¥{金額}（前月比: {+/-金額} {+/-%}）
+
+**内訳**:
+- 新規MRR: ¥{金額}（{件数}件）
+- 解約MRR: ¥{金額}（{件数}件）
+- 純増: ¥{金額}
+
+**法人別MRRランキング**:
+1. {法人名}: ¥{MRR}（{プロダクト}）
+...
+
+**注目ポイント**:
+- {解約がある場合: 解約法人名と理由}
+- {新規契約がある場合: 新規法人名}
+
+5. レポートを @DB23 ドキュメント にも保存:
+   - ドキュメント名: 「月次MRRレポート {年月}」
+   - 種別: 報告書
+   - レイヤー: CRM`,
+    setup: [
+      "Triggers: スケジュール（毎月1日 9:00 JST）",
+      "Tools and Access: DB8(Can view), DB1(Can view), DB23(Can edit)",
+      "Slack: #executive チャンネルにCan post",
+      "Model: Auto",
+    ],
+    concerns: [
+      "契約数が少ない初期段階ではレポートの価値が低い。データが蓄積されてから有効化",
+      "MRRの「先月比較」は前月のレポートをDB23から取得する必要がある→初回実行時は比較不可",
+      "#executiveチャンネルがClosedの場合はAgentがアクセスできない→パブリックにするか手動転記",
+    ],
   },
   {
     name: "コンテンツ企画エージェント",
@@ -2483,6 +2810,55 @@ const customAgents = [
       "プラットフォーム別に本文ドラフト生成",
     ],
     humanNeeded: "企画案のレビュー・承認。実際の投稿",
+    prompt: `あなたはNAGARA Inc.のSNSコンテンツ企画エージェントです。
+
+## 役割
+毎週月曜日に、CRM活動から成功事例やトピックを検出し、SNSコンテンツの企画案を自動生成します。
+
+## 実行手順
+1. 先週の @DB7 活動(CRM) をスキャンし、以下を検出:
+   - トライアル開始/契約締結の活動
+   - ポジティブなフィードバックを含む活動（「喜んで」「助かる」「効果があった」等）
+   - 展示会/イベント参加の活動
+
+2. @DB6 商談 で先週ステージが進んだ商談を検出
+
+3. 検出されたトピックごとに @DB19 発信コンテンツ にページを作成:
+   - タイトル: コンテンツ案のタイトル
+   - ステータス: 企画
+   - カテゴリ: 自動判定（企業PR/プロダクト/業界洞察等）
+   - プラットフォーム: トピックに応じて推奨PF（事例→LinkedIn/note、Tips→X、ビジュアル→Instagram）
+   - ページ本文: 以下のテンプレートで下書き
+
+### コンテンツ企画
+**元ネタ**: {活動/商談の概要}
+**切り口**: {どの角度で発信するか}
+**ターゲット**: {誰に向けた発信か}
+**推奨プラットフォーム**: {PFと理由}
+**下書き案**:
+{300字程度の本文ドラフト}
+**ハッシュタグ案**: {3-5個}
+
+4. 結果をSlackの #marketing チャンネルに投稿:
+   「今週のコンテンツ企画を{n}件作成しました: {タイトルリスト}」
+
+5. トピックが0件の場合は何も作成せず、Slackに「今週の新規コンテンツネタはありませんでした」と投稿
+
+## 注意事項
+- 顧客名を直接出さないこと（事例紹介は許可を得てから）
+- 競合を名指しで批判する内容は生成しない
+- 機密情報（MRR、契約金額等）は含めない`,
+    setup: [
+      "Triggers: スケジュール（毎週月曜10:00 JST）",
+      "Tools and Access: DB7(Can view), DB6(Can view), DB19(Can edit), DB1(Can view), DB2(Can view)",
+      "Slack: #marketing チャンネルにCan post",
+      "Model: Auto",
+    ],
+    concerns: [
+      "顧客名・機密情報の漏洩リスク→プロンプトで厳しく禁止しているが、テスト時に確認必要",
+      "「成功事例」の検出精度→活動のサマリやページ本文の書き方に依存",
+      "コンテンツの品質はドラフト段階。人間のレビュー・修正が前提",
+    ],
   },
   {
     name: "全社タスクリマインダー",
@@ -2495,6 +2871,52 @@ const customAgents = [
       "担当者別にメンション付きで通知",
     ],
     humanNeeded: "なし（通知のみ）",
+    prompt: `あなたはNAGARA Inc.の全社タスクリマインダーエージェントです。
+
+## 役割
+毎朝、全タスクDBを横断スキャンし、締切が今日または期限切れのタスクをSlackで通知します。
+
+## 実行手順
+1. 以下の4つのタスクDBをスキャンします:
+   - @DB9 CRMタスク（営業タスク）
+   - @DB14 人事タスク（採用タスク）
+   - @DB18 IRタスク（投資家タスク）
+   - @DB22 Generalタスク（社内タスク）
+
+2. 各DBで以下を検出:
+   - 締切が今日のタスク
+   - 締切が過ぎている（期限切れ）タスク
+   - ステータスが「未着手」「Next Action」「進行中」のもののみ（完了は除外）
+
+3. Slackの #general チャンネルに以下を投稿:
+
+⏰ タスクリマインダー（{日付}）
+
+**🔴 期限切れ（{件数}件）**:
+{タスク名} | {DB名} | {締切日} | @{担当者}
+...
+
+**🟡 本日締切（{件数}件）**:
+{タスク名} | {DB名} | @{担当者}
+...
+
+4. 期限切れ・本日締切が0件の場合:
+   「今日の締切タスクはありません ✨」
+
+## 注意事項
+- DB14(人事)とDB18(投資家)のタスクはClosedなので、通知では具体的な内容を省略し「人事関連タスク」「IR関連タスク」とだけ表記
+- 担当者のSlackメンションは@名前形式で`,
+    setup: [
+      "Triggers: スケジュール（毎朝8:30 JST）",
+      "Tools and Access: DB9(Can view), DB14(Can view), DB18(Can view), DB22(Can view)",
+      "Slack: #general チャンネルにCan post",
+      "Model: Auto（軽量タスクなのでコスト最適化）",
+    ],
+    concerns: [
+      "DB14/DB18はClosedだが、このAgentにはCan viewを付与する必要がある→Agent共有時に注意（営業メンバーにこのAgentを共有するとClosed DBの内容が見えてしまう可能性）",
+      "対策: DB14/DB18の情報はSlack通知に具体的内容を含めない。「人事タスクが1件期限切れです」のみ",
+      "タスク数が多い場合、Slackメッセージが長すぎて読まれない→上位5件に絞るか、DMで個別通知にする",
+    ],
   },
 ];
 
@@ -2602,6 +3024,117 @@ function renderAgents() {
 
   let html = '';
 
+  // === Section 0: 作り方ガイド ===
+  html += `<details class="guide-toggle" style="margin-bottom:24px;">
+<summary style="cursor:pointer;font-size:1.15rem;font-weight:700;color:var(--accent);padding:12px 0;">📖 Notionカスタムエージェントの作り方（完全ガイド）</summary>
+<div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-top:8px;">
+
+<h3 style="margin:16px 0 8px;">1. Agent Builderを開く</h3>
+<ol style="font-size:0.88rem;color:var(--text2);line-height:1.8;">
+<li>Notionのサイドバーで <strong>Agents</strong> セクションをクリック</li>
+<li><strong>+ New Agent</strong> ボタンをクリック</li>
+<li>3つの作成方法から選択: <strong>AI Chat</strong>（推奨）/ Templates / Blank</li>
+</ol>
+
+<h3 style="margin:16px 0 8px;">2. Instructionsを書く</h3>
+<div style="background:var(--surface2);padding:14px;border-radius:8px;margin:8px 0;">
+<p style="font-size:0.85rem;font-weight:700;margin-bottom:6px;">💡 良いプロンプトの構造:</p>
+<ol style="font-size:0.82rem;color:var(--text2);line-height:1.7;">
+<li><strong>最終成果物を先に書く</strong> — 手順ではなくゴールから</li>
+<li><strong>具体的なステップを書く</strong> — 曖昧さを排除</li>
+<li><strong>@メンションでDB/ページを指定</strong> — 「プロジェクトDB」ではなく「@DB21 プロジェクト」</li>
+<li><strong>出力フォーマットを明示</strong> — 「5つの箇条書きで」「Slackに投稿」</li>
+<li><strong>エッジケースを定義</strong> — 「データがない場合は"該当なし"と返す」</li>
+<li><strong>やってはいけないことも書く</strong> — 境界を明確に</li>
+</ol>
+</div>
+
+<div style="background:#fef2f2;padding:12px;border-radius:8px;margin:8px 0;">
+<p style="font-size:0.82rem;font-weight:700;color:#dc2626;">❌ 悪い例:</p>
+<p style="font-size:0.8rem;color:var(--text2);font-style:italic;">"商談の状況を確認して、必要ならタスクを作って"</p>
+<p style="font-size:0.78rem;color:#dc2626;">→ 何のDB？どの条件で？誰に？いつまでのタスク？全て曖昧</p>
+</div>
+
+<div style="background:#f0fdf4;padding:12px;border-radius:8px;margin:8px 0;">
+<p style="font-size:0.82rem;font-weight:700;color:#16a34a;">✅ 良い例:</p>
+<p style="font-size:0.8rem;color:var(--text2);font-style:italic;">"@DB6 商談 の全レコードをスキャンし、最終活動日から7日以上経過している商談をリストアップ。<br>各商談について @DB9 CRMタスク に以下のタスクを作成:<br>- タスク名: 「フォローアップ: {商談名}」<br>- 締切: 本日から3日後<br>- 取引先: 商談の取引先リレーションをコピー<br>- ステータス: Next Action<br>結果をSlackの #sales チャンネルに投稿。対象が0件の場合は「フォロー漏れなし」と投稿。"</p>
+</div>
+
+<h3 style="margin:16px 0 8px;">3. Triggersを設定</h3>
+<table style="font-size:0.82rem;width:100%;border-collapse:collapse;">
+<tr style="background:var(--surface2);"><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);">トリガー種別</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);">使い方</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);">注意点</th></tr>
+<tr><td style="padding:8px;border-bottom:1px solid var(--border);">スケジュール</td><td style="padding:8px;border-bottom:1px solid var(--border);">毎朝/毎週/毎月の定期実行</td><td style="padding:8px;border-bottom:1px solid var(--border);">他のトリガーと組み合わせ不可</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid var(--border);">Notionイベント</td><td style="padding:8px;border-bottom:1px solid var(--border);">ページ追加/更新/削除/コメント</td><td style="padding:8px;border-bottom:1px solid var(--border);">高頻度更新DBでは大量発火に注意</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid var(--border);">Slackイベント</td><td style="padding:8px;border-bottom:1px solid var(--border);">メッセージ/リアクション/スレッド</td><td style="padding:8px;border-bottom:1px solid var(--border);">パブリックchのみ。DM不可</td></tr>
+<tr><td style="padding:8px;border-bottom:1px solid var(--border);">メンション</td><td style="padding:8px;border-bottom:1px solid var(--border);">ページやコメントで@エージェント名</td><td style="padding:8px;border-bottom:1px solid var(--border);">手動トリガー。オンデマンド用</td></tr>
+</table>
+
+<h3 style="margin:16px 0 8px;">4. Tools and Accessを設定</h3>
+<ul style="font-size:0.82rem;color:var(--text2);line-height:1.7;">
+<li><strong>アクセス範囲は最小限に</strong> — 「全ページ共有」ではなく必要なDBだけ指定</li>
+<li><strong>読み取り/編集を分ける</strong> — 参照のみのDBはCan view、更新するDBはCan edit</li>
+<li><strong>Webアクセス</strong> — 外部情報が必要な場合のみON</li>
+<li><strong>Slack連携</strong> — 管理者がSlack AI Connectorを事前有効化する必要あり</li>
+</ul>
+
+<h3 style="margin:16px 0 8px;">5. モデル選択</h3>
+<table style="font-size:0.82rem;width:100%;border-collapse:collapse;">
+<tr style="background:var(--surface2);"><th style="padding:6px;border-bottom:1px solid var(--border);">モデル</th><th style="padding:6px;border-bottom:1px solid var(--border);">推奨用途</th><th style="padding:6px;border-bottom:1px solid var(--border);">クレジット</th></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);"><strong>Auto（推奨）</strong></td><td style="padding:6px;border-bottom:1px solid var(--border);">ほとんどのケース。タスクに応じて最適モデルを自動選択</td><td style="padding:6px;border-bottom:1px solid var(--border);">最適化</td></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Claude Opus</td><td style="padding:6px;border-bottom:1px solid var(--border);">複雑なマルチステップ推論</td><td style="padding:6px;border-bottom:1px solid var(--border);">高</td></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Claude Sonnet</td><td style="padding:6px;border-bottom:1px solid var(--border);">バランス型</td><td style="padding:6px;border-bottom:1px solid var(--border);">中</td></tr>
+</table>
+
+<h3 style="margin:16px 0 8px;">6. テスト→公開</h3>
+<ol style="font-size:0.82rem;color:var(--text2);line-height:1.7;">
+<li><strong>Runボタン</strong>で手動実行してテスト</li>
+<li><strong>Activityタブ</strong>で実行ログを確認</li>
+<li>問題があればInstructionsを修正して再テスト</li>
+<li>安定したら<strong>Share</strong>で公開範囲を設定</li>
+<li><strong>小さいグループ</strong>で試行→全社展開</li>
+</ol>
+
+</div>
+</details>`;
+
+  html += `<details class="guide-toggle" style="margin-bottom:24px;">
+<summary style="cursor:pointer;font-size:1.15rem;font-weight:700;color:#f59e0b;padding:12px 0;">⚡ データベースオートメーションの作り方</summary>
+<div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-top:8px;">
+
+<h3 style="margin:16px 0 8px;">1. オートメーション設定を開く</h3>
+<ol style="font-size:0.88rem;color:var(--text2);line-height:1.8;">
+<li>データベースを開く</li>
+<li>上部の<strong>⚡ 雷アイコン</strong>をクリック</li>
+<li><strong>New automation</strong>をクリック</li>
+</ol>
+
+<h3 style="margin:16px 0 8px;">2. トリガーを設定</h3>
+<ul style="font-size:0.82rem;color:var(--text2);line-height:1.7;">
+<li><strong>ページ追加</strong>: 新しいページが作成された時</li>
+<li><strong>プロパティ変更</strong>: 特定のプロパティが変更された時（条件指定可）</li>
+<li><strong>定期実行</strong>: 毎日/毎週/毎月（他トリガーと組み合わせ不可）</li>
+<li>複数トリガーはAND/ORで組み合わせ可能</li>
+</ul>
+
+<h3 style="margin:16px 0 8px;">3. アクションを設定</h3>
+<table style="font-size:0.82rem;width:100%;border-collapse:collapse;">
+<tr style="background:var(--surface2);"><th style="padding:6px;border-bottom:1px solid var(--border);">アクション</th><th style="padding:6px;border-bottom:1px solid var(--border);">説明</th></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Edit property</td><td style="padding:6px;border-bottom:1px solid var(--border);">トリガーページのプロパティを変更</td></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Add page to</td><td style="padding:6px;border-bottom:1px solid var(--border);">別のDBにページを自動作成</td></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Edit pages in</td><td style="padding:6px;border-bottom:1px solid var(--border);">別のDB内の既存ページを更新</td></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Send notification</td><td style="padding:6px;border-bottom:1px solid var(--border);">最大20名にNotion通知</td></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Send Slack</td><td style="padding:6px;border-bottom:1px solid var(--border);">Slackチャンネルに通知</td></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Send mail</td><td style="padding:6px;border-bottom:1px solid var(--border);">Gmail経由でメール送信</td></tr>
+<tr><td style="padding:6px;border-bottom:1px solid var(--border);">Send webhook</td><td style="padding:6px;border-bottom:1px solid var(--border);">HTTP POSTリクエスト送信</td></tr>
+</table>
+
+<div style="background:#fef3c7;padding:10px;border-radius:8px;margin:12px 0;font-size:0.82rem;">
+<strong>⚠️ 重要な制限:</strong> オートメーション同士のチェーンは不可。Automation Aがページを作成 → Automation Bがそれをトリガーにして動く、ということはできない。
+</div>
+
+</div>
+</details>`;
+
   // === Section A: 設計方針 ===
   html += `<div style="background:linear-gradient(135deg,#eef2ff,#ecfeff);border:2px solid var(--accent);border-radius:14px;padding:24px;margin-bottom:32px;">
     <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent);margin-bottom:14px;">設計方針</h2>
@@ -2705,6 +3238,9 @@ function renderAgents() {
   for (const agent of customAgents) {
     const lColor = layerColorForName(agent.layer);
     const tClass = triggerClass(agent.trigger);
+    const setupHtml = agent.setup ? agent.setup.map(s => `<li>${s}</li>`).join('') : '';
+    const concernsHtml = agent.concerns ? agent.concerns.map(c => `<li>${c}</li>`).join('') : '';
+    const promptEscaped = agent.prompt ? agent.prompt.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
     html += `<div class="agent-card" style="border-top:4px solid ${lColor};">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
         <h3 style="margin:0;color:${lColor};">${agent.name}</h3>
@@ -2721,6 +3257,17 @@ function renderAgents() {
         <span style="font-weight:700;color:var(--text);">人間の手が必要: </span>
         <span style="color:var(--text2);">${agent.humanNeeded}</span>
       </div>
+      ${agent.prompt ? `<details style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">
+        <summary style="cursor:pointer;font-size:0.82rem;font-weight:700;color:var(--accent);">📋 完全プロンプト・セットアップガイド・懸念点を表示</summary>
+        <div style="margin-top:8px;">
+          <h4 style="font-size:0.82rem;font-weight:700;margin:8px 0 4px;">📝 Notionに貼り付けるプロンプト</h4>
+          <pre style="background:var(--surface2);padding:12px;border-radius:8px;font-size:0.75rem;white-space:pre-wrap;max-height:300px;overflow-y:auto;">${promptEscaped}</pre>
+          <h4 style="font-size:0.82rem;font-weight:700;margin:12px 0 4px;">🔧 セットアップ手順</h4>
+          <ol style="font-size:0.8rem;color:var(--text2);line-height:1.6;">${setupHtml}</ol>
+          <h4 style="font-size:0.82rem;font-weight:700;margin:12px 0 4px;color:#dc2626;">⚠️ 懸念点・注意事項</h4>
+          <ul style="font-size:0.8rem;color:var(--text2);line-height:1.6;">${concernsHtml}</ul>
+        </div>
+      </details>` : ''}
     </div>`;
   }
 
