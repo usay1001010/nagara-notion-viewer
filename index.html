@@ -255,6 +255,7 @@ const dbs = [
      {n:"名刺一覧",t:"relation",to:"DB4"},{n:"支店一覧",t:"relation",to:"DB5"},
      {n:"商談一覧",t:"relation",to:"DB6"},{n:"活動一覧",t:"relation",to:"DB7"},
      {n:"契約一覧",t:"relation",to:"DB8"},{n:"ドキュメント一覧",t:"relation",to:"DB23"},
+     {n:"Generalタスク",t:"relation",to:"DB22"},{n:"IRタスク",t:"relation",to:"DB18"},
      {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},
      {n:"紹介元（個人）",t:"relation",to:"DB4"},
      {n:"施設数",t:"rollup",rp:"施設一覧",tp:"施設名",fn:"count"},
@@ -275,6 +276,7 @@ const dbs = [
      {n:"サービス種別",t:"select",o:["居宅介護支援","訪問介護","通所介護","特養","グループホーム","他"]},
      {n:"導入ステータス",t:"select",o:["未導入","トライアル見込み","準備中","トライアル中","契約中"]},
      {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},
+     {n:"名刺一覧",t:"relation",to:"DB4"},{n:"契約一覧",t:"relation",to:"DB8"},{n:"プロダクト",t:"relation",to:"DB24"},
      {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
      {n:"定員",t:"number"},
    ]},
@@ -283,7 +285,8 @@ const dbs = [
      {n:"氏名",t:"title"},{n:"名刺コード",t:"unique_id",x:"CON"},
      {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元","投資家","採用候補"]},
      {n:"カテゴリ",t:"multi_select",o:["顧客","パートナー","投資家","チームメンバー","アドバイザー"]},
-     {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},{n:"所属支店",t:"relation",to:"DB5"},
+     {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},{n:"所属事業所",t:"relation",to:"DB3"},{n:"所属支店",t:"relation",to:"DB5"},
+     {n:"IRタスク",t:"relation",to:"DB18"},
      {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
      {n:"電話番号",t:"phone_number"},{n:"メール",t:"email"},
    ]},
@@ -372,6 +375,7 @@ const dbs = [
      {n:"タイトル",t:"title"},{n:"面談コード",t:"unique_id",x:"IRM"},
      {n:"ステータス",t:"select",o:["リード","面談調整中","ピッチ済み","DD中","契約交渉","クロージング"]},
      {n:"投資家（法人）",t:"relation",to:"DB1"},{n:"投資家（個人）",t:"relation",to:"DB4"},
+     {n:"支店",t:"relation",to:"DB5"},
      {n:"面談日",t:"date"},
    ]},
   {id:"DB16",name:"活動（IR Activity）",layer:"ir",desc:"投資家との活動記録",
@@ -379,18 +383,20 @@ const dbs = [
      {n:"件名",t:"title"},{n:"活動タイプ",t:"select",o:["面談","メール","電話","ピッチ"]},
      {n:"活動日時",t:"date"},
      {n:"投資家（法人）",t:"relation",to:"DB1"},{n:"投資家（個人）",t:"relation",to:"DB4"},
+     {n:"支店",t:"relation",to:"DB5"},
      {n:"面談",t:"relation",to:"DB15"},
    ]},
   {id:"DB17",name:"契約（IR Contracts）",layer:"ir",desc:"投資契約管理",
    props:[
      {n:"契約名",t:"title"},{n:"ステータス",t:"select",o:["交渉中","締結","終了"]},
-     {n:"投資額",t:"number"},{n:"投資家",t:"relation",to:"DB1"},{n:"開始日",t:"date"},
+     {n:"投資額",t:"number"},{n:"投資家",t:"relation",to:"DB1"},{n:"支店",t:"relation",to:"DB5"},{n:"開始日",t:"date"},
    ]},
   {id:"DB18",name:"タスク（IR Tasks）",layer:"ir",desc:"投資関連タスク",
    props:[
      {n:"タスク名",t:"title"},{n:"ステータス",t:"select",o:["未着手","進行中","完了"]},
      {n:"担当者",t:"people"},{n:"締切",t:"date"},
      {n:"面談",t:"relation",to:"DB15"},
+     {n:"投資家法人",t:"relation",to:"DB1"},{n:"投資家個人",t:"relation",to:"DB4"},{n:"支店",t:"relation",to:"DB5"},
    ]},
   // コーポレート
   {id:"DB19",name:"発信コンテンツ（Contents）",layer:"corporate",desc:"SNS投稿パイプライン。11アカウント対応",
@@ -398,7 +404,8 @@ const dbs = [
      {n:"タイトル",t:"title"},{n:"コンテンツコード",t:"unique_id",x:"CNT"},
      {n:"ステータス",t:"select",o:["企画","下書き","レビュー","承認済","公開済"]},
      {n:"プラットフォーム",t:"multi_select",o:["X","Instagram","LinkedIn","note","Facebook","PR TIMES"]},
-     {n:"取引先",t:"relation",to:"DB1"},{n:"プロジェクト",t:"relation",to:"DB21"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"人・名刺",t:"relation",to:"DB4"},
+     {n:"プロジェクト",t:"relation",to:"DB21"},
    ]},
   // General
   {id:"DB20",name:"部門（Departments）",layer:"general",desc:"組織階層管理。上位DEPT自己参照",
@@ -424,6 +431,7 @@ const dbs = [
      {n:"ステータス",t:"select",o:["未着手","Next Action","進行中","返信待ち","完了"]},
      {n:"優先度",t:"select",o:["至急","高","中","低"]},
      {n:"親タスク",t:"relation",to:"DB22"},{n:"プロジェクト",t:"relation",to:"DB21"},{n:"部門",t:"relation",to:"DB20"},
+     {n:"ドキュメント",t:"relation",to:"DB23"},
      {n:"締切",t:"date"},{n:"担当者",t:"people"},
    ]},
   {id:"DB23",name:"ドキュメント（Documents）",layer:"general",desc:"統一ドキュメントDB。レイヤーselectで絞り込み",
@@ -432,13 +440,14 @@ const dbs = [
      {n:"種別",t:"select",o:["報告書","提案書","計画書","マニュアル","分析","議事録","Decision Log"]},
      {n:"レイヤー",t:"select",o:["CRM","社内運営","経営","開発","マーケティング"]},
      {n:"取引先",t:"relation",to:"DB1"},{n:"プロジェクト",t:"relation",to:"DB21"},{n:"部門",t:"relation",to:"DB20"},
+     {n:"プロダクト",t:"relation",to:"DB24"},{n:"タスク",t:"relation",to:"DB22"},
    ]},
   {id:"DB24",name:"プロダクト（Products）",layer:"general",desc:"自社プロダクト管理。ながらかいご/キクノート等",
    props:[
      {n:"プロダクト名",t:"title"},{n:"プロダクトコード",t:"unique_id",x:"PRD"},
      {n:"ステータス",t:"select",o:["企画","開発中","ベータ","リリース済","終了"]},
      {n:"カテゴリ",t:"select",o:["SaaS","ハードウェア","コンサル"]},
-     {n:"プロジェクト",t:"relation",to:"DB21"},{n:"ローンチ日",t:"date"},
+     {n:"ローンチ日",t:"date"},
    ]},
   // Executive
   {id:"DB25",name:"1on1記録（One-on-One）",layer:"executive",desc:"メンバー別1on1。ムード追跡。経営層限定",
@@ -446,20 +455,24 @@ const dbs = [
      {n:"タイトル",t:"title"},{n:"1on1コード",t:"unique_id",x:"OOO"},
      {n:"ムード",t:"select",o:["良好","普通","要注意"]},
      {n:"日付",t:"date"},{n:"メンバー",t:"people"},{n:"マネージャー",t:"people"},
-     {n:"部門",t:"relation",to:"DB20"},{n:"関連タスク",t:"relation",to:"DB22"},
+     {n:"部門",t:"relation",to:"DB20"},
    ]},
 ];
 
 const relations = [
-  // SSOT hierarchy
+  // === SSOT hierarchy ===
   {f:"DB1",t:"DB2",l:"施設一覧"},{f:"DB1",t:"DB3",l:"事業所一覧"},{f:"DB1",t:"DB4",l:"名刺一覧"},{f:"DB1",t:"DB5",l:"支店一覧"},
   {f:"DB2",t:"DB3",l:"事業所一覧"},{f:"DB2",t:"DB4",l:"所属メンバー"},
+  {f:"DB3",t:"DB4",l:"名刺一覧"},        // #6 追加（バグ修正）
+  {f:"DB3",t:"DB8",l:"契約一覧"},         // #7 追加（バグ修正）
+  {f:"DB3",t:"DB24",l:"プロダクト"},      // NEW: 事業所→プロダクト（導入管理の基点）
   {f:"DB5",t:"DB4",l:"所属メンバー"},
   // SSOT self-ref
   {f:"DB1",t:"DB1",l:"紹介元（法人）"},
   {f:"DB5",t:"DB5",l:"紹介元（支店）"},
   {f:"DB4",t:"DB4",l:"紹介元（個人）"},
-  // CRM → SSOT
+
+  // === CRM → SSOT ===
   {f:"DB6",t:"DB1",l:"取引先"},{f:"DB6",t:"DB2",l:"施設"},{f:"DB6",t:"DB3",l:"事業所"},{f:"DB6",t:"DB4",l:"主担当者"},
   {f:"DB7",t:"DB1",l:"取引先"},{f:"DB7",t:"DB2",l:"施設"},{f:"DB7",t:"DB6",l:"商談"},{f:"DB7",t:"DB4",l:"参加者"},
   {f:"DB8",t:"DB1",l:"取引先"},{f:"DB8",t:"DB2",l:"施設"},{f:"DB8",t:"DB6",l:"商談"},
@@ -467,28 +480,48 @@ const relations = [
   {f:"DB10",t:"DB1",l:"取引先"},{f:"DB10",t:"DB2",l:"施設"},{f:"DB10",t:"DB6",l:"商談"},{f:"DB10",t:"DB4",l:"名刺"},
   // CRM internal
   {f:"DB6",t:"DB7",l:"活動一覧"},{f:"DB6",t:"DB8",l:"契約"},
-  // HR → SSOT
+
+  // === HR → SSOT ===
   {f:"DB11",t:"DB4",l:"候補者"},{f:"DB11",t:"DB1",l:"エージェント"},
   {f:"DB12",t:"DB4",l:"候補者"},{f:"DB12",t:"DB1",l:"エージェント"},{f:"DB12",t:"DB11",l:"面談"},
   {f:"DB13",t:"DB4",l:"候補者"},
   {f:"DB14",t:"DB4",l:"候補者"},{f:"DB14",t:"DB11",l:"面談"},
-  // IR → SSOT
+
+  // === IR → SSOT ===
   {f:"DB15",t:"DB1",l:"投資家法人"},{f:"DB15",t:"DB4",l:"投資家個人"},
+  {f:"DB15",t:"DB5",l:"支店"},            // #16 追加
   {f:"DB16",t:"DB1",l:"投資家法人"},{f:"DB16",t:"DB4",l:"投資家個人"},{f:"DB16",t:"DB15",l:"面談"},
+  {f:"DB16",t:"DB5",l:"支店"},            // #17 追加
   {f:"DB17",t:"DB1",l:"投資家"},
+  {f:"DB17",t:"DB5",l:"支店"},            // #18 追加
   {f:"DB18",t:"DB15",l:"面談"},
-  // Corporate → SSOT/General
-  {f:"DB19",t:"DB1",l:"取引先"},{f:"DB19",t:"DB21",l:"PJ"},
-  // General internal
+  {f:"DB18",t:"DB1",l:"投資家法人"},       // #1 追加
+  {f:"DB18",t:"DB4",l:"投資家個人"},       // #9 追加
+  {f:"DB18",t:"DB5",l:"支店"},            // #13 追加
+
+  // === Corporate → SSOT/General ===
+  {f:"DB19",t:"DB1",l:"取引先"},
+  {f:"DB19",t:"DB2",l:"施設"},            // #19 追加
+  {f:"DB19",t:"DB4",l:"人・名刺"},        // #20 追加
+  {f:"DB19",t:"DB21",l:"PJ"},
+
+  // === General internal ===
   {f:"DB20",t:"DB20",l:"上位DEPT"},{f:"DB20",t:"DB21",l:"PJ一覧"},{f:"DB20",t:"DB22",l:"タスク"},{f:"DB20",t:"DB23",l:"ドキュメント"},
   {f:"DB21",t:"DB21",l:"上位PJ"},{f:"DB21",t:"DB22",l:"タスク"},{f:"DB21",t:"DB23",l:"ドキュメント"},
   {f:"DB22",t:"DB22",l:"親タスク"},
-  {f:"DB24",t:"DB21",l:"PJ"},
-  // Executive → General
-  {f:"DB25",t:"DB20",l:"部門"},{f:"DB25",t:"DB22",l:"関連タスク"},
-  // Cross-layer: SSOT → General
-  {f:"DB1",t:"DB23",l:"ドキュメント"},
-  {f:"DB7",t:"DB23",l:"ドキュメント"},
+  {f:"DB22",t:"DB23",l:"ドキュメント"},    // #21 追加
+  {f:"DB23",t:"DB24",l:"プロダクト"},      // #23 追加
+
+  // === Executive → General ===
+  {f:"DB25",t:"DB20",l:"部門"},
+  // DB25↔DB22 削除（#22）
+  // DB24↔DB21 削除（#27）
+
+  // === Cross-layer ===
+  {f:"DB1",t:"DB23",l:"ドキュメント"},     // #25 残す
+  {f:"DB1",t:"DB22",l:"Generalタスク"},   // #3 追加
+  {f:"DB1",t:"DB18",l:"IRタスク"},        // #1 追加（逆方向も）
+  // DB7↔DB23 削除（#14）
 ];
 
 const phases = [
