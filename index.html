@@ -149,13 +149,40 @@ canvas#archCanvas { display:block; margin:0 auto; }
 .matrix-detail h4 { font-size:0.95rem; font-weight:700; margin-bottom:6px; }
 .matrix-detail p { font-size:0.85rem; color:var(--text2); line-height:1.6; }
 .matrix-detail .detail-badge { display:inline-block; font-size:0.72rem; padding:2px 10px; border-radius:8px; font-weight:600; color:#fff; margin-right:6px; }
+
+/* Issues */
+.issue-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
+.issue-card.sev-critical { border-left:4px solid #ef4444; }
+.issue-card.sev-high { border-left:4px solid #f59e0b; }
+.issue-card.sev-medium { border-left:4px solid #eab308; }
+.issue-card.sev-low { border-left:4px solid #94a3b8; }
+.sev-badge { font-size:0.65rem; padding:2px 8px; border-radius:4px; font-weight:700; color:#fff; display:inline-block; }
+.sev-badge.sev-critical { background:#ef4444; }
+.sev-badge.sev-high { background:#f59e0b; }
+.sev-badge.sev-medium { background:#eab308; }
+.sev-badge.sev-low { background:#94a3b8; }
+.status-badge { font-size:0.65rem; padding:2px 8px; border-radius:4px; font-weight:700; color:#fff; display:inline-block; }
+.status-badge.st-pending { background:#94a3b8; }
+.status-badge.st-workaround { background:#f59e0b; }
+.status-badge.st-done { background:#22c55e; }
+.issue-deps { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+.issue-dep { font-size:0.7rem; padding:2px 6px; border-radius:4px; background:var(--surface2); color:var(--text2); cursor:pointer; text-decoration:none; }
+.issue-dep:hover { background:var(--border); }
+.issue-db-pill { font-size:0.65rem; padding:1px 6px; border-radius:4px; color:#fff; font-weight:600; display:inline-block; margin:1px; }
+.issues-category-section { margin-bottom:28px; }
+.issues-category-section h3 { font-size:1.05rem; font-weight:700; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid var(--border); }
+.critical-path-box { background:linear-gradient(135deg, #fef2f2, #fff7ed); border:2px solid #fecaca; border-radius:12px; padding:20px; margin-bottom:28px; }
+.critical-path-box h3 { font-size:1rem; font-weight:700; color:#dc2626; margin-bottom:12px; }
+.critical-path-chain { display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-size:0.82rem; }
+.critical-path-node { background:#fff; border:2px solid #ef4444; border-radius:8px; padding:4px 10px; font-weight:600; font-size:0.78rem; }
+.critical-path-arrow { color:#ef4444; font-weight:700; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>NAGARA Notion Architecture Viewer</h1>
-  <p>16 DBs / 5+1 Layers / Full property & relation map</p>
+  <p>15 DBs / 5 Layers / Full property & relation map</p>
 </header>
 
 <div class="container">
@@ -165,6 +192,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
     <button class="tab" data-tab="diagram">リレーション図</button>
     <button class="tab" data-tab="action">アクションプラン</button>
     <button class="tab" data-tab="rationale">設計根拠</button>
+    <button class="tab" data-tab="issues">課題一覧</button>
   </div>
 
   <div class="tab-content active" id="tab-overview">
@@ -192,6 +220,10 @@ canvas#archCanvas { display:block; margin:0 auto; }
   <div class="tab-content" id="tab-rationale">
     <div id="rationaleContent"></div>
   </div>
+
+  <div class="tab-content" id="tab-issues">
+    <div id="issuesContent"></div>
+  </div>
 </div>
 
 <script>
@@ -200,7 +232,6 @@ const layers = {
   crm:       {name:"CRM層",       color:"#5046e5", bg:"#eef2ff", count:8, desc:"顧客管理の全フロー"},
   general:   {name:"General層",   color:"#0ea5e9", bg:"#ecfeff", count:4, desc:"組織・PJ・タスク・ドキュメント"},
   marketing: {name:"Marketing層", color:"#f59e0b", bg:"#fffbeb", count:1, desc:"SNS発信パイプライン"},
-  dev:       {name:"Dev層",       color:"#22c55e", bg:"#f0fdf4", count:1, desc:"プロダクト開発管理"},
   executive: {name:"Executive層", color:"#ef4444", bg:"#fef2f2", count:1, desc:"経営・1on1（非公開）"},
   form:      {name:"Form層",      color:"#ec4899", bg:"#fdf2f8", count:1, desc:"営業報告入力"},
 };
@@ -446,21 +477,6 @@ const dbs = [
      {n:"担当者",t:"people"},
      {n:"取引先",t:"relation",to:"DB1"},{n:"プロジェクト",t:"relation",to:"DB9"},
    ]},
-  {id:"DB14",name:"プロダクトバックログ（Backlog）",layer:"dev",
-   desc:"ながらかいご等の機能要望・バグ管理。5プロダクト対応",
-   views:[{n:"全バックログ",t:"table"},{n:"優先度別",t:"board"},{n:"プロダクト別",t:"table"}],
-   props:[
-     {n:"タイトル",t:"title"},{n:"バックログコード",t:"unique_id",x:"BLG"},
-     {n:"種別",t:"select",o:["機能要望","バグ","改善","技術負債","UI/UX"]},
-     {n:"優先度",t:"select",o:["P0(緊急)","P1(高)","P2(中)","P3(低)"]},
-     {n:"ステータス",t:"select",o:["未着手","検討中","開発中","テスト中","完了","却下"]},
-     {n:"プロダクト",t:"select",o:["ながらかいご記録","ながらかいご議事録","決定版介護ソフト","キクノート","共通基盤"]},
-     {n:"起票元",t:"select",o:["顧客要望","社内","バグ報告","市場調査"]},
-     {n:"詳細",t:"rich_text"},{n:"再現手順",t:"rich_text"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"報告者",t:"people"},{n:"担当者",t:"people"},
-     {n:"プロジェクト",t:"relation",to:"DB9"},{n:"取引先",t:"relation",to:"DB1"},
-   ]},
   {id:"DB15",name:"1on1記録（One-on-One）",layer:"executive",
    desc:"メンバー別1on1記録。ムード追跡。非公開Teamspaceで管理",
    views:[{n:"全1on1",t:"table"},{n:"カレンダー",t:"calendar"}],
@@ -510,7 +526,6 @@ const relations = [
   {f:"DB9",t:"DB9",l:"上位PJ"},{f:"DB9",t:"DB10",l:"タスク"},{f:"DB9",t:"DB11",l:"ドキュメント"},
   {f:"DB10",t:"DB10",l:"親タスク"},
   {f:"DB13",t:"DB1",l:"取引先"},{f:"DB13",t:"DB9",l:"PJ"},
-  {f:"DB14",t:"DB1",l:"取引先"},{f:"DB14",t:"DB9",l:"PJ"},
   {f:"DB15",t:"DB8",l:"部門"},{f:"DB15",t:"DB10",l:"タスク"},
 ];
 
@@ -579,7 +594,7 @@ function renderStats() {
 
 function renderLayerSections(filter) {
   const container = document.getElementById("layerSections");
-  const layerOrder = ["crm","general","marketing","dev","executive","form"];
+  const layerOrder = ["crm","general","marketing","executive","form"];
   let html = "";
   for (const lk of layerOrder) {
     const ly = layers[lk];
@@ -780,7 +795,7 @@ function layoutNodes() {
     {y: 80, ids: ["DB1","DB2","DB3","DB7"]},       // CRM top
     {y: 180, ids: ["DB4","DB5","DB6","DB16"]},      // CRM bottom
     {y: 340, ids: ["DB8","DB9","DB10","DB11"]},     // General
-    {y: 500, ids: ["DB13","DB14","DB15","DB12"]},   // Others
+    {y: 500, ids: ["DB13","DB15","DB12"]},   // Others
   ];
   for (const row of rows) {
     const count = row.ids.length;
@@ -832,7 +847,7 @@ function drawDiagram() {
   ctx.globalAlpha = 1;
   ctx.fillStyle = "#888";
   ctx.font = "bold 11px Inter, sans-serif";
-  ctx.fillText("Marketing / Dev / Executive / Form", 30, 478);
+  ctx.fillText("Marketing / Executive / Form", 30, 478);
 
   // Draw relations
   for (const rel of relations) {
@@ -1016,9 +1031,6 @@ const idealStatus = [
   {db:"DB13",n:"発信コンテンツ",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"32エージェントがコンテンツ生成→レビュー→承認→各SNS自動投稿",
    missing:["テンプレート作成","32エージェント投稿パイプライン設定","エンゲージメント自動取得"]},
-  {db:"DB14",n:"バックログ",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"顧客要望・バグをプロダクト別に管理。GitHub Issues連携",
-   missing:["テンプレート作成","GitHub Issues連携検討","顧客フィードバック自動取込み"]},
   {db:"DB15",n:"1on1記録",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"メンバー別1on1をムード追跡。非公開Teamspaceで経営層のみアクセス",
    missing:["テンプレート作成","旧6個の1on1 DB移行","Teamspace権限設定"]},
@@ -1127,16 +1139,16 @@ function renderRationale() {
     {
       category: "人物・担当",
       props: [
-        {name:"PM", has:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB16"], hasNot:["DB8","DB12","DB13","DB14","DB15"],
+        {name:"PM", has:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB16"], hasNot:["DB8","DB12","DB13","DB15"],
          reason:"事業責任者の特定。ページオーナーとして管理責任を持つ",
          notReason:"DB8はLead/Membersで代替。DB12は営業担当で代替。DB13-15は担当者で代替"},
-        {name:"メンバー", has:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB15"], hasNot:["DB8","DB12","DB13","DB14","DB16"],
+        {name:"メンバー", has:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB15"], hasNot:["DB8","DB12","DB13","DB16"],
          reason:"複数人が関わるレコードのチームアサイン",
          notReason:"DB8はMembersで同等。DB12は個人報告。DB13/14は担当者1人で十分。DB16はCRM個人タスク"},
-        {name:"担当者", has:["DB10","DB13","DB14","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB15"],
-         reason:"タスク・コンテンツ・バックログの実行責任者（1人）",
+        {name:"担当者", has:["DB10","DB13","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB15"],
+         reason:"タスク・コンテンツの実行責任者（1人）",
          notReason:"DB1-9はPM/メンバーで管理。DB11はオーナーで代替。DB12は営業担当。DB15はメンバー/マネージャー"},
-        {name:"営業担当", has:["DB5","DB6","DB12"], hasNot:["DB1","DB2","DB3","DB4","DB7","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB16"],
+        {name:"営業担当", has:["DB5","DB6","DB12"], hasNot:["DB1","DB2","DB3","DB4","DB7","DB8","DB9","DB10","DB11","DB13","DB15","DB16"],
          reason:"営業活動に直結するDB（商談・活動・報告）にのみ必要",
          notReason:"営業以外のDBには不要。取引先(DB1)はPMで代替"},
       ]
@@ -1144,13 +1156,13 @@ function renderRationale() {
     {
       category: "連絡先情報",
       props: [
-        {name:"電話番号", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"電話番号", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"法人・施設・事業所・個人の連絡先は直接紐付く実体",
          notReason:"商談・活動・契約等は連絡先を持つ実体ではなく、DB1-4からリレーションで参照"},
-        {name:"メールアドレス/メール", has:["DB1","DB2","DB4"], hasNot:["DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"メールアドレス/メール", has:["DB1","DB2","DB4"], hasNot:["DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"法人代表メール・施設メール・個人メール",
          notReason:"DB3(事業所)は施設経由で連絡するため個別メール不要。他はリレーション参照"},
-        {name:"エリア（都道府県）", has:["DB1","DB2"], hasNot:["DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"エリア（都道府県）", has:["DB1","DB2"], hasNot:["DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"法人・施設単位での地域営業管理。エリア別集計・フィルタ",
          notReason:"DB3は所属施設からrollupで参照可能。DB4以降は実体の住所を持たない"},
       ]
@@ -1158,19 +1170,19 @@ function renderRationale() {
     {
       category: "ステータス管理",
       props: [
-        {name:"営業ステータス（記録/議事録）", has:["DB1","DB2","DB5"], hasNot:["DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"営業ステータス（記録/議事録）", has:["DB1","DB2","DB5"], hasNot:["DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"営業パイプラインの進捗追跡。「記録」=現時点、「議事録」=報告時点のスナップショット",
          notReason:"DB3は導入ステータスで代替。DB4は個人なのでステータス不要。DB6以降は営業進捗を直接持たない"},
-        {name:"導入ステータス（記録/議事録）", has:["DB3"], hasNot:["DB1","DB2","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"導入ステータス（記録/議事録）", has:["DB3"], hasNot:["DB1","DB2","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"事業所単位でのプロダクト導入進捗（トライアル→契約）。事業所が最小導入単位",
          notReason:"法人・施設レベルの導入状況は事業所のrollupで集計。他DBは導入と無関係"},
-        {name:"レコードステータス", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"レコードステータス", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"CRMマスタデータの品質管理。「下書き」=未確認、「確定」=検証済み",
          notReason:"DB5以降はトランザクションデータ（活動記録・契約等）なので品質管理不要"},
-        {name:"ステータス（汎用）", has:["DB4","DB9","DB10","DB11","DB13","DB14","DB16"], hasNot:["DB1","DB2","DB3","DB5","DB6","DB7","DB8","DB12","DB15"],
+        {name:"ステータス（汎用）", has:["DB4","DB9","DB10","DB11","DB13","DB16"], hasNot:["DB1","DB2","DB3","DB5","DB6","DB7","DB8","DB12","DB15"],
          reason:"進捗管理が必要なレコード。未着手→進行中→完了のライフサイクル",
          notReason:"DB1-3は営業/導入ステータスで代替。DB5はパイプラインステージ。DB6は完了チェックボックス。DB8は組織で進捗不要"},
-        {name:"処理ステータス", has:["DB12"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB16"],
+        {name:"処理ステータス", has:["DB12"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB15","DB16"],
          reason:"報告の処理フロー管理（未処理→議事録生成中→完了）。ワークフロー制御用",
          notReason:"DB12専用のワークフロー。他DBには処理フローがない"},
       ]
@@ -1178,22 +1190,22 @@ function renderRationale() {
     {
       category: "営業・CRM固有",
       props: [
-        {name:"ランク", has:["DB1"], hasNot:["DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"ランク", has:["DB1"], hasNot:["DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"取引先の重要度（S/A/B/C）。営業リソース配分の判断基準",
          notReason:"ランクは法人単位でのみ意味がある。施設・個人は法人ランクから推定"},
-        {name:"取引種別", has:["DB1","DB4"], hasNot:["DB2","DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"取引種別", has:["DB1","DB4"], hasNot:["DB2","DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"顧客/ステークホルダー/パートナー/紹介元の分類。multi_selectで兼任対応",
          notReason:"施設・事業所は法人に紐付くので法人の取引種別を参照。他DBは分類不要"},
-        {name:"接触元", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"接触元", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"リードソース追跡（紹介/展示会/HP等）。マーケティングROI測定",
          notReason:"接触元はマスタデータ（法人/施設/事業所/個人）の属性。トランザクションには不要"},
-        {name:"確度", has:["DB5","DB12"], hasNot:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB16"],
+        {name:"確度", has:["DB5","DB12"], hasNot:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB15","DB16"],
          reason:"商談の受注確率（10-90%）。パイプライン予測に使用",
          notReason:"確度は商談（DB5）と報告時点スナップショット（DB12）にのみ意味がある"},
-        {name:"MRR", has:["DB7"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"MRR", has:["DB7"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"月次経常収益の追跡。契約単位で管理し、取引先レベルではrollupで集計",
          notReason:"MRRは契約に紐付く金額。他DBは金額を持たない"},
-        {name:"想定MRR", has:["DB5"], hasNot:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"想定MRR", has:["DB5"], hasNot:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"商談段階でのMRR予測。受注前のパイプライン価値算出",
          notReason:"商談が受注→契約(DB7)に移行したらMRRに変わる。他DBは予測不要"},
       ]
@@ -1201,13 +1213,13 @@ function renderRationale() {
     {
       category: "紹介元トラッキング",
       props: [
-        {name:"紹介元（法人）", has:["DB1","DB2","DB3"], hasNot:["DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"紹介元（法人）", has:["DB1","DB2","DB3"], hasNot:["DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"どの法人が紹介してくれたかを追跡。紹介法人ランキングに使用",
          notReason:"DB4(名刺)は個人なので「個人を紹介した法人」ではなく「名刺の所属法人」で管理。DB5以降はトランザクション"},
-        {name:"紹介元（個人）", has:["DB1","DB2","DB3"], hasNot:["DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"紹介元（個人）", has:["DB1","DB2","DB3"], hasNot:["DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"誰が紹介してくれたかを追跡。紹介者ランキングに使用",
          notReason:"同上。名刺は紹介「元」であって紹介「先」ではない"},
-        {name:"紹介実績数", has:["DB1","DB4"], hasNot:["DB2","DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"紹介実績数", has:["DB1","DB4"], hasNot:["DB2","DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"紹介した件数をrollupで自動集計。ランキングビューのソートキー",
          notReason:"DB2-3は紹介「先」であって「元」ではない。紹介元としてカウントされるのはDB1(法人)とDB4(個人)"},
       ]
@@ -1215,13 +1227,13 @@ function renderRationale() {
     {
       category: "タスク・PJ管理",
       props: [
-        {name:"優先度", has:["DB9","DB10","DB14","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB11","DB12","DB13","DB15"],
-         reason:"タスク・PJ・バックログの実行順序決定。至急/高/中/低",
+        {name:"優先度", has:["DB9","DB10","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB11","DB12","DB13","DB15"],
+         reason:"タスク・PJの実行順序決定。至急/高/中/低",
          notReason:"CRMマスタ(DB1-4)は優先度ではなくランクで管理。活動(DB6)は日時で管理"},
-        {name:"締切/完了日", has:["DB10","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB14","DB15"],
+        {name:"締切/完了日", has:["DB10","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB15"],
          reason:"タスクのデッドライン管理。カレンダービュー・リマインダーの基準",
          notReason:"他DBは期間（開始日/終了日）や日付（活動日時等）で管理。締切はタスク固有"},
-        {name:"親タスク（自己参照）", has:["DB10"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"親タスク（自己参照）", has:["DB10"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB15","DB16"],
          reason:"社内タスクの階層化（親タスク→サブタスク）。WBS構造",
          notReason:"DB16(CRMタスク)は階層化不要（顧客対応は1アクション=1タスク）。他DBは階層を持たない"},
       ]
@@ -1229,10 +1241,10 @@ function renderRationale() {
     {
       category: "コンテンツ・発信",
       props: [
-        {name:"プラットフォーム", has:["DB13"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB14","DB15","DB16"],
+        {name:"プラットフォーム", has:["DB13"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB15","DB16"],
          reason:"SNS 11アカウントのどこに投稿するか。マルチPF同時投稿管理",
          notReason:"DB13専用。他DBはSNS投稿と無関係"},
-        {name:"エンゲージメント/インプレッション", has:["DB13"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB14","DB15","DB16"],
+        {name:"エンゲージメント/インプレッション", has:["DB13"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB15","DB16"],
          reason:"SNS投稿の効果測定。コンテンツ戦略の判断材料",
          notReason:"DB13専用の指標"},
       ]
@@ -1240,13 +1252,13 @@ function renderRationale() {
     {
       category: "組織・1on1",
       props: [
-        {name:"Lead/Members", has:["DB8"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"Lead/Members", has:["DB8"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"部門の責任者と所属メンバー。PM/メンバーの代わりに組織構造に特化した名前",
          notReason:"他DBはPM/メンバーで統一。DB8だけ組織構造の文脈でLead/Membersを使用"},
-        {name:"ムード", has:["DB15"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB16"],
+        {name:"ムード", has:["DB15"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB16"],
          reason:"1on1でのメンバーのコンディション追跡。良好/普通/要注意",
          notReason:"DB15専用。他DBは人のコンディションを追跡しない"},
-        {name:"Google Drive/Slack", has:["DB8"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16"],
+        {name:"Google Drive/Slack", has:["DB8"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
          reason:"部門ごとのDriveフォルダとSlackチャンネルへの直リンク",
          notReason:"部門(DB8)だけが組織インフラのリンクを持つ。他DBは共有drive(DB1)等で個別管理"},
       ]
@@ -1269,7 +1281,6 @@ function renderRationale() {
     {from:"DB1",to:"DB11",exists:true,reason:"法人→ドキュメント。法人関連の全資料（提案書・契約書・報告書等）"},
     {from:"DB1",to:"DB12",exists:true,reason:"法人→報告。法人に関する全営業報告。商談報告フォームの入口"},
     {from:"DB1",to:"DB13",exists:true,reason:"取引先→コンテンツ。顧客事例のSNS発信や導入事例記事の紐付け"},
-    {from:"DB1",to:"DB14",exists:true,reason:"取引先→バックログ。顧客要望からの機能要望・バグ報告の追跡"},
     {from:"DB1",to:"DB15",exists:false,reason:"法人と1on1は無関係。1on1は社内メンバーのコンディション管理であり、外部顧客とは無関係"},
     {from:"DB1",to:"DB16",exists:true,reason:"法人→CRMタスク。「この法人に次何するか」の管理。営業アクション管理の中核"},
 
@@ -1286,7 +1297,6 @@ function renderRationale() {
     {from:"DB2",to:"DB11",exists:true,reason:"施設→ドキュメント。施設関連の資料"},
     {from:"DB2",to:"DB12",exists:true,reason:"施設→報告。施設に関する営業報告"},
     {from:"DB2",to:"DB13",exists:false,reason:"施設とコンテンツは直接リンクしない。SNS投稿は法人(DB1)レベルで紐付け"},
-    {from:"DB2",to:"DB14",exists:false,reason:"施設とバックログは直接リンクしない。顧客要望は法人(DB1)で追跡"},
     {from:"DB2",to:"DB15",exists:false,reason:"施設と1on1は無関係。1on1は社内のみ"},
     {from:"DB2",to:"DB16",exists:true,reason:"施設→CRMタスク。「この施設に次何するか」の管理"},
 
@@ -1302,7 +1312,6 @@ function renderRationale() {
     {from:"DB3",to:"DB11",exists:false,reason:"事業所とドキュメントは直接リンクしない。ドキュメントは法人・施設・商談レベルで紐付け"},
     {from:"DB3",to:"DB12",exists:false,reason:"事業所と報告は直接リンクしない。報告は法人(DB1)・施設(DB2)レベル"},
     {from:"DB3",to:"DB13",exists:false,reason:"事業所とコンテンツは無関係"},
-    {from:"DB3",to:"DB14",exists:false,reason:"事業所とバックログは無関係。顧客要望は法人(DB1)で管理"},
     {from:"DB3",to:"DB15",exists:false,reason:"事業所と1on1は無関係"},
     {from:"DB3",to:"DB16",exists:true,reason:"事業所→CRMタスク。事業所レベルの導入タスク（トライアル準備等）"},
 
@@ -1317,7 +1326,6 @@ function renderRationale() {
     {from:"DB4",to:"DB11",exists:true,reason:"名刺→ドキュメント。特定キーパーソン向けの資料"},
     {from:"DB4",to:"DB12",exists:true,reason:"名刺→報告。報告に関連する参加者の紐付け"},
     {from:"DB4",to:"DB13",exists:false,reason:"名刺とコンテンツは直接リンクしない。SNS投稿に個人を紐付ける必要がない"},
-    {from:"DB4",to:"DB14",exists:false,reason:"名刺とバックログは直接リンクしない。顧客要望はDB14→DB1(取引先)で追跡"},
     {from:"DB4",to:"DB15",exists:false,reason:"名刺と1on1は無関係。名刺は外部連絡先、1on1は社内メンバー"},
     {from:"DB4",to:"DB16",exists:true,reason:"名刺→CRMタスク。「この人に次何するか」の管理。フォローアップの紐付け"},
 
@@ -1331,7 +1339,6 @@ function renderRationale() {
     {from:"DB5",to:"DB11",exists:true,reason:"商談→ドキュメント。提案書・見積書・NDA等の商談関連資料"},
     {from:"DB5",to:"DB12",exists:true,reason:"商談→報告。商談に紐づく全営業報告"},
     {from:"DB5",to:"DB13",exists:false,reason:"商談とコンテンツは直接リンクしない。レイヤーが異なる（CRM vs Marketing）"},
-    {from:"DB5",to:"DB14",exists:false,reason:"商談とバックログは直接リンクしない。商談で出た要望はDB14→DB1(取引先)経由"},
     {from:"DB5",to:"DB15",exists:false,reason:"商談と1on1は無関係"},
     {from:"DB5",to:"DB16",exists:true,reason:"商談→CRMタスク。商談の次のアクション管理"},
 
@@ -1344,7 +1351,6 @@ function renderRationale() {
     {from:"DB6",to:"DB11",exists:true,reason:"活動→ドキュメント。会議の議事録・配布資料を紐付け"},
     {from:"DB6",to:"DB12",exists:false,reason:"活動と報告は直接リンクしない。報告(DB12)から活動(DB6)を生成するフローだが、直接の逆参照は報告→商談→活動の経路"},
     {from:"DB6",to:"DB13",exists:false,reason:"活動とコンテンツは別レイヤー。活動=営業行動、コンテンツ=マーケティング"},
-    {from:"DB6",to:"DB14",exists:false,reason:"活動とバックログは無関係"},
     {from:"DB6",to:"DB15",exists:false,reason:"活動と1on1は無関係"},
     {from:"DB6",to:"DB16",exists:true,reason:"活動→CRMタスク。活動から派生するCRMタスクの紐付け"},
 
@@ -1356,7 +1362,6 @@ function renderRationale() {
     {from:"DB7",to:"DB11",exists:false,reason:"契約とドキュメントは直接リンクしない。契約書ファイルはDB7のfilesプロパティで管理。提案書等はDB11→DB5(商談)経由"},
     {from:"DB7",to:"DB12",exists:false,reason:"契約と報告は無関係"},
     {from:"DB7",to:"DB13",exists:false,reason:"契約とコンテンツは無関係"},
-    {from:"DB7",to:"DB14",exists:false,reason:"契約とバックログは無関係"},
     {from:"DB7",to:"DB15",exists:false,reason:"契約と1on1は無関係"},
     {from:"DB7",to:"DB16",exists:false,reason:"CRMタスクと契約は直接リンクしない。CRMタスク→商談→契約の経路。CRMタスクは短命なアクション"},
 
@@ -1367,7 +1372,6 @@ function renderRationale() {
     {from:"DB8",to:"DB11",exists:true,reason:"部門→ドキュメント。部門の成果物（マニュアル・報告書等）"},
     {from:"DB8",to:"DB12",exists:false,reason:"部門と報告は直接リンクしない。報告は法人/施設単位。部門別の報告はPM(people)でフィルタ"},
     {from:"DB8",to:"DB13",exists:false,reason:"部門とコンテンツは直接リンクしない。コンテンツはPJ(DB9)経由で紐付け可能"},
-    {from:"DB8",to:"DB14",exists:false,reason:"部門とバックログは直接リンクしない。バックログはPJ(DB9)経由"},
     {from:"DB8",to:"DB15",exists:true,reason:"部門→1on1。メンバーの所属部門を紐付け。部門別の1on1一覧"},
     {from:"DB8",to:"DB16",exists:false,reason:"部門とCRMタスクは直接リンクしない。CRMタスクはCRM層内で完結。担当者はpeopleで管理"},
 
@@ -1377,7 +1381,6 @@ function renderRationale() {
     {from:"DB9",to:"DB11",exists:true,reason:"PJ→ドキュメント。PJの成果物（計画書・報告書等）"},
     {from:"DB9",to:"DB12",exists:false,reason:"PJと報告は直接リンクしない。営業報告はCRM層(DB1/DB5)で管理"},
     {from:"DB9",to:"DB13",exists:true,reason:"PJ→コンテンツ。PRプロジェクトからのSNS投稿紐付け"},
-    {from:"DB9",to:"DB14",exists:true,reason:"PJ→バックログ。開発PJのバックログ管理"},
     {from:"DB9",to:"DB15",exists:false,reason:"PJと1on1は直接リンクしない。1on1は人のコンディション管理、PJは業務管理"},
     {from:"DB9",to:"DB16",exists:false,reason:"PJとCRMタスクは直接リンクしない。CRMタスクはCRM層内で完結"},
 
@@ -1386,7 +1389,6 @@ function renderRationale() {
     {from:"DB10",to:"DB11",exists:false,reason:"タスクとドキュメントは直接リンクしない。タスクの成果物はDB11→DB9(PJ)経由で管理"},
     {from:"DB10",to:"DB12",exists:false,reason:"タスクと報告は直接リンクしない。レイヤーが異なる"},
     {from:"DB10",to:"DB13",exists:false,reason:"タスクとコンテンツは直接リンクしない。レイヤーが異なる"},
-    {from:"DB10",to:"DB14",exists:false,reason:"タスクとバックログは意図的に分離。タスク=日常業務、バックログ=開発要望。混ぜると優先度が破綻する"},
     {from:"DB10",to:"DB15",exists:true,reason:"タスク→1on1。1on1で話題になったタスクの紐付け"},
     {from:"DB10",to:"DB16",exists:false,reason:"社内タスクとCRMタスクは意図的に分離。AIエージェントのスコープ制御。CRM用AIが社内タスクを触らないように"},
 
@@ -1394,27 +1396,19 @@ function renderRationale() {
     {from:"DB11",to:"DB11",exists:false,reason:"ドキュメント間の直接リレーションは不要。関連ドキュメントはPJ(DB9)や商談(DB5)経由で参照"},
     {from:"DB11",to:"DB12",exists:false,reason:"ドキュメントと報告は直接リンクしない。報告はDB12内で完結し、議事録化されたらDB11に新規作成"},
     {from:"DB11",to:"DB13",exists:false,reason:"ドキュメントとコンテンツは直接リンクしない。コンテンツはDB13内で完結"},
-    {from:"DB11",to:"DB14",exists:false,reason:"ドキュメントとバックログは直接リンクしない。仕様書等はDB14→DB9(PJ)→DB11の経路"},
     {from:"DB11",to:"DB15",exists:false,reason:"ドキュメントと1on1は直接リンクしない。1on1の記録はDB15自体がドキュメント"},
     {from:"DB11",to:"DB16",exists:false,reason:"ドキュメントとCRMタスクは直接リンクしない。CRMタスクは短命なアクション"},
 
     // === DB12 報告 ↔ 残りDB ===
     {from:"DB12",to:"DB12",exists:false,reason:"報告間の直接リレーションは不要"},
     {from:"DB12",to:"DB13",exists:false,reason:"報告とコンテンツは無関係"},
-    {from:"DB12",to:"DB14",exists:false,reason:"報告とバックログは無関係"},
     {from:"DB12",to:"DB15",exists:false,reason:"報告と1on1は無関係"},
     {from:"DB12",to:"DB16",exists:false,reason:"報告とCRMタスクは直接リンクしない。報告→商談→CRMタスクの経路で次のアクションを管理"},
 
     // === DB13 コンテンツ ↔ 残りDB ===
     {from:"DB13",to:"DB13",exists:false,reason:"コンテンツ間の直接リレーションは不要。シリーズ管理はタグで対応"},
-    {from:"DB13",to:"DB14",exists:false,reason:"コンテンツとバックログは無関係。レイヤーが異なる（Marketing vs Dev）"},
     {from:"DB13",to:"DB15",exists:false,reason:"コンテンツと1on1は無関係"},
     {from:"DB13",to:"DB16",exists:false,reason:"コンテンツとCRMタスクは無関係。レイヤーが異なる（Marketing vs CRM）"},
-
-    // === DB14 バックログ ↔ 残りDB ===
-    {from:"DB14",to:"DB14",exists:false,reason:"バックログ間の直接リレーションは不要。依存関係はステータスとテキストで管理"},
-    {from:"DB14",to:"DB15",exists:false,reason:"バックログと1on1は無関係"},
-    {from:"DB14",to:"DB16",exists:false,reason:"バックログとCRMタスクは無関係。レイヤーが異なる（Dev vs CRM）"},
 
     // === DB15 1on1 ↔ 残りDB ===
     {from:"DB15",to:"DB15",exists:false,reason:"1on1間の直接リレーションは不要。時系列は日付でソート"},
@@ -1424,7 +1418,7 @@ function renderRationale() {
     {from:"DB16",to:"DB16",exists:false,reason:"CRMタスク間の直接リレーションは不要。階層化はCRMタスクでは不要（1アクション=1タスク）"},
   ];
 
-  const dbOrder = ["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB16","DB8","DB9","DB10","DB11","DB13","DB14","DB15","DB12"];
+  const dbOrder = ["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB16","DB8","DB9","DB10","DB11","DB13","DB15","DB12"];
 
   // Build lookup for relation rationale
   const relLookup = {};
@@ -1458,7 +1452,7 @@ function renderRationale() {
   html += `<div class="rationale-overview">
     <h2>SSOT設計の原則</h2>
     <p><strong>Single Source of Truth（唯一の情報源）</strong> - 各情報は1箇所にのみ存在し、他のDBからはリレーション/ロールアップで参照する。</p>
-    <p>このタブでは、16個のDBのプロパティとリレーションが<strong>なぜその設計になっているか</strong>を説明します。</p>
+    <p>このタブでは、15個のDBのプロパティとリレーションが<strong>なぜその設計になっているか</strong>を説明します。</p>
     <p style="margin-top:8px;">
       <strong>設計判断の3つの軸:</strong><br>
       1. <strong>実体が持つべきか？</strong> - 連絡先は法人/施設/個人（実体）が持ち、商談（トランザクション）は持たない<br>
@@ -1499,7 +1493,7 @@ function renderRationale() {
 
   // --- Section B: Relation Matrix ---
   html += `<div class="rationale-section">
-    <h2>Section B: リレーション設計根拠（16x16 マトリクス）</h2>
+    <h2>Section B: リレーション設計根拠（15x15 マトリクス）</h2>
     <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;">セルをクリックすると下に根拠が表示されます。色凡例: <span style="background:#dcfce7;padding:2px 8px;border-radius:4px;font-size:0.8rem;">✅ リレーションあり</span> <span style="background:#f9fafb;border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:0.8rem;">➖ リレーションなし</span> <span style="background:#dbeafe;padding:2px 8px;border-radius:4px;font-size:0.8rem;">🔄 自己参照</span> <span style="background:#fef2f2;border:2px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:0.8rem;">⚠️ 根拠未定義（要検討）</span></p>`;
 
   // Health check summary
@@ -1645,12 +1639,250 @@ function renderRationale() {
   });
 }
 
+// ===== ISSUES TAB =====
+const issues = [
+  {id:"ISS-001",category:"データ移行",severity:"critical",
+   title:"旧People DB（846件）の正規化移行が未実施",
+   desc:"現行WSのPeople DB（神テーブル）を法人(DB1)/施設(DB2)/事業所(DB3)/名刺(DB4)に分割して移行する必要がある。プロパティマッピング表は作成済みだが、実行は未着手。",
+   impact:"新WSに実データが0件のため、全DBが空の状態。運用開始できない",
+   blockedBy:[],blocks:["ISS-002","ISS-003","ISS-005"],relatedDbs:["DB1","DB2","DB3","DB4"],status:"pending"},
+  {id:"ISS-002",category:"データ移行",severity:"critical",
+   title:"旧Tasks/Projects/Departments DBの移行",
+   desc:"現行WSの旧Tasks/Projects/Departments DBの実運用データを新WSのDB8-10に移行。ビュー14個+12個の再現も必要。",
+   impact:"社内タスク・PJ管理が新WSで使えない",
+   blockedBy:["ISS-001"],blocks:["ISS-005"],relatedDbs:["DB8","DB9","DB10"],status:"pending"},
+  {id:"ISS-003",category:"データ移行",severity:"high",
+   title:"市場データCSV（244K事業所）のTier1投入",
+   desc:"SSOT v6.1の244,232事業所/70,383法人/198,233施設からTier1（187法人）をDB1/DB2/DB3に投入。pandasスクリプトで変換→Notion API投入。",
+   impact:"営業ターゲットリストが空。新規営業活動に使えない",
+   blockedBy:["ISS-001"],blocks:[],relatedDbs:["DB1","DB2","DB3"],status:"pending"},
+  {id:"ISS-004",category:"データ移行",severity:"medium",
+   title:"旧1on1 DB（6個）の統合移行",
+   desc:"現行WSの6個の個人別1on1 DBをDB15に統合。メンバー/マネージャーのpeopleプロパティでフィルタ。",
+   impact:"1on1記録が散在したまま",
+   blockedBy:[],blocks:[],relatedDbs:["DB15"],status:"pending"},
+  {id:"ISS-005",category:"環境構築",severity:"critical",
+   title:"新WSのMCPサーバーがVSCode拡張で起動しない",
+   desc:"settings.json/mcp.jsonにnotion-new-nagaraを設定済みだが、VSCode拡張がセルフホスト型MCPサーバーを起動しない。現在はcurl経由でAPI直接呼び出しで代替中。",
+   impact:"Notion MCPツール（notion-search/fetch/create等）が新WSに対して使えない。操作のたびにcurlが必要で非効率",
+   blockedBy:[],blocks:["ISS-011"],relatedDbs:[],status:"workaround"},
+  {id:"ISS-006",category:"テンプレート",severity:"medium",
+   title:"DB3-7/DB8-11/DB13/DB15/DB16のテンプレートが未作成",
+   desc:"DB1/DB2/DB12のテンプレートは作成済み。残り12DBのテンプレートが未作成。特にDB5(商談)とDB16(CRMタスク)は営業運用に必須。",
+   impact:"新規レコード作成時にページ構造が空。運用効率が悪い",
+   blockedBy:[],blocks:[],relatedDbs:["DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB15","DB16"],status:"pending"},
+  {id:"ISS-007",category:"ビュー",severity:"medium",
+   title:"リンクドビューの配置が未実施",
+   desc:"各DBのページテンプレート内にリンクドビュー（他DBの絞り込みビュー）を埋め込む必要がある。例: DB1の法人ページ内にDB2施設一覧/DB4名刺一覧/DB5商談一覧のリンクドビュー。Notion APIではリンクドビュー作成不可→内部APIまたはブラウザ操作が必要。",
+   impact:"法人ページを開いても配下情報が一覧で見えない。手動でDB切り替えが必要",
+   blockedBy:["ISS-006"],blocks:[],relatedDbs:["DB1","DB2"],status:"pending"},
+  {id:"ISS-008",category:"自動化",severity:"high",
+   title:"Notta→Notion自動連携フローが未構築",
+   desc:"NottaビジネスプランでZapier利用可能。Notta→Zapier→DB6(活動)/DB11(ドキュメント)の自動パイプラインが未構築。Nottaネイティブ連携は接続済みだがフロー未設計。",
+   impact:"会議の文字起こしが手動でClaudeに投げてNotionに登録する運用のまま。「この顧客と最後に何を話した？」にAIが答えられない",
+   blockedBy:[],blocks:["ISS-012"],relatedDbs:["DB6","DB11"],status:"pending"},
+  {id:"ISS-009",category:"自動化",severity:"high",
+   title:"Gmail→CRM連携Skillが未構築",
+   desc:"Gmail MCP→Claude Code→Notion MCPでメール要約をDB6(MTG&Activity)に自動記録するSkillが未構築。",
+   impact:"メール履歴がCRMに紐付かない。重要メールの追跡が手動",
+   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB6"],status:"pending"},
+  {id:"ISS-010",category:"自動化",severity:"high",
+   title:"Slack→CRM連携Skillが未構築",
+   desc:"Slack MCP→Claude Code→Notion MCPで顧客チャンネルの重要会話をDB6に自動記録するSkillが未構築。",
+   impact:"Slack上の顧客とのやり取りがCRMに反映されない",
+   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB6"],status:"pending"},
+  {id:"ISS-011",category:"自動化",severity:"medium",
+   title:"Asana↔Notion双方向同期が未構築",
+   desc:"人間=Asana、AI=Notionの棲み分け方針は決定済み。実装はGitHub ActionsまたはZapierで行う予定だが未着手。",
+   impact:"タスク管理がAsanaとNotionで二重管理になるリスク",
+   blockedBy:["ISS-002"],blocks:[],relatedDbs:["DB9","DB10"],status:"pending"},
+  {id:"ISS-012",category:"自動化",severity:"critical",
+   title:"統合アクティビティハブ（DB6）が機能していない",
+   desc:"DB6を全コミュニケーションの統合ハブにする構想があるが、自動連携フロー（Notta/Gmail/Slack/Zoom）が全て未構築のため、手動入力のみ。",
+   impact:"IT構想の核心である「この顧客と最後にいつ何を話した？にAIが即答できる世界」が実現できない",
+   blockedBy:["ISS-008","ISS-009","ISS-010"],blocks:[],relatedDbs:["DB6"],status:"pending"},
+  {id:"ISS-013",category:"権限・組織",severity:"high",
+   title:"Teamspace構造が未決定",
+   desc:"新WSに作るTeamspaceの数と構成が未決定。現行WSは7つ（NAGARA/Sales/Dev/Executive/Corporate/External/Test）。新WSのレイヤー構成（CRM/General/Marketing/Executive/Form）とTeamspaceの対応を決める必要がある。",
+   impact:"権限設計ができない。誰が何を見れるか未整理",
+   blockedBy:[],blocks:["ISS-014"],relatedDbs:[],status:"pending"},
+  {id:"ISS-014",category:"権限・組織",severity:"high",
+   title:"権限設計（メンバー17名）が未実施",
+   desc:"CEO/部門Lead/メンバーの権限マトリクスが未定義。DB15(1on1)のExecutive層限定アクセスなど、レイヤー別の権限設計が必要。",
+   impact:"全メンバーが全DBにアクセスできてしまう。1on1記録が全員に見える",
+   blockedBy:["ISS-013"],blocks:[],relatedDbs:["DB15"],status:"pending"},
+  {id:"ISS-015",category:"マーケティング",severity:"medium",
+   title:"32エージェント投稿パイプラインが未稼働",
+   desc:"Marketing層のDB13(発信コンテンツ)は作成済みだが、32エージェントの実行基盤（Mac Mini固定砲台Chrome）のセットアップとパイプライン構築が未実施。",
+   impact:"SNS発信の自動化ができない。手動のChrome操作のまま",
+   blockedBy:[],blocks:[],relatedDbs:["DB13"],status:"pending"},
+  {id:"ISS-016",category:"運用",severity:"medium",
+   title:"SSOT v2仕様書の更新が必要",
+   desc:"仕様書は2026-03-14時点のもの。DB13-16追加/DB14削除/6層レイヤー化/紹介元トラッキング/活動タイプ拡張/タスクDB分割等の変更が反映されていない。",
+   impact:"仕様書と実態が乖離。新メンバーのオンボーディングに使えない",
+   blockedBy:[],blocks:[],relatedDbs:[],status:"pending"},
+  {id:"ISS-017",category:"運用",severity:"low",
+   title:"旧WSのアーカイブ・閉鎖スケジュール未決定",
+   desc:"新WSへの移行完了後、旧WS(NAGARA, Inc.)をいつアーカイブするか未決定。並行運用期間の設定が必要。",
+   impact:"2つのWSが並存し続けると混乱",
+   blockedBy:["ISS-001","ISS-002"],blocks:[],relatedDbs:[],status:"pending"},
+  {id:"ISS-018",category:"データ移行",severity:"high",
+   title:"notion-migratorスクリプトの2026年API対応",
+   desc:"~/project/notion-migrator/は2026-03-15に構築済みだが、STATUS型API対応、/v1/views APIでのビュー移行、DB14削除/DB16追加の反映が必要。",
+   impact:"データ移行ツールが最新のDB構成に対応していない",
+   blockedBy:[],blocks:["ISS-001","ISS-002"],relatedDbs:[],status:"pending"},
+  {id:"ISS-019",category:"自動化",severity:"medium",
+   title:"DB12商談報告→議事録自動生成フローが未構築",
+   desc:"DB12(商談報告フォーム)に文字起こしを入力→Claude AIが議事録生成→DB6(活動)/DB11(ドキュメント)に自動反映するフローが未構築。",
+   impact:"報告フォームは作成済みだが、議事録生成が手動のまま",
+   blockedBy:["ISS-008"],blocks:[],relatedDbs:["DB12","DB6","DB11"],status:"pending"},
+  {id:"ISS-020",category:"環境構築",severity:"medium",
+   title:"Notion AIエージェント（Custom Agent）の構築が未実施",
+   desc:"IT構想で8エージェント構築予定。CRM営業支援Bot/議事録生成Bot等。2026-05-04以降クレジット課金。Agent仕様書は作成済み。",
+   impact:"AIがDBを横断して営業マンを支援する世界が実現できない",
+   blockedBy:["ISS-001","ISS-012"],blocks:[],relatedDbs:[],status:"pending"},
+];
+
+function renderIssues() {
+  const c = document.getElementById("issuesContent");
+  const total = issues.length;
+  const bySev = {critical:0,high:0,medium:0,low:0};
+  const bySt = {pending:0,workaround:0,done:0};
+  for (const iss of issues) { bySev[iss.severity]++; bySt[iss.status]++; }
+
+  let html = "";
+
+  // Summary cards
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:2rem;font-weight:800;color:var(--accent);">${total}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">課題総数</div>
+    </div>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:2rem;font-weight:800;color:#ef4444;">${bySev.critical}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">Critical</div>
+    </div>
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:2rem;font-weight:800;color:#f59e0b;">${bySev.high}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">High</div>
+    </div>
+    <div style="background:#fefce8;border:1px solid #fef08a;border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:2rem;font-weight:800;color:#eab308;">${bySev.medium}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">Medium</div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:2rem;font-weight:800;color:#94a3b8;">${bySev.low}</div>
+      <div style="font-size:0.8rem;color:var(--text2);">Low</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--text2);margin-top:4px;">${bySt.pending} 未着手</div>
+      <div style="font-size:0.85rem;color:#f59e0b;font-weight:600;">${bySt.workaround} 回避策</div>
+      <div style="font-size:0.85rem;color:#22c55e;font-weight:600;">${bySt.done} 完了</div>
+    </div>
+  </div>`;
+
+  // Critical path
+  html += `<div class="critical-path-box">
+    <h3>クリティカルパス（最長依存チェーン）</h3>
+    <div class="critical-path-chain">
+      <span class="critical-path-node">ISS-018<br><span style="font-size:0.68rem;font-weight:400;">migrator API対応</span></span>
+      <span class="critical-path-arrow">&#10140;</span>
+      <span class="critical-path-node">ISS-001<br><span style="font-size:0.68rem;font-weight:400;">People DB正規化</span></span>
+      <span class="critical-path-arrow">&#10140;</span>
+      <span class="critical-path-node">ISS-002<br><span style="font-size:0.68rem;font-weight:400;">Tasks/PJ移行</span></span>
+      <span class="critical-path-arrow">/</span>
+      <span class="critical-path-node">ISS-003<br><span style="font-size:0.68rem;font-weight:400;">市場データ投入</span></span>
+    </div>
+    <div class="critical-path-chain" style="margin-top:12px;">
+      <span class="critical-path-node">ISS-005<br><span style="font-size:0.68rem;font-weight:400;">MCP接続</span></span>
+      <span class="critical-path-arrow">&#10140;</span>
+      <span class="critical-path-node">ISS-009/010<br><span style="font-size:0.68rem;font-weight:400;">Gmail/Slack連携</span></span>
+      <span class="critical-path-arrow">&#10140;</span>
+      <span class="critical-path-node">ISS-012<br><span style="font-size:0.68rem;font-weight:400;">統合ハブ実現</span></span>
+      <span class="critical-path-arrow">&#10140;</span>
+      <span class="critical-path-node">ISS-020<br><span style="font-size:0.68rem;font-weight:400;">AIエージェント</span></span>
+    </div>
+    <p style="margin-top:12px;font-size:0.78rem;color:var(--text2);">上段: データ移行の依存チェーン / 下段: 自動化の依存チェーン。両方のチェーンが完了してISS-020(AIエージェント)が実現可能になる。</p>
+  </div>`;
+
+  // Dependency graph (text-based)
+  html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:28px;">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;">依存関係グラフ</h3>
+    <div style="font-family:'SF Mono','Consolas',monospace;font-size:0.75rem;line-height:1.8;overflow-x:auto;white-space:pre;">`;
+
+  // Build dependency text
+  const depLines = [];
+  for (const iss of issues) {
+    if (iss.blocks.length > 0) {
+      depLines.push(`${iss.id} ──blocks──> ${iss.blocks.join(", ")}`);
+    }
+  }
+  html += depLines.join("\n");
+  html += `</div></div>`;
+
+  // Group by category
+  const categories = {};
+  for (const iss of issues) {
+    if (!categories[iss.category]) categories[iss.category] = [];
+    categories[iss.category].push(iss);
+  }
+
+  for (const [catName, catIssues] of Object.entries(categories)) {
+    html += `<div class="issues-category-section"><h3>${catName} (${catIssues.length})</h3>`;
+    for (const iss of catIssues) {
+      const sevLabel = {critical:"CRITICAL",high:"HIGH",medium:"MEDIUM",low:"LOW"}[iss.severity];
+      const stLabel = {pending:"未着手",workaround:"回避策あり",done:"完了"}[iss.status];
+
+      const dbPillsHtml = iss.relatedDbs.map(id => {
+        const db = dbById(id);
+        const color = db ? getLayerColor(db.layer) : "#888";
+        return '<span class="issue-db-pill" style="background:'+color+'">'+id+'</span>';
+      }).join("");
+
+      const blockedByHtml = iss.blockedBy.length > 0
+        ? '<div style="margin-top:6px;font-size:0.75rem;color:var(--text2);">Blocked by: <span class="issue-deps">' + iss.blockedBy.map(id => '<span class="issue-dep" onclick="scrollToIssue(\''+id+'\')">'+id+'</span>').join("") + '</span></div>'
+        : '';
+
+      const blocksHtml = iss.blocks.length > 0
+        ? '<div style="margin-top:4px;font-size:0.75rem;color:var(--text2);">Blocks: <span class="issue-deps">' + iss.blocks.map(id => '<span class="issue-dep" onclick="scrollToIssue(\''+id+'\')">'+id+'</span>').join("") + '</span></div>'
+        : '';
+
+      html += `<div class="issue-card sev-${iss.severity}" id="issue-${iss.id}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+          <span style="font-size:0.75rem;font-weight:700;color:var(--text2);">${iss.id}</span>
+          <span class="sev-badge sev-${iss.severity}">${sevLabel}</span>
+          <span class="status-badge st-${iss.status}">${stLabel}</span>
+          ${dbPillsHtml ? '<span style="margin-left:auto;">'+dbPillsHtml+'</span>' : ''}
+        </div>
+        <div style="font-weight:700;font-size:0.92rem;margin-bottom:6px;">${iss.title}</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;margin-bottom:6px;">${iss.desc}</div>
+        <div style="font-size:0.8rem;color:#ef4444;font-weight:600;">Impact: ${iss.impact}</div>
+        ${blockedByHtml}
+        ${blocksHtml}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  c.innerHTML = html;
+}
+
+function scrollToIssue(id) {
+  const el = document.getElementById("issue-" + id);
+  if (el) {
+    el.scrollIntoView({behavior:"smooth", block:"center"});
+    el.style.boxShadow = "0 0 0 3px var(--accent)";
+    setTimeout(() => { el.style.boxShadow = ""; }, 2000);
+  }
+}
+
 // ===== INIT =====
 renderStats();
 renderLayerSections("");
 renderIdealTab();
 renderActionPlan();
 renderRationale();
+renderIssues();
 </script>
 </body>
 </html>
