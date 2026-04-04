@@ -54,9 +54,7 @@ header p { color:var(--text2); margin-top:4px; font-size:0.95rem; }
 .db-card .db-id { font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:6px; color:#fff; flex-shrink:0; }
 .db-card .db-name { font-size:0.95rem; font-weight:700; }
 .db-card .db-desc { font-size:0.8rem; color:var(--text2); line-height:1.5; }
-.db-card .views-row { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
-.db-card .view-tag { font-size:0.68rem; padding:2px 8px; border-radius:6px; background:var(--surface2); color:var(--text2); }
-.db-card .view-icon { font-size:0.68rem; }
+.db-card .prop-count { font-size:0.72rem; color:var(--text2); margin-top:6px; }
 
 /* Expanded card */
 .db-card .expanded-area { display:none; margin-top:14px; border-top:1px solid var(--border); padding-top:12px; }
@@ -103,52 +101,12 @@ canvas#archCanvas { display:block; margin:0 auto; }
 .search-box input { width:100%; max-width:480px; padding:10px 16px; border:1.5px solid var(--border); border-radius:10px; font-size:0.95rem; outline:none; transition:border-color 0.15s; }
 .search-box input:focus { border-color:var(--accent); }
 
-/* View type icons */
-.vt-table::before { content:""; }
-.vt-board::before { content:""; }
-.vt-calendar::before { content:""; }
-.vt-timeline::before { content:""; }
-.vt-gallery::before { content:""; }
-.vt-form::before { content:""; }
-
 /* Rationale tab */
 .rationale-overview { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 24px; margin-bottom:28px; line-height:1.8; }
 .rationale-overview h2 { font-size:1.15rem; font-weight:700; margin-bottom:8px; color:var(--accent); }
 .rationale-overview p { font-size:0.88rem; color:var(--text2); }
 .rationale-section { margin-bottom:32px; }
 .rationale-section > h2 { font-size:1.2rem; font-weight:700; margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--border); }
-.rationale-category { margin-bottom:20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.rationale-category summary { padding:14px 18px; font-size:0.95rem; font-weight:700; cursor:pointer; background:var(--surface2); list-style:none; display:flex; align-items:center; gap:8px; }
-.rationale-category summary::-webkit-details-marker { display:none; }
-.rationale-category summary::before { content:"▶"; font-size:0.7rem; transition:transform 0.2s; }
-.rationale-category[open] summary::before { transform:rotate(90deg); }
-.rationale-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
-.rationale-table th { padding:10px 12px; text-align:left; background:var(--surface2); border-bottom:2px solid var(--border); font-weight:700; white-space:nowrap; }
-.rationale-table td { padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
-.rationale-table tr:nth-child(even) { background:#fafbfd; }
-.rationale-table .db-list { display:flex; flex-wrap:wrap; gap:3px; }
-.rationale-table .db-pill { font-size:0.65rem; padding:1px 6px; border-radius:4px; color:#fff; font-weight:600; white-space:nowrap; }
-.rationale-table .reason-col { font-size:0.78rem; color:var(--text); line-height:1.5; max-width:280px; }
-.rationale-table .not-reason-col { font-size:0.78rem; color:var(--text2); line-height:1.5; max-width:280px; }
-
-/* 16x16 Matrix */
-.matrix-wrap { overflow-x:auto; margin-bottom:16px; }
-.matrix-table { border-collapse:collapse; }
-.matrix-table th, .matrix-table td { width:28px; height:28px; min-width:28px; text-align:center; font-size:0.6rem; font-weight:600; border:1px solid var(--border); padding:0; }
-.matrix-table th { background:var(--surface2); position:sticky; }
-.matrix-table th.corner { background:var(--surface); }
-.matrix-table td.cell-exists { background:#dcfce7; cursor:pointer; }
-.matrix-table td.cell-exists:hover { background:#bbf7d0; }
-.matrix-table td.cell-not { background:#f9fafb; cursor:pointer; }
-.matrix-table td.cell-not:hover { background:#f1f5f9; }
-.matrix-table td.cell-self { background:#dbeafe; cursor:pointer; }
-.matrix-table td.cell-self:hover { background:#bfdbfe; }
-.matrix-table td.cell-diag { background:var(--surface2); }
-.matrix-detail { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin-top:16px; display:none; }
-.matrix-detail.visible { display:block; }
-.matrix-detail h4 { font-size:0.95rem; font-weight:700; margin-bottom:6px; }
-.matrix-detail p { font-size:0.85rem; color:var(--text2); line-height:1.6; }
-.matrix-detail .detail-badge { display:inline-block; font-size:0.72rem; padding:2px 10px; border-radius:8px; font-weight:600; color:#fff; margin-right:6px; }
 
 /* Issues */
 .issue-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
@@ -220,7 +178,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
 <header>
   <h1>NAGARA Notion Architecture Viewer</h1>
-  <p>15 DBs / 5 Layers / Full property & relation map</p>
+  <p>25 DBs / 7 Layers / Full property &amp; relation map</p>
 </header>
 
 <div class="container">
@@ -246,7 +204,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
   <div class="tab-content" id="tab-diagram">
     <div class="canvas-wrap">
-      <canvas id="archCanvas" width="1200" height="680"></canvas>
+      <canvas id="archCanvas" width="1400" height="640"></canvas>
     </div>
     <div class="canvas-legend" id="canvasLegend"></div>
     <p style="text-align:center;margin-top:8px;font-size:0.8rem;color:var(--text2);">ノードをクリックするとリレーションをハイライト。背景クリックでリセット</p>
@@ -272,332 +230,297 @@ canvas#archCanvas { display:block; margin:0 auto; }
 <script>
 // ===== DATA =====
 const layers = {
-  crm:       {name:"CRM層",       color:"#5046e5", bg:"#eef2ff", count:8, desc:"顧客管理の全フロー"},
-  general:   {name:"General層",   color:"#0ea5e9", bg:"#ecfeff", count:4, desc:"組織・PJ・タスク・ドキュメント"},
-  marketing: {name:"Marketing層", color:"#f59e0b", bg:"#fffbeb", count:1, desc:"SNS発信パイプライン"},
-  executive: {name:"Executive層", color:"#ef4444", bg:"#fef2f2", count:1, desc:"経営・1on1（非公開）"},
-  form:      {name:"Form層",      color:"#ec4899", bg:"#fdf2f8", count:1, desc:"営業報告入力"},
+  ssot:      {name:"SSOT基盤",    color:"#7c3aed", bg:"#f5f3ff", count:5, desc:"全社共通マスタ"},
+  crm:       {name:"CRM・営業",   color:"#2563eb", bg:"#eff6ff", count:5, desc:"営業パイプライン"},
+  hr:        {name:"人事・採用",   color:"#059669", bg:"#ecfdf5", count:4, desc:"採用管理 Closed"},
+  ir:        {name:"投資家関係",   color:"#dc2626", bg:"#fef2f2", count:4, desc:"投資家管理 Closed"},
+  corporate: {name:"コーポレート", color:"#f59e0b", bg:"#fffbeb", count:1, desc:"マーケティング"},
+  general:   {name:"General",     color:"#0ea5e9", bg:"#ecfeff", count:5, desc:"社内運営"},
+  executive: {name:"Executive",   color:"#ec4899", bg:"#fdf2f8", count:1, desc:"経営層 Closed"},
 };
 
 const dbs = [
-  {id:"DB1",name:"取引先（Accounts）",layer:"crm",
-   desc:"法人管理の最上位。施設数・事業所数をrollupで自動集計",
-   views:[{n:"全取引先",t:"table"},{n:"営業ステータス別",t:"board"},{n:"エリア別",t:"table"},{n:"ランク別",t:"board"}],
+  // SSOT基盤
+  {id:"DB1",name:"法人（Accounts）",layer:"ssot",desc:"法人管理の最上位。施設/事業所/支店/人の全起点",
    props:[
      {n:"法人名",t:"title"},{n:"法人コード",t:"unique_id",x:"ACC"},
      {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","商談中","関係継続中","契約法人","見送り","一時中断"]},
-     {n:"営業ステータス（議事録）",t:"select",o:["未接触","アプローチ中","商談中","関係継続中","契約法人","見送り","一時中断"]},
-     {n:"レコードステータス",t:"select",o:["下書き","確定"]},
      {n:"組織区分",t:"select",o:["社会福祉法人","医療法人","株式会社","合同会社","NPO法人","行政","社団法人","その他"]},
      {n:"ランク",t:"select",o:["S","A","B","C"]},
-     {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元"]},
-     {n:"エリア（都道府県）",t:"select",o:["北海道","青森県","...","沖縄県(47都道府県)"]},
-     {n:"接触元",t:"select",o:["紹介","SNS","HP問合せ","テレアポ","展示会","セミナー","DecacornCup","その他"]},
-     {n:"エリア（市町村）",t:"rich_text"},{n:"本社所在地",t:"rich_text"},{n:"代表者名",t:"rich_text"},{n:"法人番号",t:"rich_text"},{n:"取引先サマリー",t:"rich_text"},{n:"備考",t:"rich_text"},
-     {n:"電話番号",t:"phone_number"},{n:"メールアドレス",t:"email"},
-     {n:"HP",t:"url"},{n:"共有drive",t:"url"},
-     {n:"接触開始日",t:"date"},{n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
-     {n:"施設一覧",t:"relation",to:"DB2"},{n:"事業所一覧",t:"relation",to:"DB3"},{n:"名刺一覧",t:"relation",to:"DB4"},
-     {n:"商談一覧",t:"relation",to:"DB5"},{n:"活動一覧",t:"relation",to:"DB6"},{n:"契約一覧",t:"relation",to:"DB7"},
-     {n:"関連タスク",t:"relation",to:"DB10"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},{n:"報告一覧",t:"relation",to:"DB12"},
-     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
-     {n:"紹介した取引先",t:"relation",to:"DB1"},{n:"紹介した施設",t:"relation",to:"DB2"},{n:"紹介した事業所",t:"relation",to:"DB3"},
+     {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元","投資家","エージェント"]},
+     {n:"エリア（都道府県）",t:"select",o:["47都道府県"]},
+     {n:"接触元",t:"select",o:["紹介","SNS","HP問合せ","テレアポ","展示会","セミナー","その他"]},
+     {n:"電話番号",t:"phone_number"},{n:"メールアドレス",t:"email"},{n:"HP",t:"url"},
+     {n:"施設一覧",t:"relation",to:"DB2"},{n:"事業所一覧",t:"relation",to:"DB3"},
+     {n:"名刺一覧",t:"relation",to:"DB4"},{n:"支店一覧",t:"relation",to:"DB5"},
+     {n:"商談一覧",t:"relation",to:"DB6"},{n:"活動一覧",t:"relation",to:"DB7"},
+     {n:"契約一覧",t:"relation",to:"DB8"},{n:"ドキュメント一覧",t:"relation",to:"DB23"},
+     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},
+     {n:"紹介元（個人）",t:"relation",to:"DB4"},
      {n:"施設数",t:"rollup",rp:"施設一覧",tp:"施設名",fn:"count"},
      {n:"事業所数",t:"rollup",rp:"事業所一覧",tp:"事業所名",fn:"count"},
-     {n:"事業形態一覧",t:"rollup",rp:"事業所一覧",tp:"サービス種別",fn:"show_original"},
-     {n:"既存記録形態一覧",t:"rollup",rp:"事業所一覧",tp:"既存記録形態",fn:"show_original"},
-     {n:"既存請求ソフト一覧",t:"rollup",rp:"事業所一覧",tp:"既存請求ソフト",fn:"show_original"},
-     {n:"紹介実績数（法人経由）",t:"rollup",rp:"紹介元（法人）",tp:"法人名",fn:"count"},
-     {n:"紹介実績数（施設経由）",t:"rollup",rp:"紹介した施設",tp:"施設名",fn:"count"},
-     {n:"紹介実績数（事業所経由）",t:"rollup",rp:"紹介した事業所",tp:"事業所名",fn:"count"},
    ]},
-  {id:"DB2",name:"施設（Facilities）",layer:"crm",
-   desc:"法人配下の施設管理。SNSリンク。営業ステータス追跡。配下事業所の自動集計",
-   views:[{n:"全施設",t:"table"},{n:"営業ステータス別",t:"board"}],
+  {id:"DB2",name:"施設（Facilities）",layer:"ssot",desc:"法人配下の施設。営業ステータス・エリア追跡",
    props:[
      {n:"施設名",t:"title"},{n:"施設コード",t:"unique_id",x:"FAC"},
-     {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","日程調整中","アポ取得","商談済み","トライアル見込み","トライアル準備中","トライアル中","契約準備中","契約施設","見送り","一時中断"]},
-     {n:"営業ステータス（議事録）",t:"select",o:["同上"]},
-     {n:"レコードステータス",t:"select",o:["下書き","確定"]},
-     {n:"エリア（都道府県）",t:"select",o:["(47都道府県)"]},
-     {n:"接触元",t:"select",o:["紹介","SNS","HP問合せ","テレアポ","展示会","セミナー","その他"]},
-     {n:"SNS",t:"multi_select",o:["instagram","facebook","tiktok"]},
-     {n:"エリア（市町村）",t:"rich_text"},{n:"所在地",t:"rich_text"},{n:"備考",t:"rich_text"},
-     {n:"電話番号",t:"phone_number"},{n:"メールアドレス",t:"email"},
-     {n:"HP",t:"url"},{n:"Facebook",t:"url"},{n:"Instagram",t:"url"},{n:"X",t:"url"},{n:"共有drive",t:"url"},
-     {n:"接触開始日",t:"date"},{n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
-     {n:"上位法人",t:"relation",to:"DB1"},{n:"事業所一覧",t:"relation",to:"DB3"},{n:"所属メンバー",t:"relation",to:"DB4"},
-     {n:"商談一覧",t:"relation",to:"DB5"},{n:"関連活動記録",t:"relation",to:"DB6"},{n:"契約一覧",t:"relation",to:"DB7"},
-     {n:"関連タスク",t:"relation",to:"DB10"},{n:"関連ドキュメント",t:"relation",to:"DB11"},{n:"報告一覧",t:"relation",to:"DB12"},
-     {n:"事業所数",t:"rollup",rp:"事業所一覧",tp:"事業所名",fn:"count"},
-     {n:"事業形態一覧",t:"rollup",rp:"事業所一覧",tp:"サービス種別",fn:"show_original"},
-     {n:"既存記録形態一覧",t:"rollup",rp:"事業所一覧",tp:"既存記録形態",fn:"show_original"},
-     {n:"既存請求ソフト一覧",t:"rollup",rp:"事業所一覧",tp:"既存請求ソフト",fn:"show_original"},
-     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+     {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","日程調整中","アポ取得","商談済み","契約施設"]},
+     {n:"エリア（都道府県）",t:"select",o:["47都道府県"]},
+     {n:"上位法人",t:"relation",to:"DB1"},{n:"事業所一覧",t:"relation",to:"DB3"},
+     {n:"所属メンバー",t:"relation",to:"DB4"},
+     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
    ]},
-  {id:"DB3",name:"事業所（Offices）",layer:"crm",
-   desc:"介護事業所の詳細。サービス種別・プロダクト導入状況・定員・既存ソフト",
-   views:[{n:"全事業所",t:"table"},{n:"導入ステータス別",t:"board"},{n:"サービス種別別",t:"table"}],
+  {id:"DB3",name:"事業所（Offices）",layer:"ssot",desc:"介護事業所。サービス種別・導入ステータス・定員管理",
    props:[
      {n:"事業所名",t:"title"},{n:"事業所コード",t:"unique_id",x:"OFF"},
-     {n:"サービス種別",t:"select",o:["居宅介護支援","訪問介護","訪問看護","通所介護","地域密着型通所介護","短期入所生活介護","小規模多機能型居宅介護","認知症対応型共同生活介護","介護老人福祉施設","介護老人保健施設","他"]},
-     {n:"導入ステータス（記録）",t:"select",o:["未導入","トライアル見込み","トライアル準備中","トライアル中","契約準備中","契約中","見送り","一時中断"]},
-     {n:"導入ステータス（議事録）",t:"select",o:["同上"]},
-     {n:"レコードステータス",t:"select",o:["下書き","確定"]},
-     {n:"既存請求ソフト",t:"select",o:["カイポケ","ほのぼの","ワイズマン","ケアカルテ","まもる君","介舟ファミリー","NDソフト","他"]},
-     {n:"接触元",t:"select",o:["紹介","SNS","HP問合せ","テレアポ","展示会","セミナー","その他"]},
-     {n:"プロダクト導入状況",t:"multi_select",o:["ながらかいご記録","ながらかいご議事録","決定版介護ソフト"]},
-     {n:"既存記録形態",t:"multi_select",o:["ほのぼの","ワイズマン","カイポケ","ケアカルテ","まもる君","紙","Excel","その他"]},
-     {n:"事業所番号",t:"rich_text"},{n:"所在地",t:"rich_text"},{n:"管理者名",t:"rich_text"},{n:"備考",t:"rich_text"},
-     {n:"電話番号",t:"phone_number"},{n:"共有drive",t:"url"},
-     {n:"定員/利用定員",t:"number"},{n:"従業者数",t:"number"},{n:"常勤者数",t:"number"},
-     {n:"トライアル開始日",t:"date"},{n:"事業開始日",t:"date"},{n:"接触開始日",t:"date"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
+     {n:"サービス種別",t:"select",o:["居宅介護支援","訪問介護","通所介護","特養","グループホーム","他"]},
+     {n:"導入ステータス",t:"select",o:["未導入","トライアル見込み","準備中","トライアル中","契約中"]},
      {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},
-     {n:"名刺一覧",t:"relation",to:"DB4"},{n:"商談一覧",t:"relation",to:"DB5"},{n:"契約一覧",t:"relation",to:"DB7"},
-     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+     {n:"定員",t:"number"},
    ]},
-  {id:"DB4",name:"名刺情報（Contacts）",layer:"crm",
-   desc:"個人の連絡先管理。姓/名分離。カテゴリ・ステータス・連絡手段",
-   views:[{n:"全名刺",t:"table"},{n:"カテゴリ別",t:"board"},{n:"ギャラリー",t:"gallery"}],
+  {id:"DB4",name:"人・名刺（Contacts）",layer:"ssot",desc:"個人の連絡先。顧客/採用候補/投資家を兼任可能",
    props:[
      {n:"氏名",t:"title"},{n:"名刺コード",t:"unique_id",x:"CON"},
-     {n:"ステータス",t:"select",o:["アクティブ","休眠","退職"]},
-     {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元"]},
-     {n:"接触元",t:"select",o:["紹介","展示会","HP問合せ","テレアポ","SNS","セミナー","その他"]},
-     {n:"レコードステータス",t:"select",o:["下書き","確定"]},
-     {n:"カテゴリ",t:"multi_select",o:["顧客","パートナー","投資家","チームメンバー","アドバイザー","メディア","行政"]},
-     {n:"主な連絡手段",t:"multi_select",o:["メール","電話","SMS","LINE","Facebook","Messenger","Slack"]},
-     {n:"姓",t:"rich_text"},{n:"名",t:"rich_text"},{n:"役職",t:"rich_text"},{n:"部署",t:"rich_text"},{n:"備考",t:"rich_text"},
+     {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元","投資家","採用候補"]},
+     {n:"カテゴリ",t:"multi_select",o:["顧客","パートナー","投資家","チームメンバー","アドバイザー"]},
+     {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},{n:"所属支店",t:"relation",to:"DB5"},
+     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
      {n:"電話番号",t:"phone_number"},{n:"メール",t:"email"},
-     {n:"プロフィール画像",t:"files"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
-     {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},{n:"所属事業所",t:"relation",to:"DB3"},
-     {n:"関連商談",t:"relation",to:"DB5"},{n:"活動一覧",t:"relation",to:"DB6"},
-     {n:"タスク一覧",t:"relation",to:"DB10"},{n:"関連ドキュメント",t:"relation",to:"DB11"},{n:"関連商談報告",t:"relation",to:"DB12"},
-     {n:"紹介した取引先",t:"relation",to:"DB1"},{n:"紹介した施設",t:"relation",to:"DB2"},{n:"紹介した事業所",t:"relation",to:"DB3"},
-     {n:"紹介実績数���取引先）",t:"rollup",rp:"紹介した取引先",tp:"法人名",fn:"count"},
-     {n:"紹介実績数（施設）",t:"rollup",rp:"紹介した施設",tp:"施設名",fn:"count"},
    ]},
-  {id:"DB5",name:"商談（Deals）",layer:"crm",
-   desc:"営業パイプライン。ステージ・確度・想定MRR・対象プロダクト・失注理由",
-   views:[{n:"全商談",t:"table"},{n:"パイプライン",t:"board"},{n:"タイムライン",t:"timeline"}],
+  {id:"DB5",name:"支店（Branches）",layer:"ssot",desc:"法人配下の支店。銀行等のエリア追跡・紹介元管理",
+   props:[
+     {n:"支店名",t:"title"},{n:"支店コード",t:"unique_id",x:"BRN"},
+     {n:"上位法人",t:"relation",to:"DB1"},{n:"所属メンバー",t:"relation",to:"DB4"},
+     {n:"エリア（都道府県）",t:"select",o:["47都道府県"]},
+     {n:"住所",t:"rich_text"},{n:"電話番号",t:"phone_number"},{n:"備考",t:"rich_text"},
+     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+   ]},
+  // CRM・営業
+  {id:"DB6",name:"商談（Deals）",layer:"crm",desc:"営業パイプライン。ステージ・確度・MRR管理",
    props:[
      {n:"商談名",t:"title"},{n:"商談コード",t:"unique_id",x:"DEL"},
-     {n:"パイプラインステージ",t:"select",o:["リード","アプローチ","ヒアリング","提案","見積","交渉","受注","失注"]},
+     {n:"パイプラインステージ",t:"select",o:["リード","アプローチ","ヒアリング","提案","見積","受注","失注"]},
      {n:"確度",t:"select",o:["10%","25%","50%","75%","90%"]},
-     {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","日程調整中","アポ取得","商談済み","トライアル見込み","見送り"]},
-     {n:"営業ステータス（議事録）",t:"select",o:["同上"]},
-     {n:"失注理由",t:"select",o:["価格","機能不足","競合負け","タイミング","予算なし","その他"]},
-     {n:"対象プロダクト",t:"multi_select",o:["ながらかいご記録","ながらかいご議事録","決定版介護ソフト"]},
-     {n:"商談メモ",t:"rich_text"},{n:"備考",t:"rich_text"},
-     {n:"想定MRR",t:"number"},{n:"受注予定日",t:"date"},{n:"受注日",t:"date"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"PM",t:"people"},{n:"メンバー",t:"people"},{n:"営業担当",t:"people"},
-     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"対象事業所",t:"relation",to:"DB3"},
-     {n:"主担当者",t:"relation",to:"DB4"},{n:"活動一覧",t:"relation",to:"DB6"},{n:"契約",t:"relation",to:"DB7"},
-     {n:"タスク一覧",t:"relation",to:"DB10"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},{n:"報告一覧",t:"relation",to:"DB12"},
+     {n:"想定MRR",t:"number"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"事業所",t:"relation",to:"DB3"},
+     {n:"主担当者",t:"relation",to:"DB4"},{n:"活動一覧",t:"relation",to:"DB7"},{n:"契約",t:"relation",to:"DB8"},
    ]},
-  {id:"DB6",name:"MTG & Activity（活動記録）",layer:"crm",
-   desc:"全コミュニケーション記録ハブ。活動タイプ13種。統合アクティビティハブ構想の中心",
-   views:[{n:"全活動",t:"table"},{n:"活動タイプ別",t:"board"},{n:"カレンダー",t:"calendar"},{n:"未完了一覧",t:"table"}],
+  {id:"DB7",name:"活動（CRM Activity）",layer:"crm",desc:"全コミュニケーション統合ハブ。28プロパティ。自動投入対応",
    props:[
      {n:"件名",t:"title"},{n:"活動コード",t:"unique_id",x:"ACT"},
-     {n:"活動タイプ",t:"select",o:["訪問","電話","メール","Web会議","デモ","社内MTG","作業","その他","Slack会話","Notta文字起こし","展示会・イベント","個人電話","カレンダー予定"]},
-     {n:"会議種別",t:"select",o:["営業商談","トライアルフォロー","PM会","定例MTG","1v1","経営会議","採用面接","勉強会","その他"]},
-     {n:"次のアクション",t:"rich_text"},{n:"備考",t:"rich_text"},
-     {n:"工数（h）",t:"number"},{n:"活動日時",t:"date"},{n:"完了",t:"checkbox"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"PM",t:"people"},{n:"メンバー",t:"people"},{n:"営業担当",t:"people"},
+     {n:"活動タイプ",t:"select",o:["訪問","電話","メール","Web会議","デモ","社内MTG","Slack会話","Notta","展示会","個人電話","カレンダー","その他"]},
+     {n:"ソースチャネル",t:"select",o:["Zoom Phone","Gmail","Slack","Notta","DB10報告","SNS","手動"]},
+     {n:"活動日時",t:"date"},{n:"サマリ",t:"rich_text"},{n:"文字起こし",t:"rich_text"},
+     {n:"ソースURL",t:"url"},{n:"ソースID",t:"rich_text"},{n:"自動生成",t:"checkbox"},
+     {n:"通話方向",t:"select",o:["着信","発信"]},{n:"通話結果",t:"select",o:["応答済み","不在","切断"]},{n:"通話時間(秒)",t:"number"},
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
-     {n:"商談",t:"relation",to:"DB5"},{n:"参加者",t:"relation",to:"DB4"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},
-     {n:"ソースURL",t:"url"},{n:"ソースID",t:"rich_text"},{n:"ソースチャネル",t:"select",o:["Zoom Phone","Gmail","Slack","Notta","DB12報告","手動入力"]},
-     {n:"文字起こし",t:"rich_text"},{n:"サマリ",t:"rich_text"},{n:"自動生成",t:"checkbox"},
-     {n:"通話時間(秒)",t:"number"},{n:"通話方向",t:"select",o:["着信","発信","不在着信"]},{n:"通話結果",t:"select",o:["応答","不在","留守電","転送"]},
+     {n:"商談",t:"relation",to:"DB6"},{n:"参加者",t:"relation",to:"DB4"},
    ]},
-  {id:"DB7",name:"契約（Contracts）",layer:"crm",
-   desc:"契約ライフサイクル。MRR・契約方式・期間・プロダクト・自動更新・解約理由",
-   views:[{n:"全契約",t:"table"},{n:"ステータス別",t:"board"}],
+  {id:"DB8",name:"契約（Contracts）",layer:"crm",desc:"契約ライフサイクル。MRR・自動更新・解約理由",
    props:[
      {n:"契約名",t:"title"},{n:"契約コード",t:"unique_id",x:"CTR"},
      {n:"契約ステータス",t:"select",o:["依頼中","準備中","送付済","締結完了","解約"]},
-     {n:"契約カテゴリ",t:"select",o:["サービス契約","NDA/秘密保持","トライアル契約","SLA","その他"]},
-     {n:"契約種別",t:"select",o:["新規","更新","変更"]},
-     {n:"契約方式",t:"select",o:["MF電子契約","紙"]},
-     {n:"支払方法",t:"select",o:["請求書","口座振替","クレジットカード"]},
-     {n:"請求サイクル",t:"select",o:["月次","年次","四半期","スポット"]},
-     {n:"解約理由",t:"select",o:["価格","機能不足","競合乗換","サービス終了","事業所閉鎖","その他"]},
-     {n:"対象プロダクト",t:"multi_select",o:["ながらかいご記録","ながらかいご議事録","決定版介護ソフト"]},
-     {n:"備考",t:"rich_text"},{n:"MRR",t:"number"},
-     {n:"契約開始日",t:"date"},{n:"契約終了日",t:"date"},
-     {n:"自動更新",t:"checkbox"},{n:"契約書ファイル",t:"files"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
-     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"対象事業所",t:"relation",to:"DB3"},{n:"商談",t:"relation",to:"DB5"},
+     {n:"MRR",t:"number"},{n:"契約開始日",t:"date"},{n:"契約終了日",t:"date"},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"商談",t:"relation",to:"DB6"},
    ]},
-  {id:"DB16",name:"CRMタスク（Sales Tasks）",layer:"crm",
-   desc:"顧客に対する次のアクション管理。CRM専用タスク。2026-04-02作成",
-   views:[{n:"全CRMタスク",t:"table"},{n:"ステータス別",t:"board"},{n:"カレンダー",t:"calendar"},{n:"取引先別",t:"table"}],
+  {id:"DB9",name:"CRMタスク（Sales Tasks）",layer:"crm",desc:"顧客への次のアクション。営業専用タスク",
    props:[
      {n:"タスク名",t:"title"},{n:"タスクコード",t:"unique_id",x:"STK"},
-     {n:"ステータス",t:"select",o:["未着手","Next Action","進行中","返信待ち","他者依頼中","完了"]},
+     {n:"ステータス",t:"select",o:["未着手","Next Action","進行中","返信待ち","完了"]},
      {n:"優先度",t:"select",o:["至急","高","中","低"]},
-     {n:"活動タイプ",t:"select",o:["電話","メール","訪問","Web会議","資料送付","フォローアップ","その他"]},
-     {n:"特記事項",t:"rich_text"},{n:"締切",t:"date"},{n:"完了日",t:"date"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"担当者",t:"people"},{n:"PM",t:"people"},
-     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"事業所",t:"relation",to:"DB3"},
-     {n:"商談",t:"relation",to:"DB5"},{n:"関連先（名刺）",t:"relation",to:"DB4"},{n:"関連活動",t:"relation",to:"DB6"},
-   ]},
-  {id:"DB8",name:"部門（Departments v2）",layer:"general",
-   desc:"組織階層管理。上位/下位DEPTの自己参照。Lead/Members。Drive/Slackリンク",
-   views:[{n:"組織図",t:"table"}],
-   props:[
-     {n:"部門名",t:"title"},{n:"部署コード",t:"unique_id",x:"DPT"},
-     {n:"備考",t:"rich_text"},{n:"Google Drive",t:"url"},{n:"Slack",t:"url"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"Lead",t:"people"},{n:"Members",t:"people"},
-     {n:"上位DEPT",t:"relation",to:"DB8"},{n:"プロジェクト一覧",t:"relation",to:"DB9"},
-     {n:"タスク一覧",t:"relation",to:"DB10"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},
-   ]},
-  {id:"DB9",name:"プロジェクト（Projects v2）",layer:"general",
-   desc:"PJ管理。上位PJ自己参照で階層化。ステータス/優先度/タグ",
-   views:[{n:"全PJ",t:"table"},{n:"ステータス別",t:"board"},{n:"タイムライン",t:"timeline"}],
-   props:[
-     {n:"プロジェクト名",t:"title"},{n:"PJコード",t:"unique_id",x:"PRJ"},
-     {n:"ステータス",t:"select",o:["未着手","進行中","完了","保留","中止"]},
-     {n:"優先度",t:"select",o:["至急","高","中","低"]},
-     {n:"タグ",t:"multi_select",o:["PMF","営業","プロダクト","採用","資金調達"]},
-     {n:"備考",t:"rich_text"},{n:"開始日",t:"date"},{n:"終了日",t:"date"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"PM",t:"people"},{n:"メンバー",t:"people"},
-     {n:"上位PJ",t:"relation",to:"DB9"},{n:"部門",t:"relation",to:"DB8"},
-     {n:"タスク一覧",t:"relation",to:"DB10"},{n:"ドキュメント一覧",t:"relation",to:"DB11"},
-   ]},
-  {id:"DB10",name:"タスク（Tasks v2）",layer:"general",
-   desc:"社内運営タスク管理。GTDベース。5ステータス。親タスク階層化",
-   views:[{n:"全タスク",t:"table"},{n:"ステータス別ボード",t:"board"},{n:"カレンダー",t:"calendar"},{n:"担当者別",t:"table"}],
-   props:[
-     {n:"タスク名",t:"title"},{n:"タスクコード",t:"unique_id",x:"TSK"},
-     {n:"ステータス",t:"select",o:["未着手","Next Action","進行中","返信待ち","他者依頼中","完了"]},
-     {n:"優先度",t:"select",o:["至急","高","中","低"]},
-     {n:"特記事項",t:"rich_text"},{n:"締切",t:"date"},{n:"完了日",t:"date"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"担当者",t:"people"},{n:"PM",t:"people"},{n:"メンバー",t:"people"},
-     {n:"親タスク",t:"relation",to:"DB10"},{n:"プロジェクト",t:"relation",to:"DB9"},{n:"部門",t:"relation",to:"DB8"},
+     {n:"締切",t:"date"},
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
-     {n:"商談",t:"relation",to:"DB5"},{n:"関連先",t:"relation",to:"DB4"},
+     {n:"商談",t:"relation",to:"DB6"},{n:"関連先",t:"relation",to:"DB4"},
    ]},
-  {id:"DB11",name:"ドキュメント（Documents v2）",layer:"general",
-   desc:"統一ドキュメントDB。レイヤーselectでCRM/社内/経営/開発を絞り込み",
-   views:[{n:"全ドキュメント",t:"table"},{n:"種別別",t:"board"}],
-   props:[
-     {n:"ドキュメント名",t:"title"},{n:"ドキュメントコード",t:"unique_id",x:"DOC"},
-     {n:"種別",t:"select",o:["報告書","提案書","計画書","マニュアル","分析","議事録","Decision Log"]},
-     {n:"ステータス",t:"select",o:["下書き","レビュー中","確定","アーカイブ"]},
-     {n:"レイヤー",t:"select",o:["CRM","社内運営","経営","開発","マーケティング"]},
-     {n:"形式",t:"multi_select",o:["PDF","Google Docs","Google Spreadsheet","Canva","PowerPoint","Notion"]},
-     {n:"要約",t:"rich_text"},{n:"備考",t:"rich_text"},{n:"URL",t:"url"},
-     {n:"日付",t:"date"},{n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"オーナー",t:"people"},{n:"PM",t:"people"},{n:"メンバー",t:"people"},
-     {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"商談",t:"relation",to:"DB5"},
-     {n:"プロジェクト",t:"relation",to:"DB9"},{n:"部門",t:"relation",to:"DB8"},
-     {n:"関連先(名刺)",t:"relation",to:"DB4"},{n:"関連活動",t:"relation",to:"DB6"},
-   ]},
-  {id:"DB13",name:"発信コンテンツ（Contents）",layer:"marketing",
-   desc:"SNS投稿パイプライン。32エージェントの出力先。11アカウント対応",
-   views:[{n:"全コンテンツ",t:"table"},{n:"ステータス別",t:"board"},{n:"カレンダー",t:"calendar"}],
-   props:[
-     {n:"タイトル",t:"title"},{n:"コンテンツコード",t:"unique_id",x:"CNT"},
-     {n:"ステータス",t:"select",o:["企画","下書き","レビュー","承認済","公開済","アーカイブ"]},
-     {n:"カテゴリ",t:"select",o:["企業PR","CEO発信","業界洞察","プロダクト","採用","イベント","その他"]},
-     {n:"プラットフォーム",t:"multi_select",o:["X(@NAGARA_inc)","X(@itsuki_ok)","Instagram(法人)","Instagram(CEO)","LinkedIn(法人)","LinkedIn(CEO)","note(法人)","note(CEO)","Facebook(法人)","Facebook(CEO)","PR TIMES"]},
-     {n:"本文",t:"rich_text"},{n:"備考",t:"rich_text"},{n:"投稿URL",t:"url"},
-     {n:"エンゲージメント",t:"number"},{n:"インプレッション",t:"number"},
-     {n:"メディア",t:"files"},{n:"公開日時",t:"date"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"担当者",t:"people"},
-     {n:"取引先",t:"relation",to:"DB1"},{n:"プロジェクト",t:"relation",to:"DB9"},
-   ]},
-  {id:"DB15",name:"1on1記録（One-on-One）",layer:"executive",
-   desc:"メンバー別1on1記録。ムード追跡。非公開Teamspaceで管理",
-   views:[{n:"全1on1",t:"table"},{n:"カレンダー",t:"calendar"}],
-   props:[
-     {n:"タイトル",t:"title"},{n:"1on1コード",t:"unique_id",x:"OOO"},
-     {n:"ムード",t:"select",o:["良好","普通","要注意"]},
-     {n:"議題",t:"rich_text"},{n:"決定事項",t:"rich_text"},{n:"次のアクション",t:"rich_text"},
-     {n:"日付",t:"date"},{n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"メンバー",t:"people"},{n:"マネージャー",t:"people"},
-     {n:"部門",t:"relation",to:"DB8"},{n:"関連タスク",t:"relation",to:"DB10"},
-   ]},
-  {id:"DB12",name:"商談報告フォーム（Sales Report）",layer:"form",
-   desc:"営業現場からの報告入力。文字起こし対応。処理ステータスで議事録生成フロー管理",
-   views:[{n:"全報告",t:"table"},{n:"処理ステータス別",t:"board"},{n:"報告フォーム",t:"form"}],
+  {id:"DB10",name:"商談報告フォーム（Sales Report）",layer:"crm",desc:"営業現場からの報告入力。文字起こし→議事録生成",
    props:[
      {n:"報告タイトル",t:"title"},{n:"報告コード",t:"unique_id",x:"RPT"},
      {n:"活動タイプ",t:"select",o:["訪問","Web会議","電話","メール","デモ"]},
-     {n:"商談ステージ（報告時点）",t:"select",o:["リード","アプローチ","ヒアリング","提案","見積","交渉"]},
-     {n:"確度（報告時点）",t:"select",o:["10%","25%","50%","75%","90%"]},
-     {n:"処理ステータス",t:"select",o:["未処理","議事録生成中","完了","下書き"]},
-     {n:"報告内容",t:"rich_text"},{n:"文字起こし",t:"rich_text"},{n:"次のアクション（手入力）",t:"rich_text"},{n:"参加者メモ",t:"rich_text"},
-     {n:"文字起こし入力済み",t:"checkbox"},{n:"活動日時",t:"date"},
-     {n:"作成日時",t:"created_time"},{n:"最終更新日時",t:"last_edited_time"},
-     {n:"営業担当",t:"people"},
+     {n:"処理ステータス",t:"select",o:["未処理","議事録生成中","完了"]},
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
-     {n:"商談",t:"relation",to:"DB5"},{n:"関連先(名刺)",t:"relation",to:"DB4"},
+     {n:"商談",t:"relation",to:"DB6"},{n:"名刺",t:"relation",to:"DB4"},
+   ]},
+  // 人事・採用 Closed
+  {id:"DB11",name:"面談（HR Interviews）",layer:"hr",desc:"採用面談の進捗管理。エージェント追跡",
+   props:[
+     {n:"タイトル",t:"title"},{n:"面談コード",t:"unique_id",x:"HRI"},
+     {n:"ステータス",t:"select",o:["リード","面談調整中","面談済み","オファー","採用","不採用"]},
+     {n:"候補者",t:"relation",to:"DB4"},{n:"エージェント",t:"relation",to:"DB1"},
+     {n:"面談日",t:"date"},{n:"評価",t:"select",o:["A","B","C","D"]},
+   ]},
+  {id:"DB12",name:"活動（HR Activity）",layer:"hr",desc:"採用活動の記録。面談・メール等",
+   props:[
+     {n:"件名",t:"title"},{n:"活動タイプ",t:"select",o:["面談","メール","電話","エージェントMTG"]},
+     {n:"活動日時",t:"date"},{n:"候補者",t:"relation",to:"DB4"},{n:"エージェント",t:"relation",to:"DB1"},
+     {n:"面談",t:"relation",to:"DB11"},
+   ]},
+  {id:"DB13",name:"雇契約（Employment）",layer:"hr",desc:"雇用契約管理",
+   props:[
+     {n:"契約名",t:"title"},{n:"ステータス",t:"select",o:["準備中","締結","終了"]},
+     {n:"候補者",t:"relation",to:"DB4"},{n:"雇用形態",t:"select",o:["正社員","契約","業務委託","インターン"]},
+     {n:"開始日",t:"date"},
+   ]},
+  {id:"DB14",name:"人事タスク（HR Tasks）",layer:"hr",desc:"採用関連タスク",
+   props:[
+     {n:"タスク名",t:"title"},{n:"ステータス",t:"select",o:["未着手","進行中","完了"]},
+     {n:"担当者",t:"people"},{n:"締切",t:"date"},
+     {n:"候補者",t:"relation",to:"DB4"},{n:"面談",t:"relation",to:"DB11"},
+   ]},
+  // 投資家関係 Closed
+  {id:"DB15",name:"面談（IR Meetings）",layer:"ir",desc:"投資家面談・ピッチ管理",
+   props:[
+     {n:"タイトル",t:"title"},{n:"面談コード",t:"unique_id",x:"IRM"},
+     {n:"ステータス",t:"select",o:["リード","面談調整中","ピッチ済み","DD中","契約交渉","クロージング"]},
+     {n:"投資家（法人）",t:"relation",to:"DB1"},{n:"投資家（個人）",t:"relation",to:"DB4"},
+     {n:"面談日",t:"date"},
+   ]},
+  {id:"DB16",name:"活動（IR Activity）",layer:"ir",desc:"投資家との活動記録",
+   props:[
+     {n:"件名",t:"title"},{n:"活動タイプ",t:"select",o:["面談","メール","電話","ピッチ"]},
+     {n:"活動日時",t:"date"},
+     {n:"投資家（法人）",t:"relation",to:"DB1"},{n:"投資家（個人）",t:"relation",to:"DB4"},
+     {n:"面談",t:"relation",to:"DB15"},
+   ]},
+  {id:"DB17",name:"契約（IR Contracts）",layer:"ir",desc:"投資契約管理",
+   props:[
+     {n:"契約名",t:"title"},{n:"ステータス",t:"select",o:["交渉中","締結","終了"]},
+     {n:"投資額",t:"number"},{n:"投資家",t:"relation",to:"DB1"},{n:"開始日",t:"date"},
+   ]},
+  {id:"DB18",name:"タスク（IR Tasks）",layer:"ir",desc:"投資関連タスク",
+   props:[
+     {n:"タスク名",t:"title"},{n:"ステータス",t:"select",o:["未着手","進行中","完了"]},
+     {n:"担当者",t:"people"},{n:"締切",t:"date"},
+     {n:"面談",t:"relation",to:"DB15"},
+   ]},
+  // コーポレート
+  {id:"DB19",name:"発信コンテンツ（Contents）",layer:"corporate",desc:"SNS投稿パイプライン。11アカウント対応",
+   props:[
+     {n:"タイトル",t:"title"},{n:"コンテンツコード",t:"unique_id",x:"CNT"},
+     {n:"ステータス",t:"select",o:["企画","下書き","レビュー","承認済","公開済"]},
+     {n:"プラットフォーム",t:"multi_select",o:["X","Instagram","LinkedIn","note","Facebook","PR TIMES"]},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"プロジェクト",t:"relation",to:"DB21"},
+   ]},
+  // General
+  {id:"DB20",name:"部門（Departments）",layer:"general",desc:"組織階層管理。上位DEPT自己参照",
+   props:[
+     {n:"部門名",t:"title"},{n:"部署コード",t:"unique_id",x:"DPT"},
+     {n:"上位DEPT",t:"relation",to:"DB20"},
+     {n:"プロジェクト一覧",t:"relation",to:"DB21"},{n:"タスク一覧",t:"relation",to:"DB22"},
+     {n:"ドキュメント一覧",t:"relation",to:"DB23"},
+     {n:"Lead",t:"people"},{n:"Members",t:"people"},
+   ]},
+  {id:"DB21",name:"プロジェクト（Projects）",layer:"general",desc:"PJ管理。タイムライン。上位PJ自己参照",
+   props:[
+     {n:"PJ名",t:"title"},{n:"PJコード",t:"unique_id",x:"PRJ"},
+     {n:"ステータス",t:"select",o:["未着手","進行中","完了","保留","中止"]},
+     {n:"優先度",t:"select",o:["至急","高","中","低"]},
+     {n:"上位PJ",t:"relation",to:"DB21"},{n:"部門",t:"relation",to:"DB20"},
+     {n:"タスク一覧",t:"relation",to:"DB22"},{n:"ドキュメント一覧",t:"relation",to:"DB23"},
+     {n:"開始日",t:"date"},{n:"終了日",t:"date"},
+   ]},
+  {id:"DB22",name:"タスク（General Tasks）",layer:"general",desc:"社内運営タスク。GTDベース",
+   props:[
+     {n:"タスク名",t:"title"},{n:"タスクコード",t:"unique_id",x:"TSK"},
+     {n:"ステータス",t:"select",o:["未着手","Next Action","進行中","返信待ち","完了"]},
+     {n:"優先度",t:"select",o:["至急","高","中","低"]},
+     {n:"親タスク",t:"relation",to:"DB22"},{n:"プロジェクト",t:"relation",to:"DB21"},{n:"部門",t:"relation",to:"DB20"},
+     {n:"締切",t:"date"},{n:"担当者",t:"people"},
+   ]},
+  {id:"DB23",name:"ドキュメント（Documents）",layer:"general",desc:"統一ドキュメントDB。レイヤーselectで絞り込み",
+   props:[
+     {n:"ドキュメント名",t:"title"},{n:"ドキュメントコード",t:"unique_id",x:"DOC"},
+     {n:"種別",t:"select",o:["報告書","提案書","計画書","マニュアル","分析","議事録","Decision Log"]},
+     {n:"レイヤー",t:"select",o:["CRM","社内運営","経営","開発","マーケティング"]},
+     {n:"取引先",t:"relation",to:"DB1"},{n:"プロジェクト",t:"relation",to:"DB21"},{n:"部門",t:"relation",to:"DB20"},
+   ]},
+  {id:"DB24",name:"プロダクト（Products）",layer:"general",desc:"自社プロダクト管理。ながらかいご/キクノート等",
+   props:[
+     {n:"プロダクト名",t:"title"},{n:"プロダクトコード",t:"unique_id",x:"PRD"},
+     {n:"ステータス",t:"select",o:["企画","開発中","ベータ","リリース済","終了"]},
+     {n:"カテゴリ",t:"select",o:["SaaS","ハードウェア","コンサル"]},
+     {n:"プロジェクト",t:"relation",to:"DB21"},{n:"ローンチ日",t:"date"},
+   ]},
+  // Executive
+  {id:"DB25",name:"1on1記録（One-on-One）",layer:"executive",desc:"メンバー別1on1。ムード追跡。経営層限定",
+   props:[
+     {n:"タイトル",t:"title"},{n:"1on1コード",t:"unique_id",x:"OOO"},
+     {n:"ムード",t:"select",o:["良好","普通","要注意"]},
+     {n:"日付",t:"date"},{n:"メンバー",t:"people"},{n:"マネージャー",t:"people"},
+     {n:"部門",t:"relation",to:"DB20"},{n:"関連タスク",t:"relation",to:"DB22"},
    ]},
 ];
 
 const relations = [
-  {f:"DB1",t:"DB2",l:"施設一覧"},{f:"DB1",t:"DB3",l:"事業所一覧"},{f:"DB1",t:"DB4",l:"名刺一覧"},
-  {f:"DB1",t:"DB5",l:"商談一覧"},{f:"DB1",t:"DB6",l:"活動一覧"},{f:"DB1",t:"DB7",l:"契約一覧"},
+  // SSOT hierarchy
+  {f:"DB1",t:"DB2",l:"施設一覧"},{f:"DB1",t:"DB3",l:"事業所一覧"},{f:"DB1",t:"DB4",l:"名刺一覧"},{f:"DB1",t:"DB5",l:"支店一覧"},
   {f:"DB2",t:"DB3",l:"事業所一覧"},{f:"DB2",t:"DB4",l:"所属メンバー"},
-  {f:"DB2",t:"DB5",l:"商談一覧"},{f:"DB2",t:"DB6",l:"関連活動"},{f:"DB2",t:"DB7",l:"契約一覧"},
-  {f:"DB3",t:"DB4",l:"名刺一覧"},{f:"DB3",t:"DB5",l:"商談一覧"},{f:"DB3",t:"DB7",l:"契約一覧"},
-  {f:"DB4",t:"DB5",l:"関連商談"},{f:"DB4",t:"DB6",l:"活動一覧"},
-  {f:"DB5",t:"DB6",l:"活動一覧"},{f:"DB5",t:"DB7",l:"契約"},
-  {f:"DB16",t:"DB1",l:"取引先"},{f:"DB16",t:"DB2",l:"施設"},{f:"DB16",t:"DB3",l:"事業所"},
-  {f:"DB16",t:"DB4",l:"名刺"},{f:"DB16",t:"DB5",l:"商談"},{f:"DB16",t:"DB6",l:"関連活動"},
-  {f:"DB12",t:"DB1",l:"取引先"},{f:"DB12",t:"DB2",l:"施設"},{f:"DB12",t:"DB4",l:"名刺"},{f:"DB12",t:"DB5",l:"商談"},
-  {f:"DB1",t:"DB10",l:"関連タスク"},{f:"DB1",t:"DB11",l:"ドキュメント"},{f:"DB1",t:"DB12",l:"報告"},
-  {f:"DB2",t:"DB10",l:"関連タスク"},{f:"DB2",t:"DB11",l:"ドキュメント"},{f:"DB2",t:"DB12",l:"報告"},
-  {f:"DB4",t:"DB10",l:"タスク"},{f:"DB4",t:"DB11",l:"ドキュメント"},{f:"DB4",t:"DB12",l:"報告"},
-  {f:"DB5",t:"DB10",l:"タスク"},{f:"DB5",t:"DB11",l:"ドキュメント"},{f:"DB5",t:"DB12",l:"報告"},
-  {f:"DB6",t:"DB11",l:"ドキュメント"},
-  {f:"DB8",t:"DB8",l:"上位DEPT"},{f:"DB8",t:"DB9",l:"PJ一覧"},{f:"DB8",t:"DB10",l:"タスク"},{f:"DB8",t:"DB11",l:"ドキュメント"},
-  {f:"DB9",t:"DB9",l:"上位PJ"},{f:"DB9",t:"DB10",l:"タスク"},{f:"DB9",t:"DB11",l:"ドキュメント"},
-  {f:"DB10",t:"DB10",l:"親タスク"},
-  {f:"DB13",t:"DB1",l:"取引先"},{f:"DB13",t:"DB9",l:"PJ"},
-  {f:"DB15",t:"DB8",l:"部門"},{f:"DB15",t:"DB10",l:"タスク"},
+  {f:"DB5",t:"DB4",l:"所属メンバー"},
+  // SSOT self-ref
+  {f:"DB1",t:"DB1",l:"紹介元（法人）"},
+  {f:"DB5",t:"DB5",l:"紹介元（支店）"},
+  {f:"DB4",t:"DB4",l:"紹介元（個人）"},
+  // CRM → SSOT
+  {f:"DB6",t:"DB1",l:"取引先"},{f:"DB6",t:"DB2",l:"施設"},{f:"DB6",t:"DB3",l:"事業所"},{f:"DB6",t:"DB4",l:"主担当者"},
+  {f:"DB7",t:"DB1",l:"取引先"},{f:"DB7",t:"DB2",l:"施設"},{f:"DB7",t:"DB6",l:"商談"},{f:"DB7",t:"DB4",l:"参加者"},
+  {f:"DB8",t:"DB1",l:"取引先"},{f:"DB8",t:"DB2",l:"施設"},{f:"DB8",t:"DB6",l:"商談"},
+  {f:"DB9",t:"DB1",l:"取引先"},{f:"DB9",t:"DB2",l:"施設"},{f:"DB9",t:"DB6",l:"商談"},{f:"DB9",t:"DB4",l:"関連先"},
+  {f:"DB10",t:"DB1",l:"取引先"},{f:"DB10",t:"DB2",l:"施設"},{f:"DB10",t:"DB6",l:"商談"},{f:"DB10",t:"DB4",l:"名刺"},
+  // CRM internal
+  {f:"DB6",t:"DB7",l:"活動一覧"},{f:"DB6",t:"DB8",l:"契約"},
+  // HR → SSOT
+  {f:"DB11",t:"DB4",l:"候補者"},{f:"DB11",t:"DB1",l:"エージェント"},
+  {f:"DB12",t:"DB4",l:"候補者"},{f:"DB12",t:"DB1",l:"エージェント"},{f:"DB12",t:"DB11",l:"面談"},
+  {f:"DB13",t:"DB4",l:"候補者"},
+  {f:"DB14",t:"DB4",l:"候補者"},{f:"DB14",t:"DB11",l:"面談"},
+  // IR → SSOT
+  {f:"DB15",t:"DB1",l:"投資家法人"},{f:"DB15",t:"DB4",l:"投資家個人"},
+  {f:"DB16",t:"DB1",l:"投資家法人"},{f:"DB16",t:"DB4",l:"投資家個人"},{f:"DB16",t:"DB15",l:"面談"},
+  {f:"DB17",t:"DB1",l:"投資家"},
+  {f:"DB18",t:"DB15",l:"面談"},
+  // Corporate → SSOT/General
+  {f:"DB19",t:"DB1",l:"取引先"},{f:"DB19",t:"DB21",l:"PJ"},
+  // General internal
+  {f:"DB20",t:"DB20",l:"上位DEPT"},{f:"DB20",t:"DB21",l:"PJ一覧"},{f:"DB20",t:"DB22",l:"タスク"},{f:"DB20",t:"DB23",l:"ドキュメント"},
+  {f:"DB21",t:"DB21",l:"上位PJ"},{f:"DB21",t:"DB22",l:"タスク"},{f:"DB21",t:"DB23",l:"ドキュメント"},
+  {f:"DB22",t:"DB22",l:"親タスク"},
+  {f:"DB24",t:"DB21",l:"PJ"},
+  // Executive → General
+  {f:"DB25",t:"DB20",l:"部門"},{f:"DB25",t:"DB22",l:"関連タスク"},
+  // Cross-layer: SSOT → General
+  {f:"DB1",t:"DB23",l:"ドキュメント"},
+  {f:"DB7",t:"DB23",l:"ドキュメント"},
 ];
 
 const phases = [
   {name:"Phase 0: 基盤確定",items:[
-    {l:"新WS MCP/API接続確立",s:"done"},{l:"DB1-12 スキーマ構築",s:"done"},
-    {l:"DB6 活動タイプ 13種拡張",s:"done"},{l:"DB13-15 新規作成",s:"done"},
-    {l:"DB16 CRMタスク新規作成",s:"done"},{l:"DB11 レイヤーselect追加",s:"done"},
-    {l:"42ビュー一括作成",s:"done"},{l:"DB Homeページ整理",s:"done"},
-    {l:"DB1/DB2/DB12 テンプレート作成",s:"done"},{l:"viewer HTML作成",s:"done"},
-    {l:"設計ドキュメント同期",s:"done"},{l:"Teamspace構造の決定",s:"pending"},
-    {l:"権限設計（17名）",s:"pending"},
+    {l:"SSOT基盤 DB1-5 構築",s:"done"},{l:"CRM DB6-10 構築",s:"done"},
+    {l:"DB7 活動タイプ13種+ソース追跡9props",s:"done"},
+    {l:"紹介元リレーション（法人/支店/人）設計",s:"done"},
+    {l:"DB番号振り直し（25DB/7レイヤー）",s:"done"},
+    {l:"DB5 支店DB設計",s:"pending"},{l:"DB24 プロダクトDB設計",s:"pending"},
+    {l:"Teamspace構造決定",s:"pending"},{l:"権限設計（17名）",s:"pending"},
   ]},
-  {name:"Phase 1: テンプレート & データ投入",items:[
-    {l:"残りDB テンプレート作成（DB3-7等）",s:"pending"},{l:"既存データ移行（取引先37社）",s:"pending"},
-    {l:"名刺スキャナー→DB4連携テスト",s:"pending"},{l:"DB12 報告フォーム運用テスト",s:"pending"},
+  {name:"Phase 1: 新レイヤー構築",items:[
+    {l:"DB11-14 人事・採用レイヤー構築",s:"pending"},
+    {l:"DB15-18 投資家レイヤー構築",s:"pending"},
+    {l:"DB24 プロダクトDB構築",s:"pending"},
+    {l:"DB25 1on1記録DB構築",s:"pending"},
+    {l:"全DBビュー設計・構築",s:"pending"},
+    {l:"全DBテンプレート作成",s:"pending"},
+  ]},
+  {name:"Phase 2: データ移行・連携",items:[
     {l:"旧People DB→DB1-4正規化移行",s:"pending"},
+    {l:"旧Tasks/Projects/Departments移行",s:"pending"},
+    {l:"Notta→DB7自動連携",s:"pending"},
+    {l:"DB10→DB7 Notionオートメーション",s:"pending"},
+    {l:"Zoom Phone拡張（文字起こし+DB7投入）",s:"pending"},
   ]},
-  {name:"Phase 2: 自動化 & 外部連携",items:[
-    {l:"Notta→Notion連携フロー（DB6/DB11）",s:"pending"},{l:"Notta→Zapier→自動パイプライン",s:"pending"},
-    {l:"Gmail→DB6 Skill構築",s:"pending"},{l:"Slack→DB6 Skill構築",s:"pending"},
-    {l:"Asana↔DB10 タスク同期",s:"pending"},
-  ]},
-  {name:"Phase 3: 発信 & 全社展開",items:[
-    {l:"32エージェント投稿パイプライン（DB13）",s:"pending"},{l:"統合ダッシュボード構築",s:"pending"},
-    {l:"D層権限設計・全社展開",s:"pending"},{l:"旧WS完全データ移行",s:"pending"},
+  {name:"Phase 3: 全チャネル統合・全社展開",items:[
+    {l:"Gmail→DB7（Service Account+ドメイン委任）",s:"pending"},
+    {l:"Slack→DB7 連携",s:"pending"},
+    {l:"SNS→DB19 パイプライン",s:"pending"},
+    {l:"Notion AIエージェント構築",s:"pending"},
+    {l:"旧WS完全移行・アーカイブ",s:"pending"},
   ]},
 ];
 
@@ -607,8 +530,6 @@ const pillColors = ["#dbeafe","#fce7f3","#dcfce7","#fff7ed","#fef3c7","#f3e8ff",
 function getLayerColor(layerKey) { return layers[layerKey]?.color || "#888"; }
 function getLayerBg(layerKey) { return layers[layerKey]?.bg || "#f5f5f5"; }
 function dbById(id) { return dbs.find(d => d.id === id); }
-
-const viewIcons = {table:"\u{1F5C2}",board:"\u{1F4CB}",calendar:"\u{1F4C5}",timeline:"\u{23F3}",gallery:"\u{1F5BC}",form:"\u{1F4DD}"};
 
 function groupProps(props) {
   const g = {relation:[],rollup:[],select:[],multi_select:[],text:[],date:[],number:[],other:[]};
@@ -629,10 +550,9 @@ function groupProps(props) {
 function renderStats() {
   const grid = document.getElementById("statsGrid");
   const totalProps = dbs.reduce((s, d) => s + d.props.length, 0);
-  const totalViews = dbs.reduce((s, d) => s + d.views.length, 0);
   const totalRels = relations.length;
   const items = [
-    {n:dbs.length, l:"Databases"}, {n:totalProps, l:"Properties"}, {n:totalViews, l:"Views"}, {n:totalRels, l:"Relations"},
+    {n:dbs.length, l:"Databases"}, {n:totalProps, l:"Properties"}, {n:totalRels, l:"Relations"},
     {n:Object.keys(layers).length, l:"Layers"},
   ];
   grid.innerHTML = items.map(i => `<div class="stat-card"><div class="stat-num">${i.n}</div><div class="stat-label">${i.l}</div></div>`).join("");
@@ -640,7 +560,7 @@ function renderStats() {
 
 function renderLayerSections(filter) {
   const container = document.getElementById("layerSections");
-  const layerOrder = ["crm","general","marketing","executive","form"];
+  const layerOrder = ["ssot","crm","hr","ir","corporate","general","executive"];
   let html = "";
   for (const lk of layerOrder) {
     const ly = layers[lk];
@@ -670,7 +590,6 @@ function renderLayerSections(filter) {
 
 function renderCard(db, lk) {
   const color = getLayerColor(lk);
-  const viewsHtml = db.views.map(v => `<span class="view-tag"><span class="view-icon">${viewIcons[v.t]||""}</span> ${v.n}</span>`).join("");
   const gp = groupProps(db.props);
   let expandedHtml = renderExpandedProps(gp, db);
   return `<div class="db-card" data-id="${db.id}" onclick="toggleCard(event, this)">
@@ -680,77 +599,69 @@ function renderCard(db, lk) {
       <span class="db-name">${db.name}</span>
     </div>
     <div class="db-desc">${db.desc}</div>
-    <div class="views-row">${viewsHtml}</div>
+    <div class="prop-count">${db.props.length} properties / ${gp.relation.length} relations</div>
     <div class="expanded-area">${expandedHtml}</div>
   </div>`;
 }
 
 function renderExpandedProps(gp, db) {
   let h = "";
-  // Relations
   if (gp.relation.length) {
-    h += `<div class="prop-group"><div class="prop-group-title">\u{1F517} リレーション (${gp.relation.length})</div>`;
+    h += `<div class="prop-group"><div class="prop-group-title">&#128279; リレーション (${gp.relation.length})</div>`;
     for (const p of gp.relation) {
       const target = dbById(p.to);
       const tc = target ? getLayerColor(target.layer) : "#888";
-      h += `<div class="prop-row"><span class="relation-badge" style="background:${tc}">\u2192 ${p.to}</span> <span class="prop-name">${p.n}</span></div>`;
+      h += `<div class="prop-row"><span class="relation-badge" style="background:${tc}">&rarr; ${p.to}</span> <span class="prop-name">${p.n}</span></div>`;
     }
     h += `</div>`;
   }
-  // Rollups
   if (gp.rollup.length) {
-    h += `<div class="prop-group"><div class="prop-group-title">\u{1F4CA} ロールアップ (${gp.rollup.length})</div>`;
+    h += `<div class="prop-group"><div class="prop-group-title">&#128202; ロールアップ (${gp.rollup.length})</div>`;
     for (const p of gp.rollup) {
       h += `<div class="prop-row"><span class="prop-type-badge">rollup</span> <span class="prop-name">${p.n}</span> <span class="rollup-detail">${p.rp}.${p.tp} (${p.fn})</span></div>`;
     }
     h += `</div>`;
   }
-  // Select
   if (gp.select.length) {
-    h += `<div class="prop-group"><div class="prop-group-title">\u{1F3F7}\uFE0F セレクト (${gp.select.length})</div>`;
+    h += `<div class="prop-group"><div class="prop-group-title">&#127991; セレクト (${gp.select.length})</div>`;
     for (const p of gp.select) {
       const pills = (p.o||[]).map((o, i) => `<span class="prop-pill" style="background:${pillColors[i % pillColors.length]}">${o}</span>`).join("");
       h += `<div class="prop-row"><span class="prop-type-badge">select</span> <span class="prop-name">${p.n}</span> <div class="prop-options">${pills}</div></div>`;
     }
     h += `</div>`;
   }
-  // Multi-select
   if (gp.multi_select.length) {
-    h += `<div class="prop-group"><div class="prop-group-title">\u{1F3F7}\uFE0F マルチセレクト (${gp.multi_select.length})</div>`;
+    h += `<div class="prop-group"><div class="prop-group-title">&#127991; マルチセレクト (${gp.multi_select.length})</div>`;
     for (const p of gp.multi_select) {
       const pills = (p.o||[]).map((o, i) => `<span class="prop-pill" style="background:${pillColors[i % pillColors.length]}">${o}</span>`).join("");
       h += `<div class="prop-row"><span class="prop-type-badge">multi_select</span> <span class="prop-name">${p.n}</span> <div class="prop-options">${pills}</div></div>`;
     }
     h += `</div>`;
   }
-  // Text
   if (gp.text.length) {
-    h += `<div class="prop-group"><div class="prop-group-title">\u{1F4DD} テキスト系 (${gp.text.length})</div>`;
+    h += `<div class="prop-group"><div class="prop-group-title">&#128221; テキスト系 (${gp.text.length})</div>`;
     for (const p of gp.text) {
       h += `<div class="prop-row"><span class="prop-type-badge">${p.t}</span> <span class="prop-name">${p.n}</span></div>`;
     }
     h += `</div>`;
   }
-  // Date
   if (gp.date.length) {
-    h += `<div class="prop-group"><div class="prop-group-title">\u{1F4C5} 日付系 (${gp.date.length})</div>`;
+    h += `<div class="prop-group"><div class="prop-group-title">&#128197; 日付系 (${gp.date.length})</div>`;
     for (const p of gp.date) {
       h += `<div class="prop-row"><span class="prop-type-badge">${p.t}</span> <span class="prop-name">${p.n}</span></div>`;
     }
     h += `</div>`;
   }
-  // Number / ID
   if (gp.number.length) {
-    h += `<div class="prop-group"><div class="prop-group-title">\u{1F522} 数値・ID (${gp.number.length})</div>`;
+    h += `<div class="prop-group"><div class="prop-group-title">&#128290; 数値・ID (${gp.number.length})</div>`;
     for (const p of gp.number) {
       const detail = p.x ? `prefix: ${p.x}` : "";
       h += `<div class="prop-row"><span class="prop-type-badge">${p.t}</span> <span class="prop-name">${p.n}</span> <span class="prop-detail">${detail}</span></div>`;
     }
     h += `</div>`;
   }
-  // Other
   if (gp.other.length) {
-    h += `<div class="prop-group"><div class="prop-group-title">\u{1F4C1} その他 (${gp.other.length})</div>`;
+    h += `<div class="prop-group"><div class="prop-group-title">&#128193; その他 (${gp.other.length})</div>`;
     for (const p of gp.other) {
       h += `<div class="prop-row"><span class="prop-type-badge">${p.t}</span> <span class="prop-name">${p.n}</span></div>`;
     }
@@ -761,11 +672,9 @@ function renderExpandedProps(gp, db) {
 
 // ===== CARD EXPAND/CLOSE =====
 function toggleCard(e, el) {
-  // Don't toggle if clicking close button
   if (e.target.closest('.close-btn')) return;
   e.stopPropagation();
   const wasExpanded = el.classList.contains("expanded");
-  // Close all
   document.querySelectorAll(".db-card.expanded").forEach(c => {
     c.classList.remove("expanded");
     c.querySelector(".close-btn").style.display = "none";
@@ -784,7 +693,6 @@ function closeCard(e, btn) {
   btn.style.display = "none";
 }
 
-// Close on background click
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".db-card")) {
     document.querySelectorAll(".db-card.expanded").forEach(c => {
@@ -831,26 +739,45 @@ function renderActionPlan() {
 // ===== CANVAS DIAGRAM =====
 const nodePositions = {};
 let selectedNode = null;
-let canvasW = 1200, canvasH = 680;
+const canvasW = 1400, canvasH = 640;
 
 function layoutNodes() {
-  const nw = 120, nh = 48;
-  const padX = 60, padY = 30;
-  // Row definitions (y bands)
-  const rows = [
-    {y: 80, ids: ["DB1","DB2","DB3","DB7"]},       // CRM top
-    {y: 180, ids: ["DB4","DB5","DB6","DB16"]},      // CRM bottom
-    {y: 340, ids: ["DB8","DB9","DB10","DB11"]},     // General
-    {y: 500, ids: ["DB13","DB15","DB12"]},   // Others
-  ];
-  for (const row of rows) {
-    const count = row.ids.length;
-    const totalW = count * nw + (count - 1) * padX;
-    let startX = (canvasW - totalW) / 2;
-    for (let i = 0; i < count; i++) {
-      nodePositions[row.ids[i]] = {x: startX + i * (nw + padX), y: row.y, w: nw, h: nh};
-    }
-  }
+  const nw = 110, nh = 46;
+  const padX = 20;
+
+  // Row 1: SSOT (DB1-5) y=60
+  const row1 = ["DB1","DB2","DB3","DB4","DB5"];
+  const row1Total = row1.length * nw + (row1.length - 1) * padX;
+  let r1s = (canvasW - row1Total) / 2;
+  row1.forEach((id, i) => { nodePositions[id] = {x: r1s + i*(nw+padX), y:60, w:nw, h:nh}; });
+
+  // Row 2: CRM (DB6-10) y=180
+  const row2 = ["DB6","DB7","DB8","DB9","DB10"];
+  const row2Total = row2.length * nw + (row2.length - 1) * padX;
+  let r2s = (canvasW - row2Total) / 2;
+  row2.forEach((id, i) => { nodePositions[id] = {x: r2s + i*(nw+padX), y:180, w:nw, h:nh}; });
+
+  // Row 3: HR (DB11-14) | IR (DB15-18) y=320
+  const row3a = ["DB11","DB12","DB13","DB14"];
+  const row3b = ["DB15","DB16","DB17","DB18"];
+  const gap3 = 60;
+  const r3aTotal = row3a.length * nw + (row3a.length-1)*padX;
+  const r3bTotal = row3b.length * nw + (row3b.length-1)*padX;
+  let r3s = (canvasW - (r3aTotal + gap3 + r3bTotal)) / 2;
+  row3a.forEach((id, i) => { nodePositions[id] = {x: r3s + i*(nw+padX), y:320, w:nw, h:nh}; });
+  let r3bs = r3s + r3aTotal + gap3;
+  row3b.forEach((id, i) => { nodePositions[id] = {x: r3bs + i*(nw+padX), y:320, w:nw, h:nh}; });
+
+  // Row 4: Corp(DB19) | General(DB20-24) | Exec(DB25) y=460
+  const row4b = ["DB20","DB21","DB22","DB23","DB24"];
+  const r4bTotal = row4b.length * nw + (row4b.length-1)*padX;
+  const gap4 = 40;
+  const r4fullTotal = nw + gap4 + r4bTotal + gap4 + nw;
+  let r4s = (canvasW - r4fullTotal) / 2;
+  nodePositions["DB19"] = {x: r4s, y:460, w:nw, h:nh};
+  let r4bs = r4s + nw + gap4;
+  row4b.forEach((id, i) => { nodePositions[id] = {x: r4bs + i*(nw+padX), y:460, w:nw, h:nh}; });
+  nodePositions["DB25"] = {x: r4bs + r4bTotal + gap4, y:460, w:nw, h:nh};
 }
 
 function drawDiagram() {
@@ -868,32 +795,24 @@ function drawDiagram() {
 
   // Draw layer bands
   const bands = [
-    {y:40, h:210, layer:"crm"},
-    {y:300, h:110, layer:"general"},
-    {y:460, h:110, layer:"marketing"}, // shared row
+    {y:36, h:86, layer:"ssot",      label:"SSOT基盤 (DB1-5)"},
+    {y:155, h:86, layer:"crm",      label:"CRM・営業 (DB6-10)"},
+    {y:290, h:98, layer:"hr",       label:"人事(DB11-14) / 投資家(DB15-18)"},
+    {y:430, h:98, layer:"general",  label:"コーポレート(DB19) / General(DB20-24) / Executive(DB25)"},
   ];
   for (const b of bands) {
-    ctx.fillStyle = layers[b.layer].bg;
-    ctx.globalAlpha = 0.5;
+    const lyr = layers[b.layer] || {bg:"#f5f5f5", color:"#888"};
+    ctx.fillStyle = lyr.bg;
+    ctx.globalAlpha = 0.55;
     ctx.beginPath();
-    ctx.roundRect(20, b.y, canvasW - 40, b.h, 12);
+    ctx.roundRect(16, b.y, canvasW - 32, b.h, 10);
     ctx.fill();
     ctx.globalAlpha = 1;
-    // label
-    ctx.fillStyle = layers[b.layer].color;
+    ctx.fillStyle = lyr.color;
     ctx.font = "bold 11px Inter, sans-serif";
-    ctx.fillText(layers[b.layer].name, 30, b.y + 18);
+    ctx.textAlign = "left";
+    ctx.fillText(b.label, 26, b.y + 16);
   }
-  // Others band (mixed)
-  ctx.fillStyle = "#f9fafb";
-  ctx.globalAlpha = 0.5;
-  ctx.beginPath();
-  ctx.roundRect(20, 460, canvasW - 40, 110, 12);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = "#888";
-  ctx.font = "bold 11px Inter, sans-serif";
-  ctx.fillText("Marketing / Executive / Form", 30, 478);
 
   // Draw relations
   for (const rel of relations) {
@@ -905,14 +824,13 @@ function drawDiagram() {
     const isHighlighted = selectedNode && (rel.f === selectedNode || rel.t === selectedNode);
     const isDimmed = selectedNode && !isHighlighted;
 
-    // Determine line style
     const fromDb = dbById(rel.f);
     const toDb = dbById(rel.t);
     const isCrossLayer = fromDb && toDb && fromDb.layer !== toDb.layer;
 
     ctx.save();
     if (isDimmed) {
-      ctx.globalAlpha = 0.08;
+      ctx.globalAlpha = 0.07;
     } else if (isHighlighted) {
       ctx.lineWidth = 2.5;
       ctx.strokeStyle = getLayerColor(fromDb.layer);
@@ -928,19 +846,18 @@ function drawDiagram() {
     }
 
     if (isSelf) {
-      // Self-reference arc
       const cx = from.x + from.w + 8;
       const cy = from.y + from.h / 2;
       ctx.beginPath();
-      ctx.arc(cx, cy, 14, -Math.PI * 0.5, Math.PI * 0.5);
+      ctx.arc(cx, cy, 13, -Math.PI * 0.5, Math.PI * 0.5);
       ctx.stroke();
     } else {
       const fx = from.x + from.w / 2;
       const fy = from.y + from.h / 2;
       const tx = to.x + to.w / 2;
       const ty = to.y + to.h / 2;
-      ctx.beginPath();
       const midY = (fy + ty) / 2;
+      ctx.beginPath();
       ctx.moveTo(fx, fy);
       ctx.bezierCurveTo(fx, midY, tx, midY, tx, ty);
       ctx.stroke();
@@ -959,12 +876,9 @@ function drawDiagram() {
     ctx.save();
     if (isDimmed) ctx.globalAlpha = 0.2;
 
-    // Shadow
     ctx.shadowColor = "rgba(0,0,0,0.08)";
     ctx.shadowBlur = 6;
     ctx.shadowOffsetY = 2;
-
-    // Box
     ctx.fillStyle = "#fff";
     ctx.strokeStyle = isSelected ? color : "#d0d5e0";
     ctx.lineWidth = isSelected ? 2.5 : 1.2;
@@ -972,30 +886,26 @@ function drawDiagram() {
     ctx.roundRect(pos.x, pos.y, pos.w, pos.h, 8);
     ctx.fill();
     ctx.stroke();
-
     ctx.shadowColor = "transparent";
 
-    // ID badge
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(pos.x + 6, pos.y + 6, 36, 16, 4);
+    ctx.roundRect(pos.x + 4, pos.y + 4, 34, 15, 4);
     ctx.fill();
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 9px Inter, sans-serif";
+    ctx.font = "bold 8px Inter, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(db.id, pos.x + 24, pos.y + 17);
+    ctx.fillText(db.id, pos.x + 21, pos.y + 14);
 
-    // Name
     ctx.fillStyle = "#1a1d2e";
-    ctx.font = "600 10px Inter, Hiragino Sans, sans-serif";
+    ctx.font = "600 8.5px Inter, Hiragino Sans, sans-serif";
     ctx.textAlign = "center";
-    const shortName = db.name.length > 10 ? db.name.substring(0, 10) + "..." : db.name;
-    ctx.fillText(shortName, pos.x + pos.w / 2, pos.y + 38);
+    const shortName = db.name.length > 13 ? db.name.substring(0, 13) + ".." : db.name;
+    ctx.fillText(shortName, pos.x + pos.w / 2, pos.y + 36);
 
     ctx.restore();
   }
 
-  // Legend
   renderCanvasLegend();
 }
 
@@ -1008,12 +918,13 @@ function renderCanvasLegend() {
   el.innerHTML = html;
 }
 
-// Canvas click handler
 document.getElementById("archCanvas").addEventListener("click", (e) => {
   const canvas = e.target;
   const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  const scaleX = canvasW / rect.width;
+  const scaleY = canvasH / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
 
   let clicked = null;
   for (const db of dbs) {
@@ -1024,68 +935,91 @@ document.getElementById("archCanvas").addEventListener("click", (e) => {
       break;
     }
   }
-
-  if (clicked === selectedNode) {
-    selectedNode = null;
-  } else {
-    selectedNode = clicked;
-  }
+  selectedNode = clicked === selectedNode ? null : clicked;
   drawDiagram();
 });
 
 // ===== IDEAL TAB =====
 const idealStatus = [
-  {db:"DB1",n:"取引先",schema:true,views:true,tpl:true,data:false,auto:false,
-   ideal:"Notta/Gmail連携でDB6活動と自動紐付け。顧客360°ビュー完成",
-   missing:["データ移行（旧People DB 法人分）","リンクドビュー配置（施設/名刺/商談/活動の一覧埋め込み）"]},
+  {db:"DB1",n:"法人",schema:true,views:true,tpl:true,data:false,auto:false,
+   ideal:"Notta/Gmail連携でDB7活動と自動紐付け。顧客360ビュー完成",
+   missing:["データ移行（旧People DB 法人分）","リンクドビュー配置"]},
   {db:"DB2",n:"施設",schema:true,views:true,tpl:true,data:false,auto:false,
    ideal:"施設ページから配下事業所・導入状況が一目でわかる",
    missing:["データ移行（旧People DB 施設分）","リンクドビュー配置"]},
   {db:"DB3",n:"事業所",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"244K事業所マスタからTier1を投入。導入ステータス追跡が機能",
-   missing:["テンプレート作成","市場データCSV初期投入（Tier1 187法人分）"]},
-  {db:"DB4",n:"名刺",schema:true,views:true,tpl:false,data:false,auto:false,
+   missing:["テンプレート作成","市場データCSV初期投入"]},
+  {db:"DB4",n:"人・名刺",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"名刺スキャナーアプリから自動登録。法人/施設に自動紐付け",
    missing:["テンプレート作成","名刺スキャナー連携テスト","旧People DB個人データ移行"]},
-  {db:"DB5",n:"商談",schema:true,views:true,tpl:false,data:false,auto:false,
+  {db:"DB5",n:"支店",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"法人の支店ネットワークを可視化。エリア別の紹介元追跡",
+   missing:["DB作成","スキーマ構築","ビュー作成","支店データ投入"]},
+  {db:"DB6",n:"商談",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"パイプラインボードでステージ管理。MRR予測。失注分析",
-   missing:["テンプレート作成","パイプライン自動化（ステージ変更→活動記録自動生成）"]},
-  {db:"DB6",n:"活動記録",schema:true,views:true,tpl:false,data:false,auto:false,
+   missing:["テンプレート作成","パイプライン自動化"]},
+  {db:"DB7",n:"活動(CRM)",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"全チャネル（Notta/Gmail/Slack/Zoom/訪問）の活動が自動集約される統合ハブ",
-   missing:["テンプレート作成","Notta→Zapier→DB6自動投入フロー","Gmail→DB6 Skill","Slack→DB6 Skill","Notta連携用プロパティ追加（文字起こしリンク/録音URL等）"]},
-  {db:"DB7",n:"契約",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"MRR追跡・自動更新通知・解約アラート。MF電子契約連携",
-   missing:["テンプレート作成","MF電子契約連携","自動更新リマインダー自動化"]},
-  {db:"DB16",n:"CRMタスク",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"顧客ごとの次のアクションが一目でわかる。AIエージェントが営業マンに次のアクションを提案",
-   missing:["テンプレート作成","AIエージェント連携（Notion AI / Claude Skills）"]},
-  {db:"DB8",n:"部門",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"組織図が自動表示。部門ページから配下PJ/タスク/メンバーが一覧",
-   missing:["テンプレート作成","部門データ投入（営業課/開発課/企画課/経営推進課等）","組織図ビュー拡充"]},
-  {db:"DB9",n:"PJ",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"タイムラインでPJ進捗を俯瞰。Asanaと双方向同期",
-   missing:["テンプレート作成","Asana↔Notion同期設計","旧Projects DB移行"]},
-  {db:"DB10",n:"タスク（社内）",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"GTDベースのタスク管理。Asanaと同期。社内運営タスクに専念",
-   missing:["テンプレート作成","Asana↔Notion同期","旧Tasks DB移行"]},
-  {db:"DB11",n:"ドキュメント",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"全レイヤー横断の統一ドキュメントDB。レイヤーselectでCRM/社内/経営/開発を絞り込み",
-   missing:["テンプレート作成","レイヤー別ビュー作成","旧Documents DB移行"]},
-  {db:"DB12",n:"商談報告",schema:true,views:true,tpl:true,data:false,auto:false,
-   ideal:"営業現場からフォーム入力→文字起こし→AI議事録自動生成→DB6/DB5に反映",
-   missing:["議事録自動生成フロー構築（Notta→DB12→Claude→DB6）","フォーム公開・運用テスト"]},
-  {db:"DB13",n:"発信コンテンツ",schema:true,views:true,tpl:false,data:false,auto:false,
+   missing:["テンプレート作成","Notta/Gmail/Slack→DB7自動投入フロー"]},
+  {db:"DB8",n:"契約",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"MRR追跡・自動更新通知・解約アラート",
+   missing:["テンプレート作成","MF電子契約連携"]},
+  {db:"DB9",n:"CRMタスク",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"顧客ごとの次のアクションが一目でわかる",
+   missing:["テンプレート作成","AIエージェント連携"]},
+  {db:"DB10",n:"商談報告",schema:true,views:true,tpl:true,data:false,auto:false,
+   ideal:"営業現場からフォーム入力→文字起こし→AI議事録自動生成→DB7に反映",
+   missing:["議事録自動生成フロー構築"]},
+  {db:"DB11",n:"面談(HR)",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"採用パイプライン管理。候補者ステータス一覧",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB12",n:"活動(HR)",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"採用活動の全履歴。面談記録・連絡履歴の統合",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB13",n:"雇契約",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"雇用契約の一元管理。契約状況の可視化",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB14",n:"人事タスク",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"採用プロセスのタスク管理",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB15",n:"面談(IR)",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"投資家パイプライン管理。ピッチ/DD/交渉のステージ追跡",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB16",n:"活動(IR)",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"投資家とのコミュニケーション全履歴",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB17",n:"契約(IR)",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"投資契約の一元管理。投資額・条件の可視化",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB18",n:"タスク(IR)",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"IR関連タスクの管理。DD資料準備等",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB19",n:"発信コンテンツ",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"32エージェントがコンテンツ生成→レビュー→承認→各SNS自動投稿",
-   missing:["テンプレート作成","32エージェント投稿パイプライン設定","エンゲージメント自動取得"]},
-  {db:"DB15",n:"1on1記録",schema:true,views:true,tpl:false,data:false,auto:false,
+   missing:["テンプレート作成","32エージェント投稿パイプライン設定"]},
+  {db:"DB20",n:"部門",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"組織図が自動表示。部門ページから配下PJ/タスク/メンバーが一覧",
+   missing:["テンプレート作成","部門データ投入"]},
+  {db:"DB21",n:"PJ",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"タイムラインでPJ進捗を俯瞰。Asanaと双方向同期",
+   missing:["テンプレート作成","Asana同期設計"]},
+  {db:"DB22",n:"タスク(社内)",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"GTDベースのタスク管理。Asanaと同期",
+   missing:["テンプレート作成","Asana同期"]},
+  {db:"DB23",n:"ドキュメント",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"全レイヤー横断の統一ドキュメントDB",
+   missing:["テンプレート作成","レイヤー別ビュー作成"]},
+  {db:"DB24",n:"プロダクト",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"自社プロダクトの開発ステータス・カテゴリ管理",
+   missing:["DB作成","スキーマ構築","ビュー作成","プロダクトデータ投入"]},
+  {db:"DB25",n:"1on1記録",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"メンバー別1on1をムード追跡。非公開Teamspaceで経営層のみアクセス",
    missing:["テンプレート作成","旧6個の1on1 DB移行","Teamspace権限設定"]},
 ];
 
 function renderIdealTab() {
   const c = document.getElementById("idealContent");
-
-  // Summary cards
   const totalDb = idealStatus.length;
   const schemaOk = idealStatus.filter(d=>d.schema).length;
   const viewsOk = idealStatus.filter(d=>d.views).length;
@@ -1116,9 +1050,9 @@ function renderIdealTab() {
     </div>
   </div>`;
 
-  // Comparison table
-  html += `<div style="overflow-x:auto;margin-bottom:28px;">
-  <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+  const icon = v => v ? '<span style="color:#22c55e;font-weight:700;">OK</span>' : '<span style="color:#ef4444;">--</span>';
+
+  html += `<div style="overflow-x:auto;margin-bottom:28px;"><table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
     <thead><tr style="background:var(--surface2);">
       <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">DB</th>
       <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">スキーマ</th>
@@ -1128,8 +1062,6 @@ function renderIdealTab() {
       <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">自動化</th>
       <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">理想の状態</th>
     </tr></thead><tbody>`;
-
-  const icon = v => v ? '<span style="color:#22c55e;font-weight:700;">✅</span>' : '<span style="color:#ef4444;">❌</span>';
 
   for (const d of idealStatus) {
     const allDone = d.schema && d.views && d.tpl && d.data && d.auto;
@@ -1146,18 +1078,14 @@ function renderIdealTab() {
   }
   html += `</tbody></table></div>`;
 
-  // Detailed cards per DB: what's missing
-  html += `<h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;">📋 各DBの理想状態 & 残タスク</h2>`;
+  html += `<h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;">各DBの理想状態 &amp; 残タスク</h2>`;
   html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:14px;">`;
 
   for (const d of idealStatus) {
     const done = d.schema && d.views && d.tpl && d.data && d.auto;
     const borderColor = done ? '#22c55e' : (d.missing.length <= 2 ? '#f59e0b' : '#ef4444');
-    const statusLabel = done ? '✅ 完成' : (d.missing.length <= 2 ? '⚠️ あと少し' : '🔧 構築中');
-
-    const missingHtml = d.missing.map(m => `<li style="font-size:0.8rem;color:var(--text2);margin-bottom:4px;">⬜ ${m}</li>`).join('');
-
-    // Find the DB's actual layer
+    const statusLabel = done ? '完成' : (d.missing.length <= 2 ? 'あと少し' : '構築中');
+    const missingHtml = d.missing.map(m => `<li style="font-size:0.8rem;color:var(--text2);margin-bottom:4px;">- ${m}</li>`).join('');
     const dbData = dbs.find(db => db.id === d.db);
     const layerInfo = dbData ? layers[dbData.layer] : null;
     const layerBadge = layerInfo ? `<span style="font-size:0.65rem;padding:2px 8px;border-radius:10px;background:${layerInfo.bg};color:${layerInfo.color};font-weight:700;">${layerInfo.name}</span>` : '';
@@ -1167,626 +1095,206 @@ function renderIdealTab() {
         <span style="font-weight:700;">${d.db} ${d.n}</span>
         <span style="display:flex;gap:6px;align-items:center;">${layerBadge}<span style="font-size:0.75rem;color:${borderColor};font-weight:700;">${statusLabel}</span></span>
       </div>
-      <div style="font-size:0.82rem;color:var(--accent);margin-bottom:8px;">🎯 ${d.ideal}</div>
-      ${d.missing.length ? `<div style="margin-top:6px;"><div style="font-size:0.72rem;font-weight:700;color:var(--text2);margin-bottom:4px;">残タスク (${d.missing.length})</div><ul style="list-style:none;padding:0;">${missingHtml}</ul></div>` : '<div style="font-size:0.8rem;color:#22c55e;">すべて完了！</div>'}
+      <div style="font-size:0.82rem;color:var(--accent);margin-bottom:8px;">${d.ideal}</div>
+      ${d.missing.length ? `<div><div style="font-size:0.72rem;font-weight:700;color:var(--text2);margin-bottom:4px;">残タスク (${d.missing.length})</div><ul style="list-style:none;padding:0;">${missingHtml}</ul></div>` : '<div style="font-size:0.8rem;color:#22c55e;">すべて完了!</div>'}
     </div>`;
   }
   html += `</div>`;
-
   c.innerHTML = html;
 }
 
 // ===== RATIONALE TAB =====
 function renderRationale() {
   const container = document.getElementById("rationaleContent");
-
-  // --- Data ---
-  const propRationale = [
-    {
-      category: "人物・担当",
-      props: [
-        {name:"PM", has:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB16"], hasNot:["DB8","DB12","DB13","DB15"],
-         reason:"事業責任者の特定。ページオーナーとして管理責任を持つ",
-         notReason:"DB8はLead/Membersで代替。DB12は営業担当で代替。DB13-15は担当者で代替"},
-        {name:"メンバー", has:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB15"], hasNot:["DB8","DB12","DB13","DB16"],
-         reason:"複数人が関わるレコードのチームアサイン",
-         notReason:"DB8はMembersで同等。DB12は個人報告。DB13/14は担当者1人で十分。DB16はCRM個人タスク"},
-        {name:"担当者", has:["DB10","DB13","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB15"],
-         reason:"タスク・コンテンツの実行責任者（1人）",
-         notReason:"DB1-9はPM/メンバーで管理。DB11はオーナーで代替。DB12は営業担当。DB15はメンバー/マネージャー"},
-        {name:"営業担当", has:["DB5","DB6","DB12"], hasNot:["DB1","DB2","DB3","DB4","DB7","DB8","DB9","DB10","DB11","DB13","DB15","DB16"],
-         reason:"営業活動に直結するDB（商談・活動・報告）にのみ必要",
-         notReason:"営業以外のDBには不要。取引先(DB1)はPMで代替"},
-      ]
-    },
-    {
-      category: "連絡先情報",
-      props: [
-        {name:"電話番号", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"法人・施設・事業所・個人の連絡先は直接紐付く実体",
-         notReason:"商談・活動・契約等は連絡先を持つ実体ではなく、DB1-4からリレーションで参照"},
-        {name:"メールアドレス/メール", has:["DB1","DB2","DB4"], hasNot:["DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"法人代表メール・施設メール・個人メール",
-         notReason:"DB3(事業所)は施設経由で連絡するため個別メール不要。他はリレーション参照"},
-        {name:"エリア（都道府県）", has:["DB1","DB2"], hasNot:["DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"法人・施設単位での地域営業管理。エリア別集計・フィルタ",
-         notReason:"DB3は所属施設からrollupで参照可能。DB4以降は実体の住所を持たない"},
-      ]
-    },
-    {
-      category: "ステータス管理",
-      props: [
-        {name:"営業ステータス（記録/議事録）", has:["DB1","DB2","DB5"], hasNot:["DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"営業パイプラインの進捗追跡。「記録」=現時点、「議事録」=報告時点のスナップショット",
-         notReason:"DB3は導入ステータスで代替。DB4は個人なのでステータス不要。DB6以降は営業進捗を直接持たない"},
-        {name:"導入ステータス（記録/議事録）", has:["DB3"], hasNot:["DB1","DB2","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"事業所単位でのプロダクト導入進捗（トライアル→契約）。事業所が最小導入単位",
-         notReason:"法人・施設レベルの導入状況は事業所のrollupで集計。他DBは導入と無関係"},
-        {name:"レコードステータス", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"CRMマスタデータの品質管理。「下書き」=未確認、「確定」=検証済み",
-         notReason:"DB5以降はトランザクションデータ（活動記録・契約等）なので品質管理不要"},
-        {name:"ステータス（汎用）", has:["DB4","DB9","DB10","DB11","DB13","DB16"], hasNot:["DB1","DB2","DB3","DB5","DB6","DB7","DB8","DB12","DB15"],
-         reason:"進捗管理が必要なレコード。未着手→進行中→完了のライフサイクル",
-         notReason:"DB1-3は営業/導入ステータスで代替。DB5はパイプラインステージ。DB6は完了チェックボックス。DB8は組織で進捗不要"},
-        {name:"処理ステータス", has:["DB12"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB15","DB16"],
-         reason:"報告の処理フロー管理（未処理→議事録生成中→完了）。ワークフロー制御用",
-         notReason:"DB12専用のワークフロー。他DBには処理フローがない"},
-      ]
-    },
-    {
-      category: "営業・CRM固有",
-      props: [
-        {name:"ランク", has:["DB1"], hasNot:["DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"取引先の重要度（S/A/B/C）。営業リソース配分の判断基準",
-         notReason:"ランクは法人単位でのみ意味がある。施設・個人は法人ランクから推定"},
-        {name:"取引種別", has:["DB1","DB4"], hasNot:["DB2","DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"顧客/ステークホルダー/パートナー/紹介元の分類。multi_selectで兼任対応",
-         notReason:"施設・事業所は法人に紐付くので法人の取引種別を参照。他DBは分類不要"},
-        {name:"接触元", has:["DB1","DB2","DB3","DB4"], hasNot:["DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"リードソース追跡（紹介/展示会/HP等）。マーケティングROI測定",
-         notReason:"接触元はマスタデータ（法人/施設/事業所/個人）の属性。トランザクションには不要"},
-        {name:"確度", has:["DB5","DB12"], hasNot:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB15","DB16"],
-         reason:"商談の受注確率（10-90%）。パイプライン予測に使用",
-         notReason:"確度は商談（DB5）と報告時点スナップショット（DB12）にのみ意味がある"},
-        {name:"MRR", has:["DB7"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"月次経常収益の追跡。契約単位で管理し、取引先レベルではrollupで集計",
-         notReason:"MRRは契約に紐付く金額。他DBは金額を持たない"},
-        {name:"想定MRR", has:["DB5"], hasNot:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"商談段階でのMRR予測。受注前のパイプライン価値算出",
-         notReason:"商談が受注→契約(DB7)に移行したらMRRに変わる。他DBは予測不要"},
-      ]
-    },
-    {
-      category: "紹介元トラッキング",
-      props: [
-        {name:"紹介元（法人）", has:["DB1","DB2","DB3"], hasNot:["DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"どの法人が紹介してくれたかを追跡。紹介法人ランキングに使用",
-         notReason:"DB4(名刺)は個人なので「個人を紹介した法人」ではなく「名刺の所属法人」で管理。DB5以降はトランザクション"},
-        {name:"紹介元（個人）", has:["DB1","DB2","DB3"], hasNot:["DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"誰が紹介してくれたかを追跡。紹介者ランキングに使用",
-         notReason:"同上。名刺は紹介「元」であって紹介「先」ではない"},
-        {name:"紹介実績数", has:["DB1","DB4"], hasNot:["DB2","DB3","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"紹介した件数をrollupで自動集計。ランキングビューのソートキー",
-         notReason:"DB2-3は紹介「先」であって「元」ではない。紹介元としてカウントされるのはDB1(法人)とDB4(個人)"},
-      ]
-    },
-    {
-      category: "タスク・PJ管理",
-      props: [
-        {name:"優先度", has:["DB9","DB10","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB11","DB12","DB13","DB15"],
-         reason:"タスク・PJの実行順序決定。至急/高/中/低",
-         notReason:"CRMマスタ(DB1-4)は優先度ではなくランクで管理。活動(DB6)は日時で管理"},
-        {name:"締切/完了日", has:["DB10","DB16"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB15"],
-         reason:"タスクのデッドライン管理。カレンダービュー・リマインダーの基準",
-         notReason:"他DBは期間（開始日/終了日）や日付（活動日時等）で管理。締切はタスク固有"},
-        {name:"親タスク（自己参照）", has:["DB10"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB15","DB16"],
-         reason:"社内タスクの階層化（親タスク→サブタスク）。WBS構造",
-         notReason:"DB16(CRMタスク)は階層化不要（顧客対応は1アクション=1タスク）。他DBは階層を持たない"},
-      ]
-    },
-    {
-      category: "コンテンツ・発信",
-      props: [
-        {name:"プラットフォーム", has:["DB13"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB15","DB16"],
-         reason:"SNS 11アカウントのどこに投稿するか。マルチPF同時投稿管理",
-         notReason:"DB13専用。他DBはSNS投稿と無関係"},
-        {name:"エンゲージメント/インプレッション", has:["DB13"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB15","DB16"],
-         reason:"SNS投稿の効果測定。コンテンツ戦略の判断材料",
-         notReason:"DB13専用の指標"},
-      ]
-    },
-    {
-      category: "組織・1on1",
-      props: [
-        {name:"Lead/Members", has:["DB8"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"部門の責任者と所属メンバー。PM/メンバーの代わりに組織構造に特化した名前",
-         notReason:"他DBはPM/メンバーで統一。DB8だけ組織構造の文脈でLead/Membersを使用"},
-        {name:"ムード", has:["DB15"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB16"],
-         reason:"1on1でのメンバーのコンディション追跡。良好/普通/要注意",
-         notReason:"DB15専用。他DBは人のコンディションを追跡しない"},
-        {name:"Google Drive/Slack", has:["DB8"], hasNot:["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB9","DB10","DB11","DB12","DB13","DB15","DB16"],
-         reason:"部門ごとのDriveフォルダとSlackチャンネルへの直リンク",
-         notReason:"部門(DB8)だけが組織インフラのリンクを持つ。他DBは共有drive(DB1)等で個別管理"},
-      ]
-    },
-  ];
-
-  // Complete relation rationale for ALL 16x16 pairs
-  const relRationale = [
-    // === DB1 取引先 ↔ 全DB ===
-    {from:"DB1",to:"DB1",exists:true,reason:"🔄 紹介元（法人）自己参照。法人Aが法人Bを紹介するケース。紹介法人ランキングに使用"},
-    {from:"DB1",to:"DB2",exists:true,reason:"法人→施設の1:N。介護業界の基本構造。1法人が複数施設を運営"},
-    {from:"DB1",to:"DB3",exists:true,reason:"法人→事業所の1:N。施設を経由せず法人直下の事業所もあるため直接リレーション"},
-    {from:"DB1",to:"DB4",exists:true,reason:"法人→名刺の1:N。法人に所属する全キーパーソンを一覧。紹介元（個人）のdual参照にも使用"},
-    {from:"DB1",to:"DB5",exists:true,reason:"法人→商談の1:N。法人単位の全商談パイプラインを俯瞰"},
-    {from:"DB1",to:"DB6",exists:true,reason:"法人→活動の1:N。法人との全コミュニケーション履歴。統合アクティビティハブの入口"},
-    {from:"DB1",to:"DB7",exists:true,reason:"法人→契約の1:N。法人との全契約・MRR管理"},
-    {from:"DB1",to:"DB8",exists:false,reason:"法人は外部顧客、部門は社内組織。直接のビジネス関係がない。部門が担当する法人はPM/メンバーのpeopleプロパティで管理"},
-    {from:"DB1",to:"DB9",exists:false,reason:"法人とPJは直接関係しない。PJは社内管理単位。法人→商談→タスク→PJの経路で間接参照可能"},
-    {from:"DB1",to:"DB10",exists:true,reason:"法人→社内タスク。法人関連の社内作業（提案書作成・調査等）。CRMと社内運営の橋渡し"},
-    {from:"DB1",to:"DB11",exists:true,reason:"法人→ドキュメント。法人関連の全資料（提案書・契約書・報告書等）"},
-    {from:"DB1",to:"DB12",exists:true,reason:"法人→報告。法人に関する全営業報告。商談報告フォームの入口"},
-    {from:"DB1",to:"DB13",exists:true,reason:"取引先→コンテンツ。顧客事例のSNS発信や導入事例記事の紐付け"},
-    {from:"DB1",to:"DB15",exists:false,reason:"法人と1on1は無関係。1on1は社内メンバーのコンディション管理であり、外部顧客とは無関係"},
-    {from:"DB1",to:"DB16",exists:true,reason:"法人→CRMタスク。「この法人に次何するか」の管理。営業アクション管理の中核"},
-
-    // === DB2 施設 ↔ 残りDB ===
-    {from:"DB2",to:"DB2",exists:false,reason:"施設間の直接リレーションは不要。同じ法人の施設はDB1経由で参照可能"},
-    {from:"DB2",to:"DB3",exists:true,reason:"施設→事業所の1:N。1施設が複数の介護サービス事業所を持つ（特養+デイ+ショートステイ等）"},
-    {from:"DB2",to:"DB4",exists:true,reason:"施設→名刺。施設に所属するキーパーソン（施設長・管理者等）"},
-    {from:"DB2",to:"DB5",exists:true,reason:"施設→商談。施設単位の商談管理。事業所レベルでの導入提案"},
-    {from:"DB2",to:"DB6",exists:true,reason:"施設→活動。施設との全コミュニケーション履歴"},
-    {from:"DB2",to:"DB7",exists:true,reason:"施設→契約。施設単位の契約管理"},
-    {from:"DB2",to:"DB8",exists:false,reason:"施設は外部顧客、部門は社内組織。直接関係しない"},
-    {from:"DB2",to:"DB9",exists:false,reason:"施設とPJは直接関係しない。施設→商談→タスク→PJの経路で間接参照"},
-    {from:"DB2",to:"DB10",exists:true,reason:"施設→社内タスク。施設関連の社内作業"},
-    {from:"DB2",to:"DB11",exists:true,reason:"施設→ドキュメント。施設関連の資料"},
-    {from:"DB2",to:"DB12",exists:true,reason:"施設→報告。施設に関する営業報告"},
-    {from:"DB2",to:"DB13",exists:false,reason:"施設とコンテンツは直接リンクしない。SNS投稿は法人(DB1)レベルで紐付け"},
-    {from:"DB2",to:"DB15",exists:false,reason:"施設と1on1は無関係。1on1は社内のみ"},
-    {from:"DB2",to:"DB16",exists:true,reason:"施設→CRMタスク。「この施設に次何するか」の管理"},
-
-    // === DB3 事業所 ↔ 残りDB ===
-    {from:"DB3",to:"DB3",exists:false,reason:"事業所間の直接リレーションは不要。同一施設の事業所はDB2経由で参照"},
-    {from:"DB3",to:"DB4",exists:true,reason:"事業所→名刺。事業所に所属する管理者・職員の連絡先"},
-    {from:"DB3",to:"DB5",exists:true,reason:"事業所→商談。事業所単位の導入商談（最小の導入単位が事業所）"},
-    {from:"DB3",to:"DB6",exists:false,reason:"事業所と活動は直接リンクしない。活動は法人(DB1)・施設(DB2)レベルで記録。事業所レベルの活動は施設経由で参照"},
-    {from:"DB3",to:"DB7",exists:true,reason:"事業所→契約。事業所が契約の最小単位（サービス種別ごとに契約）"},
-    {from:"DB3",to:"DB8",exists:false,reason:"事業所は外部顧客、部門は社内組織。直接関係しない"},
-    {from:"DB3",to:"DB9",exists:false,reason:"事業所とPJは直接関係しない"},
-    {from:"DB3",to:"DB10",exists:false,reason:"事業所と社内タスクは直接リンクしない。タスクは法人(DB1)・施設(DB2)レベルで紐付け"},
-    {from:"DB3",to:"DB11",exists:false,reason:"事業所とドキュメントは直接リンクしない。ドキュメントは法人・施設・商談レベルで紐付け"},
-    {from:"DB3",to:"DB12",exists:false,reason:"事業所と報告は直接リンクしない。報告は法人(DB1)・施設(DB2)レベル"},
-    {from:"DB3",to:"DB13",exists:false,reason:"事業所とコンテンツは無関係"},
-    {from:"DB3",to:"DB15",exists:false,reason:"事業所と1on1は無関係"},
-    {from:"DB3",to:"DB16",exists:true,reason:"事業所→CRMタスク。事業所レベルの導入タスク（トライアル準備等）"},
-
-    // === DB4 名刺 ↔ 残りDB ===
-    {from:"DB4",to:"DB4",exists:false,reason:"名刺間の直接リレーションは不要。同一法人の名刺はDB1経由で参照"},
-    {from:"DB4",to:"DB5",exists:true,reason:"名刺→商談。商談の主担当者（キーパーソン）を紐付け"},
-    {from:"DB4",to:"DB6",exists:true,reason:"名刺→活動。活動の参加者を紐付け。「この人と最後に何を話した？」に回答"},
-    {from:"DB4",to:"DB7",exists:false,reason:"名刺と契約は直接リンクしない。契約は法人・施設・事業所単位。個人は商談(DB5)経由で間接参照"},
-    {from:"DB4",to:"DB8",exists:false,reason:"名刺は外部連絡先、部門は社内組織。直接関係しない"},
-    {from:"DB4",to:"DB9",exists:false,reason:"名刺とPJは直接関係しない"},
-    {from:"DB4",to:"DB10",exists:true,reason:"名刺→社内タスク。特定キーパーソンに関するタスク（資料送付・フォロー等）"},
-    {from:"DB4",to:"DB11",exists:true,reason:"名刺→ドキュメント。特定キーパーソン向けの資料"},
-    {from:"DB4",to:"DB12",exists:true,reason:"名刺→報告。報告に関連する参加者の紐付け"},
-    {from:"DB4",to:"DB13",exists:false,reason:"名刺とコンテンツは直接リンクしない。SNS投稿に個人を紐付ける必要がない"},
-    {from:"DB4",to:"DB15",exists:false,reason:"名刺と1on1は無関係。名刺は外部連絡先、1on1は社内メンバー"},
-    {from:"DB4",to:"DB16",exists:true,reason:"名刺→CRMタスク。「この人に次何するか」の管理。フォローアップの紐付け"},
-
-    // === DB5 商談 ↔ 残りDB ===
-    {from:"DB5",to:"DB5",exists:false,reason:"商談間の直接リレーションは不要。同一法人の商談はDB1経由で参照"},
-    {from:"DB5",to:"DB6",exists:true,reason:"商談→活動。商談に紐づく全活動（訪問・電話・Web会議等）"},
-    {from:"DB5",to:"DB7",exists:true,reason:"商談→契約。受注した商談から契約を生成。1商談=1契約の紐付け"},
-    {from:"DB5",to:"DB8",exists:false,reason:"商談と部門は直接関係しない。営業担当はpeopleプロパティで管理"},
-    {from:"DB5",to:"DB9",exists:false,reason:"商談とPJは直接関係しない。商談は営業、PJは社内管理"},
-    {from:"DB5",to:"DB10",exists:true,reason:"商談→社内タスク。商談に関連する社内作業（提案書作成・見積作成・デモ準備等）"},
-    {from:"DB5",to:"DB11",exists:true,reason:"商談→ドキュメント。提案書・見積書・NDA等の商談関連資料"},
-    {from:"DB5",to:"DB12",exists:true,reason:"商談→報告。商談に紐づく全営業報告"},
-    {from:"DB5",to:"DB13",exists:false,reason:"商談とコンテンツは直接リンクしない。レイヤーが異なる（CRM vs Marketing）"},
-    {from:"DB5",to:"DB15",exists:false,reason:"商談と1on1は無関係"},
-    {from:"DB5",to:"DB16",exists:true,reason:"商談→CRMタスク。商談の次のアクション管理"},
-
-    // === DB6 活動 ↔ 残りDB ===
-    {from:"DB6",to:"DB6",exists:false,reason:"活動間の直接リレーションは不要。時系列は活動日時でソート"},
-    {from:"DB6",to:"DB7",exists:false,reason:"活動と契約は直接リンクしない。活動→商談→契約の経路で間接参照。活動=日々の行動、契約=長期的合意"},
-    {from:"DB6",to:"DB8",exists:false,reason:"活動と部門は直接リンクしない。活動は顧客との接点、部門は社内組織"},
-    {from:"DB6",to:"DB9",exists:false,reason:"活動とPJは直接リンクしない。活動は営業行動、PJは社内管理"},
-    {from:"DB6",to:"DB10",exists:false,reason:"活動とタスクは直接リンクしない。活動=「やったこと」、タスク=「やること」。次のアクションはDB6のテキストプロパティまたはDB16で管理"},
-    {from:"DB6",to:"DB11",exists:true,reason:"活動→ドキュメント。会議の議事録・配布資料を紐付け"},
-    {from:"DB6",to:"DB12",exists:false,reason:"活動と報告は直接リンクしない。報告(DB12)から活動(DB6)を生成するフローだが、直接の逆参照は報告→商談→活動の経路"},
-    {from:"DB6",to:"DB13",exists:false,reason:"活動とコンテンツは別レイヤー。活動=営業行動、コンテンツ=マーケティング"},
-    {from:"DB6",to:"DB15",exists:false,reason:"活動と1on1は無関係"},
-    {from:"DB6",to:"DB16",exists:true,reason:"活動→CRMタスク。活動から派生するCRMタスクの紐付け"},
-
-    // === DB7 契約 ↔ 残りDB ===
-    {from:"DB7",to:"DB7",exists:false,reason:"契約間の直接リレーションは不要。更新契約は契約種別=「更新」で管理"},
-    {from:"DB7",to:"DB8",exists:false,reason:"契約と部門は無関係"},
-    {from:"DB7",to:"DB9",exists:false,reason:"契約とPJは無関係。契約管理はDB7内で完結"},
-    {from:"DB7",to:"DB10",exists:false,reason:"契約とタスクは直接リンクしない。契約関連タスクはDB10→DB5→DB7の経路"},
-    {from:"DB7",to:"DB11",exists:false,reason:"契約とドキュメントは直接リンクしない。契約書ファイルはDB7のfilesプロパティで管理。提案書等はDB11→DB5(商談)経由"},
-    {from:"DB7",to:"DB12",exists:false,reason:"契約と報告は無関係"},
-    {from:"DB7",to:"DB13",exists:false,reason:"契約とコンテンツは無関係"},
-    {from:"DB7",to:"DB15",exists:false,reason:"契約と1on1は無関係"},
-    {from:"DB7",to:"DB16",exists:false,reason:"CRMタスクと契約は直接リンクしない。CRMタスク→商談→契約の経路。CRMタスクは短命なアクション"},
-
-    // === DB8 部門 ↔ 残りDB ===
-    {from:"DB8",to:"DB8",exists:true,reason:"🔄 上位DEPT自己参照。部門の階層構造（経営→営業課→営業チーム等）"},
-    {from:"DB8",to:"DB9",exists:true,reason:"部門→PJ。部門がオーナーのプロジェクト一覧"},
-    {from:"DB8",to:"DB10",exists:true,reason:"部門→タスク。部門配下の全タスク一覧"},
-    {from:"DB8",to:"DB11",exists:true,reason:"部門→ドキュメント。部門の成果物（マニュアル・報告書等）"},
-    {from:"DB8",to:"DB12",exists:false,reason:"部門と報告は直接リンクしない。報告は法人/施設単位。部門別の報告はPM(people)でフィルタ"},
-    {from:"DB8",to:"DB13",exists:false,reason:"部門とコンテンツは直接リンクしない。コンテンツはPJ(DB9)経由で紐付け可能"},
-    {from:"DB8",to:"DB15",exists:true,reason:"部門→1on1。メンバーの所属部門を紐付け。部門別の1on1一覧"},
-    {from:"DB8",to:"DB16",exists:false,reason:"部門とCRMタスクは直接リンクしない。CRMタスクはCRM層内で完結。担当者はpeopleで管理"},
-
-    // === DB9 PJ ↔ 残りDB ===
-    {from:"DB9",to:"DB9",exists:true,reason:"🔄 上位PJ自己参照。PJの階層構造（大PJ→サブPJ）"},
-    {from:"DB9",to:"DB10",exists:true,reason:"PJ→タスク。PJ配下のタスク一覧。WBS管理"},
-    {from:"DB9",to:"DB11",exists:true,reason:"PJ→ドキュメント。PJの成果物（計画書・報告書等）"},
-    {from:"DB9",to:"DB12",exists:false,reason:"PJと報告は直接リンクしない。営業報告はCRM層(DB1/DB5)で管理"},
-    {from:"DB9",to:"DB13",exists:true,reason:"PJ→コンテンツ。PRプロジェクトからのSNS投稿紐付け"},
-    {from:"DB9",to:"DB15",exists:false,reason:"PJと1on1は直接リンクしない。1on1は人のコンディション管理、PJは業務管理"},
-    {from:"DB9",to:"DB16",exists:false,reason:"PJとCRMタスクは直接リンクしない。CRMタスクはCRM層内で完結"},
-
-    // === DB10 タスク ↔ 残りDB ===
-    {from:"DB10",to:"DB10",exists:true,reason:"🔄 親タスク自己参照。タスクの階層化（GTDのサブタスク構造）"},
-    {from:"DB10",to:"DB11",exists:false,reason:"タスクとドキュメントは直接リンクしない。タスクの成果物はDB11→DB9(PJ)経由で管理"},
-    {from:"DB10",to:"DB12",exists:false,reason:"タスクと報告は直接リンクしない。レイヤーが異なる"},
-    {from:"DB10",to:"DB13",exists:false,reason:"タスクとコンテンツは直接リンクしない。レイヤーが異なる"},
-    {from:"DB10",to:"DB15",exists:true,reason:"タスク→1on1。1on1で話題になったタスクの紐付け"},
-    {from:"DB10",to:"DB16",exists:false,reason:"社内タスクとCRMタスクは意図的に分離。AIエージェントのスコープ制御。CRM用AIが社内タスクを触らないように"},
-
-    // === DB11 ドキュメント ↔ 残りDB ===
-    {from:"DB11",to:"DB11",exists:false,reason:"ドキュメント間の直接リレーションは不要。関連ドキュメントはPJ(DB9)や商談(DB5)経由で参照"},
-    {from:"DB11",to:"DB12",exists:false,reason:"ドキュメントと報告は直接リンクしない。報告はDB12内で完結し、議事録化されたらDB11に新規作成"},
-    {from:"DB11",to:"DB13",exists:false,reason:"ドキュメントとコンテンツは直接リンクしない。コンテンツはDB13内で完結"},
-    {from:"DB11",to:"DB15",exists:false,reason:"ドキュメントと1on1は直接リンクしない。1on1の記録はDB15自体がドキュメント"},
-    {from:"DB11",to:"DB16",exists:false,reason:"ドキュメントとCRMタスクは直接リンクしない。CRMタスクは短命なアクション"},
-
-    // === DB12 報告 ↔ 残りDB ===
-    {from:"DB12",to:"DB12",exists:false,reason:"報告間の直接リレーションは不要"},
-    {from:"DB12",to:"DB13",exists:false,reason:"報告とコンテンツは無関係"},
-    {from:"DB12",to:"DB15",exists:false,reason:"報告と1on1は無関係"},
-    {from:"DB12",to:"DB16",exists:false,reason:"報告とCRMタスクは直接リンクしない。報告→商談→CRMタスクの経路で次のアクションを管理"},
-
-    // === DB13 コンテンツ ↔ 残りDB ===
-    {from:"DB13",to:"DB13",exists:false,reason:"コンテンツ間の直接リレーションは不要。シリーズ管理はタグで対応"},
-    {from:"DB13",to:"DB15",exists:false,reason:"コンテンツと1on1は無関係"},
-    {from:"DB13",to:"DB16",exists:false,reason:"コンテンツとCRMタスクは無関係。レイヤーが異なる（Marketing vs CRM）"},
-
-    // === DB15 1on1 ↔ 残りDB ===
-    {from:"DB15",to:"DB15",exists:false,reason:"1on1間の直接リレーションは不要。時系列は日付でソート"},
-    {from:"DB15",to:"DB16",exists:false,reason:"1on1とCRMタスクは無関係。レイヤーが異なる（Executive vs CRM）"},
-
-    // === DB16 CRMタスク ↔ 残りDB ===
-    {from:"DB16",to:"DB16",exists:false,reason:"CRMタスク間の直接リレーションは不要。階層化はCRMタスクでは不要（1アクション=1タスク）"},
-  ];
-
-  const dbOrder = ["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB16","DB8","DB9","DB10","DB11","DB13","DB15","DB12"];
-
-  // Build lookup for relation rationale
-  const relLookup = {};
-  for (const r of relRationale) {
-    const key1 = r.from + "-" + r.to;
-    const key2 = r.to + "-" + r.from;
-    relLookup[key1] = r;
-    if (r.from !== r.to) relLookup[key2] = r;
-  }
-
-  // Also build lookup from actual relations data
-  const actualRelSet = new Set();
-  for (const rel of relations) {
-    actualRelSet.add(rel.f + "-" + rel.t);
-    if (rel.f !== rel.t) actualRelSet.add(rel.t + "-" + rel.f);
-  }
-
-  // Helper: get DB pill color
-  function dbPillColor(dbId) {
-    const db = dbById(dbId);
-    return db ? getLayerColor(db.layer) : "#888";
-  }
-
-  function dbPills(dbIds) {
-    return dbIds.map(id => `<span class="db-pill" style="background:${dbPillColor(id)}">${id}</span>`).join("");
-  }
-
   let html = "";
 
-  // --- Overview ---
   html += `<div class="rationale-overview">
-    <h2>SSOT設計の原則</h2>
+    <h2>SSOT設計の原則（25 DB / 7 Layer版）</h2>
     <p><strong>Single Source of Truth（唯一の情報源）</strong> - 各情報は1箇所にのみ存在し、他のDBからはリレーション/ロールアップで参照する。</p>
-    <p>このタブでは、15個のDBのプロパティとリレーションが<strong>なぜその設計になっているか</strong>を説明します。</p>
-    <p style="margin-top:8px;">
-      <strong>設計判断の3つの軸:</strong><br>
-      1. <strong>実体が持つべきか？</strong> - 連絡先は法人/施設/個人（実体）が持ち、商談（トランザクション）は持たない<br>
-      2. <strong>重複を避けられるか？</strong> - 事業所のエリアは施設からrollupで取得可能なので持たない<br>
-      3. <strong>スコープを分離すべきか？</strong> - CRMタスクと社内タスクはAIエージェントの制御境界として分離
+    <p style="margin-top:10px;"><strong>7レイヤーの設計意図:</strong></p>
+    <p>1. <strong>SSOT基盤（DB1-5）</strong> - 全社共通マスタ。法人/施設/事業所/人/支店の5実体。全DBの起点。</p>
+    <p>2. <strong>CRM（DB6-10）</strong> - 営業パイプライン。SSOT実体を参照して活動記録。DB7が統合ハブ。</p>
+    <p>3. <strong>人事（DB11-14）</strong> - CRMと同構造で採用管理。Closed Teamspace。</p>
+    <p>4. <strong>IR（DB15-18）</strong> - CRMと同構造で投資家管理。Closed Teamspace。</p>
+    <p>5. <strong>コーポレート（DB19）</strong> - SNS発信パイプライン。11アカウント対応。</p>
+    <p>6. <strong>General（DB20-24）</strong> - 社内運営基盤。部門/PJ/タスク/ドキュメント/プロダクト。</p>
+    <p>7. <strong>Executive（DB25）</strong> - 経営層限定。1on1記録。ムード追跡。</p>
+  </div>`;
+
+  html += `<div class="rationale-section">
+    <h2>レイヤー間の設計パターン</h2>
+    <p style="font-size:0.88rem;color:var(--text2);margin-bottom:16px;">
+      HR層（DB11-14）とIR層（DB15-18）はCRM層（DB6-10）と同じ「面談→活動→契約→タスク」の4DB構造を採用。<br>
+      理由: 営業/採用/IRはいずれも「関係構築→活動記録→契約締結→タスク管理」の同一パターン。
+      統一構造により学習コストを下げ、将来的なクロスレイヤー分析を可能にする。
     </p>
-  </div>`;
-
-  // --- Section A: Property Rationale ---
-  html += `<div class="rationale-section">
-    <h2>Section A: プロパティ設計根拠（なぜあるか / なぜないか）</h2>`;
-
-  for (const cat of propRationale) {
-    html += `<details class="rationale-category" open>
-      <summary>${cat.category}</summary>
-      <div style="overflow-x:auto;">
-        <table class="rationale-table">
-          <thead><tr>
-            <th style="min-width:120px;">プロパティ</th>
-            <th style="min-width:140px;">あるDB</th>
-            <th class="reason-col" style="min-width:200px;">ある理由</th>
-            <th style="min-width:140px;">ないDB</th>
-            <th class="not-reason-col" style="min-width:200px;">ない理由</th>
-          </tr></thead>
-          <tbody>`;
-    for (const p of cat.props) {
-      html += `<tr>
-        <td style="font-weight:600;">${p.name}</td>
-        <td><div class="db-list">${dbPills(p.has)}</div></td>
-        <td class="reason-col">${p.reason}</td>
-        <td><div class="db-list">${dbPills(p.hasNot)}</div></td>
-        <td class="not-reason-col">${p.notReason}</td>
-      </tr>`;
-    }
-    html += `</tbody></table></div></details>`;
-  }
-  html += `</div>`;
-
-  // --- Section B: Relation Matrix ---
-  html += `<div class="rationale-section">
-    <h2>Section B: リレーション設計根拠（15x15 マトリクス）</h2>
-    <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;">セルをクリックすると下に根拠が表示されます。色凡例: <span style="background:#dcfce7;padding:2px 8px;border-radius:4px;font-size:0.8rem;">✅ リレーションあり</span> <span style="background:#f9fafb;border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:0.8rem;">➖ リレーションなし</span> <span style="background:#dbeafe;padding:2px 8px;border-radius:4px;font-size:0.8rem;">🔄 自己参照</span> <span style="background:#fef2f2;border:2px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:0.8rem;">⚠️ 根拠未定義（要検討）</span></p>`;
-
-  // Health check summary
-  let warningCount = 0;
-  let relWithRationale = 0;
-  let relWithoutRationale = 0;
-  let noRelWithRationale = 0;
-  for (let ri = 0; ri < dbOrder.length; ri++) {
-    for (let ci = 0; ci < dbOrder.length; ci++) {
-      if (ri === ci) continue;
-      const key = dbOrder[ri] + "-" + dbOrder[ci];
-      const hasRel = actualRelSet.has(key);
-      const info = relLookup[key];
-      if (hasRel && info) relWithRationale++;
-      else if (hasRel && !info) { relWithoutRationale++; warningCount++; }
-      else if (info && info.exists && !hasRel) noRelWithRationale++;
-    }
-  }
-  const selfRefs = dbOrder.filter(id => actualRelSet.has(id+"-"+id)).length;
-
-  html += `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;flex:1;min-width:180px;">
-      <div style="font-size:1.4rem;font-weight:800;color:#16a34a;">${relWithRationale}</div>
-      <div style="font-size:0.78rem;color:#6b7294;">リレーションあり（根拠あり）</div>
-    </div>
-    <div style="background:${relWithoutRationale>0?'#fef2f2':'#f0fdf4'};border:1px solid ${relWithoutRationale>0?'#fecaca':'#bbf7d0'};border-radius:10px;padding:12px 16px;flex:1;min-width:180px;">
-      <div style="font-size:1.4rem;font-weight:800;color:${relWithoutRationale>0?'#dc2626':'#16a34a'};">${relWithoutRationale}</div>
-      <div style="font-size:0.78rem;color:#6b7294;">⚠️ 根拠未定義のリレーション</div>
-    </div>
-    <div style="background:#ecfeff;border:1px solid #a5f3fc;border-radius:10px;padding:12px 16px;flex:1;min-width:180px;">
-      <div style="font-size:1.4rem;font-weight:800;color:#0891b2;">${selfRefs}</div>
-      <div style="font-size:0.78rem;color:#6b7294;">🔄 自己参照</div>
-    </div>
-    <div style="background:${noRelWithRationale>0?'#fffbeb':'#f0fdf4'};border:1px solid ${noRelWithRationale>0?'#fde68a':'#bbf7d0'};border-radius:10px;padding:12px 16px;flex:1;min-width:180px;">
-      <div style="font-size:1.4rem;font-weight:800;color:${noRelWithRationale>0?'#d97706':'#16a34a'};">${noRelWithRationale}</div>
-      <div style="font-size:0.78rem;color:#6b7294;">設計上必要だが未作成</div>
-    </div>
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;flex:1;min-width:180px;">
-      <div style="font-size:1.4rem;font-weight:800;color:#16a34a;">${warningCount === 0 ? '✅' : '⚠️'}</div>
-      <div style="font-size:0.78rem;color:#6b7294;">${warningCount === 0 ? '設計と実態が完全一致' : warningCount + '件の不整合あり'}</div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+        <thead><tr style="background:var(--surface2);">
+          <th style="padding:10px;border-bottom:2px solid var(--border);">パターン</th>
+          <th style="padding:10px;border-bottom:2px solid var(--border);">CRM</th>
+          <th style="padding:10px;border-bottom:2px solid var(--border);">人事・採用</th>
+          <th style="padding:10px;border-bottom:2px solid var(--border);">投資家関係</th>
+        </tr></thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px;font-weight:700;">パイプライン</td>
+            <td style="padding:10px;">DB6 商談（Deals）</td>
+            <td style="padding:10px;">DB11 面談（HR Interviews）</td>
+            <td style="padding:10px;">DB15 面談（IR Meetings）</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);background:#fafbfd;">
+            <td style="padding:10px;font-weight:700;">活動記録</td>
+            <td style="padding:10px;">DB7 活動（CRM Activity）</td>
+            <td style="padding:10px;">DB12 活動（HR Activity）</td>
+            <td style="padding:10px;">DB16 活動（IR Activity）</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px;font-weight:700;">契約</td>
+            <td style="padding:10px;">DB8 契約（Contracts）</td>
+            <td style="padding:10px;">DB13 雇契約（Employment）</td>
+            <td style="padding:10px;">DB17 契約（IR Contracts）</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);background:#fafbfd;">
+            <td style="padding:10px;font-weight:700;">タスク</td>
+            <td style="padding:10px;">DB9 CRMタスク</td>
+            <td style="padding:10px;">DB14 人事タスク</td>
+            <td style="padding:10px;">DB18 IRタスク</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>`;
 
-  // Build 16x16 matrix
-  html += `<div class="matrix-wrap"><table class="matrix-table"><thead><tr><th class="corner"></th>`;
-  for (const id of dbOrder) {
-    const db = dbById(id);
-    const c = db ? getLayerColor(db.layer) : "#888";
-    html += `<th style="color:${c};font-size:0.6rem;">${id.replace("DB","")}</th>`;
-  }
-  html += `</tr></thead><tbody>`;
+  html += `<div class="rationale-section">
+    <h2>リレーション行列（主要クロスレイヤー）</h2>
+    <p style="font-size:0.85rem;color:var(--text2);margin-bottom:16px;">各DBからSSOT基盤（DB1-5）へのリレーション接続状況。&#10003; = リレーションあり</p>
+    <div style="overflow-x:auto;">
+      <table style="border-collapse:collapse;font-size:0.82rem;">
+        <thead><tr style="background:var(--surface2);">
+          <th style="padding:8px 12px;border-bottom:2px solid var(--border);">From \\ To</th>
+          ${[1,2,3,4,5].map(n=>`<th style="padding:8px 12px;border-bottom:2px solid var(--border);text-align:center;">DB${n}</th>`).join('')}
+        </tr></thead>
+        <tbody>`;
 
-  for (let ri = 0; ri < dbOrder.length; ri++) {
-    const rowId = dbOrder[ri];
-    const rowDb = dbById(rowId);
-    const rc = rowDb ? getLayerColor(rowDb.layer) : "#888";
-    html += `<tr><th style="color:${rc};font-size:0.6rem;">${rowId.replace("DB","")}</th>`;
-    for (let ci = 0; ci < dbOrder.length; ci++) {
-      const colId = dbOrder[ci];
-      if (ri === ci) {
-        // Self - check if self-reference exists
-        const selfKey = rowId + "-" + rowId;
-        const hasSelf = actualRelSet.has(selfKey);
-        if (hasSelf) {
-          const info = relLookup[selfKey];
-          const tooltip = info ? info.reason : "自己参照";
-          html += `<td class="cell-self" data-from="${rowId}" data-to="${colId}" title="${tooltip}">&#x1F504;</td>`;
-        } else {
-          html += `<td class="cell-diag">-</td>`;
-        }
-      } else {
-        const key = rowId + "-" + colId;
-        const hasRel = actualRelSet.has(key);
-        const info = relLookup[key];
-        if (hasRel && info) {
-          html += `<td class="cell-exists" data-from="${rowId}" data-to="${colId}" title="${info.reason}">&#x2705;</td>`;
-        } else if (hasRel && !info) {
-          // WARNING: relation exists but no rationale defined
-          html += `<td class="cell-exists" data-from="${rowId}" data-to="${colId}" title="⚠️ 根拠未定義" style="background:#fef2f2;outline:2px solid #ef4444;">&#x26A0;</td>`;
-        } else if (info && info.exists === false) {
-          html += `<td class="cell-not" data-from="${rowId}" data-to="${colId}" title="${info.reason}">&#x2796;</td>`;
-        } else {
-          html += `<td class="cell-not" data-from="${rowId}" data-to="${colId}" title="リレーションなし">&#x2796;</td>`;
-        }
-      }
+  const checkDbs = ["DB6","DB7","DB8","DB9","DB10","DB11","DB12","DB13","DB14","DB15","DB16","DB17","DB18","DB19","DB23","DB25"];
+  const targets = ["DB1","DB2","DB3","DB4","DB5"];
+  for (const fromId of checkDbs) {
+    html += `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px 12px;font-weight:700;">${fromId}</td>`;
+    for (const toId of targets) {
+      const hasRel = relations.some(r => r.f === fromId && r.t === toId);
+      html += `<td style="padding:8px 12px;text-align:center;color:${hasRel?'#22c55e':'#e2e5ee'};">${hasRel?'&#10003;':'-'}</td>`;
     }
     html += `</tr>`;
   }
-  html += `</tbody></table></div>`;
-
-  // Detail panel
-  html += `<div class="matrix-detail" id="matrixDetail">
-    <h4 id="matrixDetailTitle"></h4>
-    <p id="matrixDetailText"></p>
-  </div>`;
-
-  html += `</div>`;
+  html += `</tbody></table></div></div>`;
 
   container.innerHTML = html;
-
-  // --- Matrix click handler ---
-  container.querySelectorAll(".matrix-table td[data-from]").forEach(cell => {
-    cell.addEventListener("click", () => {
-      const from = cell.dataset.from;
-      const to = cell.dataset.to;
-      const key = from + "-" + to;
-      const info = relLookup[key];
-      const detailEl = document.getElementById("matrixDetail");
-      const titleEl = document.getElementById("matrixDetailTitle");
-      const textEl = document.getElementById("matrixDetailText");
-
-      const fromDb = dbById(from);
-      const toDb = dbById(to);
-      const fromName = fromDb ? fromDb.name : from;
-      const toName = toDb ? toDb.name : to;
-      const fromColor = fromDb ? getLayerColor(fromDb.layer) : "#888";
-      const toColor = toDb ? getLayerColor(toDb.layer) : "#888";
-
-      const hasRel = actualRelSet.has(key) || (from === to && actualRelSet.has(key));
-      const statusBadge = hasRel
-        ? `<span class="detail-badge" style="background:#22c55e;">リレーションあり</span>`
-        : `<span class="detail-badge" style="background:#94a3b8;">リレーションなし</span>`;
-
-      titleEl.innerHTML = `${statusBadge} <span class="detail-badge" style="background:${fromColor}">${from}</span> ${fromName} ↔ <span class="detail-badge" style="background:${toColor}">${to}</span> ${toName}`;
-
-      if (info) {
-        textEl.innerHTML = info.reason;
-        // Warning if relation exists but rationale says it shouldn't, or vice versa
-        if (hasRel && info.exists === false) {
-          textEl.innerHTML += '<br><br><span style="background:#fef2f2;color:#dc2626;padding:4px 10px;border-radius:6px;font-weight:700;font-size:0.85rem;">⚠️ 警告: リレーションが実際に存在するが、設計上は不要と判断。削除を検討してください。</span>';
-        } else if (!hasRel && info.exists === true) {
-          textEl.innerHTML += '<br><br><span style="background:#fffbeb;color:#d97706;padding:4px 10px;border-radius:6px;font-weight:700;font-size:0.85rem;">⚠️ 注意: 設計上必要だが、実際のリレーションが未作成です。</span>';
-        }
-      } else if (hasRel) {
-        textEl.innerHTML = '<span style="background:#fef2f2;color:#dc2626;padding:6px 12px;border-radius:8px;font-weight:700;">⚠️ 警告: リレーションが存在するが、設計根拠が定義されていません。このリレーションが本当に必要か検討してください。</span>';
-      } else {
-        textEl.textContent = "リレーションなし（設計上も不要）";
-      }
-
-      detailEl.classList.add("visible");
-      detailEl.scrollIntoView({behavior:"smooth", block:"nearest"});
-    });
-  });
 }
 
 // ===== ISSUES TAB =====
 const issues = [
   {id:"ISS-001",category:"データ移行",severity:"critical",
    title:"旧People DB（846件）の正規化移行が未実施",
-   desc:"現行WSのPeople DB（神テーブル）を法人(DB1)/施設(DB2)/事業所(DB3)/名刺(DB4)に分割して移行する必要がある。プロパティマッピング表は作成済みだが、実行は未着手。",
+   desc:"現行WSのPeople DB（神テーブル）を法人(DB1)/施設(DB2)/事業所(DB3)/名刺(DB4)/支店(DB5)に分割して移行する必要がある。",
    impact:"新WSに実データが0件のため、全DBが空の状態。運用開始できない",
-   blockedBy:[],blocks:["ISS-002","ISS-003","ISS-005"],relatedDbs:["DB1","DB2","DB3","DB4"],status:"pending"},
+   blockedBy:[],blocks:["ISS-002","ISS-003","ISS-005"],relatedDbs:["DB1","DB2","DB3","DB4","DB5"],status:"pending"},
   {id:"ISS-002",category:"データ移行",severity:"critical",
    title:"旧Tasks/Projects/Departments DBの移行",
-   desc:"現行WSの旧Tasks/Projects/Departments DBの実運用データを新WSのDB8-10に移行。ビュー14個+12個の再現も必要。",
+   desc:"現行WSの旧Tasks/Projects/Departments DBの実運用データを新WSのDB20-22に移行。",
    impact:"社内タスク・PJ管理が新WSで使えない",
-   blockedBy:["ISS-001"],blocks:["ISS-005"],relatedDbs:["DB8","DB9","DB10"],status:"pending"},
+   blockedBy:["ISS-001"],blocks:["ISS-005"],relatedDbs:["DB20","DB21","DB22"],status:"pending"},
   {id:"ISS-003",category:"データ移行",severity:"high",
    title:"市場データCSV（244K事業所）のTier1投入",
-   desc:"SSOT v6.1の244,232事業所/70,383法人/198,233施設からTier1（187法人）をDB1/DB2/DB3に投入。pandasスクリプトで変換→Notion API投入。",
+   desc:"244,232事業所/70,383法人/198,233施設からTier1（187法人）をDB1/DB2/DB3に投入。",
    impact:"営業ターゲットリストが空。新規営業活動に使えない",
    blockedBy:["ISS-001"],blocks:[],relatedDbs:["DB1","DB2","DB3"],status:"pending"},
   {id:"ISS-004",category:"データ移行",severity:"medium",
    title:"旧1on1 DB（6個）の統合移行",
-   desc:"現行WSの6個の個人別1on1 DBをDB15に統合。メンバー/マネージャーのpeopleプロパティでフィルタ。",
+   desc:"現行WSの6個の個人別1on1 DBをDB25に統合。",
    impact:"1on1記録が散在したまま",
-   blockedBy:[],blocks:[],relatedDbs:["DB15"],status:"pending"},
+   blockedBy:[],blocks:[],relatedDbs:["DB25"],status:"pending"},
   {id:"ISS-005",category:"環境構築",severity:"critical",
    title:"新WSのMCPサーバーがVSCode拡張で起動しない",
-   desc:"settings.json/mcp.jsonにnotion-new-nagaraを設定済みだが、VSCode拡張がセルフホスト型MCPサーバーを起動しない。現在はcurl経由でAPI直接呼び出しで代替中。",
-   impact:"Notion MCPツール（notion-search/fetch/create等）が新WSに対して使えない。操作のたびにcurlが必要で非効率",
+   desc:"settings.json/mcp.jsonにnotion-new-nagaraを設定済みだが、VSCode拡張がセルフホスト型MCPサーバーを起動しない。",
+   impact:"Notion MCPツールが新WSに対して使えない",
    blockedBy:[],blocks:["ISS-011"],relatedDbs:[],status:"workaround"},
   {id:"ISS-006",category:"テンプレート",severity:"medium",
-   title:"DB3-7/DB8-11/DB13/DB15/DB16のテンプレートが未作成",
-   desc:"DB1/DB2/DB12のテンプレートは作成済み。残り12DBのテンプレートが未作成。特にDB5(商談)とDB16(CRMタスク)は営業運用に必須。",
+   title:"大部分のDBのテンプレートが未作成",
+   desc:"DB1/DB2/DB10のテンプレートは作成済み。残り22DBのテンプレートが未作成。特にDB6(商談)とDB9(CRMタスク)は営業運用に必須。",
    impact:"新規レコード作成時にページ構造が空。運用効率が悪い",
-   blockedBy:[],blocks:[],relatedDbs:["DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10","DB11","DB13","DB15","DB16"],status:"pending"},
+   blockedBy:[],blocks:[],relatedDbs:["DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB14","DB15","DB16","DB17","DB18","DB19","DB20","DB21","DB22","DB23","DB24","DB25"],status:"pending"},
   {id:"ISS-007",category:"ビュー",severity:"medium",
    title:"リンクドビューの配置が未実施",
-   desc:"各DBのページテンプレート内にリンクドビュー（他DBの絞り込みビュー）を埋め込む必要がある。例: DB1の法人ページ内にDB2施設一覧/DB4名刺一覧/DB5商談一覧のリンクドビュー。Notion APIではリンクドビュー作成不可→内部APIまたはブラウザ操作が必要。",
-   impact:"法人ページを開いても配下情報が一覧で見えない。手動でDB切り替えが必要",
+   desc:"各DBのページテンプレート内にリンクドビュー（他DBの絞り込みビュー）を埋め込む必要がある。",
+   impact:"法人ページを開いても配下情報が一覧で見えない",
    blockedBy:["ISS-006"],blocks:[],relatedDbs:["DB1","DB2"],status:"pending"},
   {id:"ISS-008",category:"自動化",severity:"high",
    title:"Notta→Notion自動連携フローが未構築",
-   desc:"NottaビジネスプランでZapier利用可能。Notta→Zapier→DB6(活動)/DB11(ドキュメント)の自動パイプラインが未構築。Nottaネイティブ連携は接続済みだがフロー未設計。",
-   impact:"会議の文字起こしが手動でClaudeに投げてNotionに登録する運用のまま。「この顧客と最後に何を話した？」にAIが答えられない",
-   blockedBy:[],blocks:["ISS-012"],relatedDbs:["DB6","DB11"],status:"pending"},
+   desc:"NottaビジネスプランでZapier利用可能。Notta→Zapier→DB7(活動)/DB23(ドキュメント)の自動パイプラインが未構築。",
+   impact:"会議の文字起こしが手動。AIが顧客との会話履歴に即答できない",
+   blockedBy:[],blocks:["ISS-012"],relatedDbs:["DB7","DB23"],status:"pending"},
   {id:"ISS-009",category:"自動化",severity:"high",
    title:"Gmail→CRM連携Skillが未構築",
-   desc:"Gmail MCP→Claude Code→Notion MCPでメール要約をDB6(MTG&Activity)に自動記録するSkillが未構築。",
-   impact:"メール履歴がCRMに紐付かない。重要メールの追跡が手動",
-   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB6"],status:"pending"},
+   desc:"Gmail MCP→Claude Code→Notion MCPでメール要約をDB7(活動)に自動記録するSkillが未構築。",
+   impact:"メール履歴がCRMに紐付かない",
+   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB7"],status:"pending"},
   {id:"ISS-010",category:"自動化",severity:"high",
    title:"Slack→CRM連携Skillが未構築",
-   desc:"Slack MCP→Claude Code→Notion MCPで顧客チャンネルの重要会話をDB6に自動記録するSkillが未構築。",
+   desc:"Slack MCP→Claude Code→Notion MCPで顧客チャンネルの重要会話をDB7に自動記録するSkillが未構築。",
    impact:"Slack上の顧客とのやり取りがCRMに反映されない",
-   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB6"],status:"pending"},
+   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB7"],status:"pending"},
   {id:"ISS-011",category:"自動化",severity:"medium",
-   title:"Asana↔Notion双方向同期が未構築",
-   desc:"人間=Asana、AI=Notionの棲み分け方針は決定済み。実装はGitHub ActionsまたはZapierで行う予定だが未着手。",
+   title:"Asana<->Notion双方向同期が未構築",
+   desc:"人間=Asana、AI=Notionの棲み分け方針は決定済み。実装未着手。",
    impact:"タスク管理がAsanaとNotionで二重管理になるリスク",
-   blockedBy:["ISS-002"],blocks:[],relatedDbs:["DB9","DB10"],status:"pending"},
+   blockedBy:["ISS-002"],blocks:[],relatedDbs:["DB21","DB22"],status:"pending"},
   {id:"ISS-012",category:"自動化",severity:"critical",
-   title:"統合アクティビティハブ（DB6）が機能していない",
-   desc:"DB6を全コミュニケーションの統合ハブにする構想があるが、自動連携フロー（Notta/Gmail/Slack/Zoom）が全て未構築のため、手動入力のみ。",
-   impact:"IT構想の核心である「この顧客と最後にいつ何を話した？にAIが即答できる世界」が実現できない",
-   blockedBy:["ISS-008","ISS-009","ISS-010"],blocks:[],relatedDbs:["DB6"],status:"pending"},
+   title:"統合アクティビティハブ（DB7）が機能していない",
+   desc:"DB7を全コミュニケーションの統合ハブにする構想があるが、自動連携フロー（Notta/Gmail/Slack/Zoom）が全て未構築。",
+   impact:"「この顧客と最後にいつ何を話した？」にAIが即答できる世界が実現できない",
+   blockedBy:["ISS-008","ISS-009","ISS-010"],blocks:[],relatedDbs:["DB7"],status:"pending"},
   {id:"ISS-013",category:"権限・組織",severity:"high",
    title:"Teamspace構造が未決定",
-   desc:"新WSに作るTeamspaceの数と構成が未決定。現行WSは7つ（NAGARA/Sales/Dev/Executive/Corporate/External/Test）。新WSのレイヤー構成（CRM/General/Marketing/Executive/Form）とTeamspaceの対応を決める必要がある。",
-   impact:"権限設計ができない。誰が何を見れるか未整理",
+   desc:"新WSに作るTeamspaceの数と構成が未決定。7レイヤー（SSOT/CRM/HR/IR/Corp/General/Exec）とTeamspaceの対応を決める必要がある。",
+   impact:"権限設計ができない。HR/IR層のClosed制御ができない",
    blockedBy:[],blocks:["ISS-014"],relatedDbs:[],status:"pending"},
   {id:"ISS-014",category:"権限・組織",severity:"high",
    title:"権限設計（メンバー17名）が未実施",
-   desc:"CEO/部門Lead/メンバーの権限マトリクスが未定義。DB15(1on1)のExecutive層限定アクセスなど、レイヤー別の権限設計が必要。",
-   impact:"全メンバーが全DBにアクセスできてしまう。1on1記録が全員に見える",
-   blockedBy:["ISS-013"],blocks:[],relatedDbs:["DB15"],status:"pending"},
+   desc:"CEO/部門Lead/メンバーの権限マトリクスが未定義。DB25(1on1)のExecutive層限定、DB11-14のHR層限定、DB15-18のIR層限定アクセスなど。",
+   impact:"全メンバーが全DBにアクセスできてしまう",
+   blockedBy:["ISS-013"],blocks:[],relatedDbs:["DB25","DB11","DB12","DB13","DB14","DB15","DB16","DB17","DB18"],status:"pending"},
   {id:"ISS-015",category:"マーケティング",severity:"medium",
    title:"32エージェント投稿パイプラインが未稼働",
-   desc:"Marketing層のDB13(発信コンテンツ)は作成済みだが、32エージェントの実行基盤（Mac Mini固定砲台Chrome）のセットアップとパイプライン構築が未実施。",
-   impact:"SNS発信の自動化ができない。手動のChrome操作のまま",
-   blockedBy:[],blocks:[],relatedDbs:["DB13"],status:"pending"},
+   desc:"DB19(発信コンテンツ)は作成済みだが、32エージェントの実行基盤が未構築。",
+   impact:"SNS発信の自動化ができない",
+   blockedBy:[],blocks:[],relatedDbs:["DB19"],status:"pending"},
   {id:"ISS-016",category:"運用",severity:"medium",
-   title:"SSOT v2仕様書の更新が必要",
-   desc:"仕様書は2026-03-14時点のもの。DB13-16追加/DB14削除/6層レイヤー化/紹介元トラッキング/活動タイプ拡張/タスクDB分割等の変更が反映されていない。",
-   impact:"仕様書と実態が乖離。新メンバーのオンボーディングに使えない",
+   title:"SSOT仕様書の更新が必要",
+   desc:"仕様書は旧15DB構成のもの。25DB/7レイヤーへの変更が反映されていない。",
+   impact:"仕様書と実態が乖離",
    blockedBy:[],blocks:[],relatedDbs:[],status:"pending"},
-  {id:"ISS-017",category:"運用",severity:"low",
-   title:"旧WSのアーカイブ・閉鎖スケジュール未決定",
-   desc:"新WSへの移行完了後、旧WS(NAGARA, Inc.)をいつアーカイブするか未決定。並行運用期間の設定が必要。",
-   impact:"2つのWSが並存し続けると混乱",
-   blockedBy:["ISS-001","ISS-002"],blocks:[],relatedDbs:[],status:"pending"},
-  {id:"ISS-018",category:"データ移行",severity:"high",
-   title:"notion-migratorスクリプトの2026年API対応",
-   desc:"~/project/notion-migrator/は2026-03-15に構築済みだが、STATUS型API対応、/v1/views APIでのビュー移行、DB14削除/DB16追加の反映が必要。",
-   impact:"データ移行ツールが最新のDB構成に対応していない",
-   blockedBy:[],blocks:["ISS-001","ISS-002"],relatedDbs:[],status:"pending"},
-  {id:"ISS-019",category:"自動化",severity:"medium",
-   title:"DB12商談報告→議事録自動生成フローが未構築",
-   desc:"DB12(商談報告フォーム)に文字起こしを入力→Claude AIが議事録生成→DB6(活動)/DB11(ドキュメント)に自動反映するフローが未構築。",
-   impact:"報告フォームは作成済みだが、議事録生成が手動のまま",
-   blockedBy:["ISS-008"],blocks:[],relatedDbs:["DB12","DB6","DB11"],status:"pending"},
-  {id:"ISS-020",category:"環境構築",severity:"medium",
+  {id:"ISS-017",category:"新規構築",severity:"high",
+   title:"HR層（DB11-14）の新規構築が未実施",
+   desc:"人事・採用管理の4DBが全て未作成。スキーマ設計は完了。",
+   impact:"採用管理がNotion上で行えない",
+   blockedBy:[],blocks:[],relatedDbs:["DB11","DB12","DB13","DB14"],status:"pending"},
+  {id:"ISS-018",category:"新規構築",severity:"high",
+   title:"IR層（DB15-18）の新規構築が未実施",
+   desc:"投資家関係管理の4DBが全て未作成。スキーマ設計は完了。",
+   impact:"IR管理がNotion上で行えない",
+   blockedBy:[],blocks:[],relatedDbs:["DB15","DB16","DB17","DB18"],status:"pending"},
+  {id:"ISS-019",category:"新規構築",severity:"medium",
+   title:"DB5支店・DB24プロダクトの新規構築が未実施",
+   desc:"支店DB(DB5)とプロダクトDB(DB24)が未作成。",
+   impact:"支店ネットワーク管理とプロダクト管理ができない",
+   blockedBy:[],blocks:[],relatedDbs:["DB5","DB24"],status:"pending"},
+  {id:"ISS-020",category:"自動化",severity:"critical",
    title:"Notion AIエージェント（Custom Agent）の構築が未実施",
-   desc:"IT構想で8エージェント構築予定。CRM営業支援Bot/議事録生成Bot等。2026-05-04以降クレジット課金。Agent仕様書は作成済み。",
+   desc:"IT構想で8エージェント構築予定。CRM営業支援Bot/議事録生成Bot等。",
    impact:"AIがDBを横断して営業マンを支援する世界が実現できない",
-   blockedBy:["ISS-001","ISS-012"],blocks:[],relatedDbs:[],status:"pending"},
+   blockedBy:["ISS-001","ISS-012"],blocks:[],relatedDbs:["DB7","DB9","DB23"],status:"pending"},
 ];
 
 function renderIssues() {
@@ -1796,10 +1304,7 @@ function renderIssues() {
   const bySt = {pending:0,workaround:0,done:0};
   for (const iss of issues) { bySev[iss.severity]++; bySt[iss.status]++; }
 
-  let html = "";
-
-  // Summary cards
-  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
+  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
       <div style="font-size:2rem;font-weight:800;color:var(--accent);">${total}</div>
       <div style="font-size:0.8rem;color:var(--text2);">課題総数</div>
@@ -1816,10 +1321,6 @@ function renderIssues() {
       <div style="font-size:2rem;font-weight:800;color:#eab308;">${bySev.medium}</div>
       <div style="font-size:0.8rem;color:var(--text2);">Medium</div>
     </div>
-    <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
-      <div style="font-size:2rem;font-weight:800;color:#94a3b8;">${bySev.low}</div>
-      <div style="font-size:0.8rem;color:var(--text2);">Low</div>
-    </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
       <div style="font-size:1.2rem;font-weight:700;color:var(--text2);margin-top:4px;">${bySt.pending} 未着手</div>
       <div style="font-size:0.85rem;color:#f59e0b;font-weight:600;">${bySt.workaround} 回避策</div>
@@ -1827,46 +1328,27 @@ function renderIssues() {
     </div>
   </div>`;
 
-  // Critical path
   html += `<div class="critical-path-box">
     <h3>クリティカルパス（最長依存チェーン）</h3>
     <div class="critical-path-chain">
-      <span class="critical-path-node">ISS-018<br><span style="font-size:0.68rem;font-weight:400;">migrator API対応</span></span>
+      <span class="critical-path-node">ISS-001<br><span style="font-size:0.68rem;font-weight:400;">People DB正規化→DB1-5</span></span>
       <span class="critical-path-arrow">&#10140;</span>
-      <span class="critical-path-node">ISS-001<br><span style="font-size:0.68rem;font-weight:400;">People DB正規化</span></span>
-      <span class="critical-path-arrow">&#10140;</span>
-      <span class="critical-path-node">ISS-002<br><span style="font-size:0.68rem;font-weight:400;">Tasks/PJ移行</span></span>
+      <span class="critical-path-node">ISS-002<br><span style="font-size:0.68rem;font-weight:400;">Tasks/PJ移行→DB20-22</span></span>
       <span class="critical-path-arrow">/</span>
       <span class="critical-path-node">ISS-003<br><span style="font-size:0.68rem;font-weight:400;">市場データ投入</span></span>
     </div>
     <div class="critical-path-chain" style="margin-top:12px;">
       <span class="critical-path-node">ISS-005<br><span style="font-size:0.68rem;font-weight:400;">MCP接続</span></span>
       <span class="critical-path-arrow">&#10140;</span>
-      <span class="critical-path-node">ISS-009/010<br><span style="font-size:0.68rem;font-weight:400;">Gmail/Slack連携</span></span>
+      <span class="critical-path-node">ISS-009/010<br><span style="font-size:0.68rem;font-weight:400;">Gmail/Slack→DB7</span></span>
       <span class="critical-path-arrow">&#10140;</span>
-      <span class="critical-path-node">ISS-012<br><span style="font-size:0.68rem;font-weight:400;">統合ハブ実現</span></span>
+      <span class="critical-path-node">ISS-012<br><span style="font-size:0.68rem;font-weight:400;">統合ハブ(DB7)実現</span></span>
       <span class="critical-path-arrow">&#10140;</span>
       <span class="critical-path-node">ISS-020<br><span style="font-size:0.68rem;font-weight:400;">AIエージェント</span></span>
     </div>
-    <p style="margin-top:12px;font-size:0.78rem;color:var(--text2);">上段: データ移行の依存チェーン / 下段: 自動化の依存チェーン。両方のチェーンが完了してISS-020(AIエージェント)が実現可能になる。</p>
+    <p style="margin-top:12px;font-size:0.78rem;color:var(--text2);">上段: データ移行の依存チェーン / 下段: 自動化の依存チェーン</p>
   </div>`;
 
-  // Dependency graph (text-based)
-  html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:28px;">
-    <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;">依存関係グラフ</h3>
-    <div style="font-family:'SF Mono','Consolas',monospace;font-size:0.75rem;line-height:1.8;overflow-x:auto;white-space:pre;">`;
-
-  // Build dependency text
-  const depLines = [];
-  for (const iss of issues) {
-    if (iss.blocks.length > 0) {
-      depLines.push(`${iss.id} ──blocks──> ${iss.blocks.join(", ")}`);
-    }
-  }
-  html += depLines.join("\n");
-  html += `</div></div>`;
-
-  // Group by category
   const categories = {};
   for (const iss of issues) {
     if (!categories[iss.category]) categories[iss.category] = [];
@@ -1878,38 +1360,31 @@ function renderIssues() {
     for (const iss of catIssues) {
       const sevLabel = {critical:"CRITICAL",high:"HIGH",medium:"MEDIUM",low:"LOW"}[iss.severity];
       const stLabel = {pending:"未着手",workaround:"回避策あり",done:"完了"}[iss.status];
-
       const dbPillsHtml = iss.relatedDbs.map(id => {
         const db = dbById(id);
         const color = db ? getLayerColor(db.layer) : "#888";
-        return '<span class="issue-db-pill" style="background:'+color+'">'+id+'</span>';
+        return `<span class="issue-db-pill" style="background:${color}">${id}</span>`;
       }).join("");
-
       const blockedByHtml = iss.blockedBy.length > 0
-        ? '<div style="margin-top:6px;font-size:0.75rem;color:var(--text2);">Blocked by: <span class="issue-deps">' + iss.blockedBy.map(id => '<span class="issue-dep" onclick="scrollToIssue(\''+id+'\')">'+id+'</span>').join("") + '</span></div>'
-        : '';
-
+        ? `<div style="margin-top:6px;font-size:0.75rem;color:var(--text2);">Blocked by: <span class="issue-deps">${iss.blockedBy.map(id=>`<span class="issue-dep" onclick="scrollToIssue('${id}')">${id}</span>`).join("")}</span></div>` : '';
       const blocksHtml = iss.blocks.length > 0
-        ? '<div style="margin-top:4px;font-size:0.75rem;color:var(--text2);">Blocks: <span class="issue-deps">' + iss.blocks.map(id => '<span class="issue-dep" onclick="scrollToIssue(\''+id+'\')">'+id+'</span>').join("") + '</span></div>'
-        : '';
+        ? `<div style="margin-top:4px;font-size:0.75rem;color:var(--text2);">Blocks: <span class="issue-deps">${iss.blocks.map(id=>`<span class="issue-dep" onclick="scrollToIssue('${id}')">${id}</span>`).join("")}</span></div>` : '';
 
       html += `<div class="issue-card sev-${iss.severity}" id="issue-${iss.id}">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
           <span style="font-size:0.75rem;font-weight:700;color:var(--text2);">${iss.id}</span>
           <span class="sev-badge sev-${iss.severity}">${sevLabel}</span>
           <span class="status-badge st-${iss.status}">${stLabel}</span>
-          ${dbPillsHtml ? '<span style="margin-left:auto;">'+dbPillsHtml+'</span>' : ''}
+          ${dbPillsHtml ? `<span style="margin-left:auto;">${dbPillsHtml}</span>` : ''}
         </div>
         <div style="font-weight:700;font-size:0.92rem;margin-bottom:6px;">${iss.title}</div>
         <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;margin-bottom:6px;">${iss.desc}</div>
         <div style="font-size:0.8rem;color:#ef4444;font-weight:600;">Impact: ${iss.impact}</div>
-        ${blockedByHtml}
-        ${blocksHtml}
+        ${blockedByHtml}${blocksHtml}
       </div>`;
     }
     html += `</div>`;
   }
-
   c.innerHTML = html;
 }
 
@@ -1928,175 +1403,155 @@ function renderHub() {
 
   const channels = [
     {
-      id:"zoom", name:"Zoom Phone", icon:"\u{1F4DE}", color:"#2D8CFF", difficulty:"Easy", time:"2-3\u6642\u9593",
-      method:"Python + GitHub Actions (\u65E2\u5B58sync.py\u62E1\u5F35)",
-      existing:"~/project/zoom-phone-notion/ \u306B\u65E2\u5B58cron\u7A3C\u50CD\u4E2D",
+      id:"zoom", name:"Zoom Phone", icon:"&#128222;", color:"#2D8CFF", difficulty:"Easy", time:"2-3時間",
+      method:"Python + GitHub Actions (既存sync.py拡張)",
+      existing:"~/project/zoom-phone-notion/ に既存cron稼働中",
       flow:[
-        "Zoom API \u2192 \u901A\u8A71\u30ED\u30B0\u53D6\u5F97\uFF0815\u5206cron\uFF09",
-        "\u96FB\u8A71\u756A\u53F7\u3067DB1/DB4\u30DE\u30C3\u30C1\u30F3\u30B0 \u2192 \u9867\u5BA2\u7279\u5B9A",
-        "DB6\u306B\u6295\u5165\uFF08\u6D3B\u52D5\u30BF\u30A4\u30D7=\u96FB\u8A71\u3001\u901A\u8A71\u65B9\u5411/\u7D50\u679C/\u6642\u9593\uFF09",
-        "\u30DA\u30FC\u30B8\u672C\u6587\u306B: \u767A\u4FE1\u5143/\u5148\u756A\u53F7, \u30C7\u30D0\u30A4\u30B9, \u30B3\u30FC\u30EBID",
-        "Notion AI \u2192 \u30B5\u30DE\u30EA\u81EA\u52D5\u751F\u6210\u3001\u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3\u62BD\u51FA"
+        "Zoom API → 通話ログ取得（15分cron）",
+        "電話番号でDB1/DB4マッチング → 顧客特定",
+        "DB7に投入（活動タイプ=電話、通話方向/結果/時間）",
+        "ページ本文に: 発信元/先番号, デバイス, コールID",
+        "Notion AI → サマリ自動生成、次のアクション抽出"
       ],
-      propsUsed:["\u6D3B\u52D5\u30BF\u30A4\u30D7=\u96FB\u8A71","\u901A\u8A71\u65B9\u5411","\u901A\u8A71\u7D50\u679C","\u901A\u8A71\u6642\u9593(\u79D2)","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=Zoom Phone","\u30BD\u30FC\u30B9ID=\u30B3\u30FC\u30EBID","\u81EA\u52D5\u751F\u6210=true"],
-      pageContent:["\u901A\u8A71\u8A73\u7D30\uFF08\u767A\u4FE1\u5143/\u5148\u3001\u30C7\u30D0\u30A4\u30B9\u3001\u30B3\u30FC\u30EBID/\u30D1\u30B9ID\uFF09","\u6587\u5B57\u8D77\u3053\u3057\u5168\u6587\uFF08Zoom\u9332\u97F3\u304B\u3089\uFF09","Notion AI\u81EA\u52D5\u8981\u7D04"],
-      notionAi:"\u30B5\u30DE\u30EA\u81EA\u52D5\u751F\u6210 / \u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3\u62BD\u51FA / DB16(CRM\u30BF\u30B9\u30AF)\u81EA\u52D5\u4F5C\u6210",
-      blockers:["Zoom Marketplace\u3067recording_transcript\u30B9\u30B3\u30FC\u30D7\u8FFD\u52A0\u304C\u5FC5\u8981"]
+      propsUsed:["活動タイプ=電話","通話方向","通話結果","通話時間(秒)","ソースチャネル=Zoom Phone","ソースID=コールID","自動生成=true"],
+      pageContent:["通話詳細（発信元/先、デバイス、コールID）","文字起こし全文","Notion AI自動要約"],
+      notionAi:"サマリ自動生成 / 次のアクション抽出 / DB9(CRMタスク)自動作成",
+      blockers:["Zoom MarketplaceでRecording Transcriptスコープ追加が必要"]
     },
     {
-      id:"gmail", name:"Gmail", icon:"\u2709\uFE0F", color:"#EA4335", difficulty:"Medium", time:"1-2\u65E5",
-      method:"Python + Google Workspace Service Account + \u30C9\u30E1\u30A4\u30F3\u5168\u4F53\u59D4\u4EFB",
-      existing:"Google Workspace\u5951\u7D04\u6E08\u307F\u3002Gmail MCP\u63A5\u7D9A\u6E08\u307F\uFF08CEO\u5206\u306E\u307F\uFF09",
+      id:"gmail", name:"Gmail", icon:"&#9993;", color:"#EA4335", difficulty:"Medium", time:"1-2日",
+      method:"Python + Google Workspace Service Account + ドメイン全体委任",
+      existing:"Google Workspace契約済み。Gmail MCP接続済み（CEO分のみ）",
       flow:[
-        "Service Account + \u30C9\u30E1\u30A4\u30F3\u5168\u4F53\u59D4\u4EFB\u3067\u516817\u540D\u306EGmail\u306BAPI\u30A2\u30AF\u30BB\u30B9",
-        "DB1/DB2/DB4\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9/\u30C9\u30E1\u30A4\u30F3\u3067\u9867\u5BA2\u30E1\u30FC\u30EB\u30EA\u30B9\u30C8\u751F\u6210",
-        "Gmail API\u691C\u7D22: from/to \u304C\u9867\u5BA2\u30EA\u30B9\u30C8\u306B\u30DE\u30C3\u30C1\u3059\u308B\u30E1\u30FC\u30EB\u3060\u3051\u62BD\u51FA",
-        "\u9664\u5916: \u30E1\u30EB\u30DE\u30AC(unsubscribe), \u793E\u5185(@nagara.co.jp), noreply",
-        "DB6\u306B\u6295\u5165\uFF08\u6D3B\u52D5\u30BF\u30A4\u30D7=\u30E1\u30FC\u30EB\uFF09",
-        "\u30DA\u30FC\u30B8\u672C\u6587\u306B: \u30E1\u30FC\u30EB\u5168\u6587, CC/BCC, \u30B9\u30EC\u30C3\u30C9\u5C65\u6B74",
-        "Notion AI \u2192 \u30E1\u30FC\u30EB\u8981\u7D04\u3001\u91CD\u8981\u5EA6\u5224\u5B9A\u3001\u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3"
+        "Service Account + ドメイン全体委任で全17名のGmailにAPIアクセス",
+        "DB1/DB2/DB4のメールアドレス/ドメインで顧客メールリスト生成",
+        "Gmail API検索: from/to が顧客リストにマッチするメールだけ抽出",
+        "除外: メルマガ(unsubscribe), 社内(@nagara.co.jp), noreply",
+        "DB7に投入（活動タイプ=メール）",
+        "ページ本文に: メール全文, CC/BCC, スレッド履歴",
+        "Notion AI → メール要約、重要度判定、次のアクション"
       ],
-      propsUsed:["\u6D3B\u52D5\u30BF\u30A4\u30D7=\u30E1\u30FC\u30EB","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=Gmail","\u30BD\u30FC\u30B9URL=Gmail\u30EA\u30F3\u30AF","\u30BD\u30FC\u30B9ID=\u30B9\u30EC\u30C3\u30C9ID","\u81EA\u52D5\u751F\u6210=true"],
-      pageContent:["\u30E1\u30FC\u30EB\u672C\u6587\uFF08\u5168\u6587\uFF09","CC/BCC\u4E00\u89A7","\u6DFB\u4ED8\u30D5\u30A1\u30A4\u30EB\u540D","\u30B9\u30EC\u30C3\u30C9\u5185\u306E\u904E\u53BB\u30E1\u30FC\u30EB"],
-      notionAi:"\u30E1\u30FC\u30EB\u8981\u7D04 / \u91CD\u8981\u5EA6\u5224\u5B9A / \u8FD4\u4FE1\u304C\u5FC5\u8981\u304B\u306E\u5224\u65AD / DB16\u81EA\u52D5\u4F5C\u6210",
-      blockers:["Google Cloud Console\u3067Service Account\u4F5C\u6210\uFF081\u56DE\uFF09","Workspace\u7BA1\u7406\u30B3\u30F3\u30BD\u30FC\u30EB\u3067\u30C9\u30E1\u30A4\u30F3\u59D4\u4EFB\u8A2D\u5B9A\uFF081\u56DE\uFF09"]
+      propsUsed:["活動タイプ=メール","ソースチャネル=Gmail","ソースURL=Gmailリンク","ソースID=スレッドID","自動生成=true"],
+      pageContent:["メール本文（全文）","CC/BCC一覧","添付ファイル名","スレッド内の過去メール"],
+      notionAi:"メール要約 / 重要度判定 / 返信が必要かの判断 / DB9自動作成",
+      blockers:["Google Cloud ConsoleでService Account作成（1回）","Workspace管理コンソールでドメイン委任設定（1回）"]
     },
     {
-      id:"slack", name:"Slack", icon:"\u{1F4AC}", color:"#4A154B", difficulty:"Medium", time:"1-2\u65E5",
+      id:"slack", name:"Slack", icon:"&#128172;", color:"#4A154B", difficulty:"Medium", time:"1-2日",
       method:"Python + Slack API + GitHub Actions",
-      existing:"Slack MCP\u63A5\u7D9A\u6E08\u307F\u3002\u9867\u5BA2\u30C1\u30E3\u30F3\u30CD\u30EB10+",
+      existing:"Slack MCP接続済み。顧客チャンネル10+",
       flow:[
-        "\u9867\u5BA2\u30C1\u30E3\u30F3\u30CD\u30EB\u4E00\u89A7\u3092\u547D\u540D\u898F\u5247(#client-XXX)\u3067\u81EA\u52D5\u8B58\u5225",
-        "Slack API\u3067\u524D\u56DE\u4EE5\u964D\u306E\u65B0\u30E1\u30C3\u30BB\u30FC\u30B8\u3092\u53D6\u5F97",
-        "\u30B9\u30EC\u30C3\u30C9\u5358\u4F4D\u3067\u307E\u3068\u3081\u3066DB6\u306B\u6295\u5165",
-        "\u30DA\u30FC\u30B8\u672C\u6587\u306B: \u4F1A\u8A71\u5168\u6587\uFF08\u8A71\u8005\u4ED8\u304D\uFF09, \u30EA\u30A2\u30AF\u30B7\u30E7\u30F3",
-        "Notion AI \u2192 \u4F1A\u8A71\u8981\u7D04\u3001\u30A2\u30AF\u30B7\u30E7\u30F3\u30A2\u30A4\u30C6\u30E0\u62BD\u51FA"
+        "顧客チャンネル一覧を命名規則(#client-XXX)で自動識別",
+        "Slack APIで前回以降の新メッセージを取得",
+        "スレッド単位でまとめてDB7に投入",
+        "ページ本文に: 会話全文（話者付き）, リアクション",
+        "Notion AI → 会話要約、アクションアイテム抽出"
       ],
-      propsUsed:["\u6D3B\u52D5\u30BF\u30A4\u30D7=Slack\u4F1A\u8A71","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=Slack","\u30BD\u30FC\u30B9URL=\u30D1\u30FC\u30DE\u30EA\u30F3\u30AF","\u81EA\u52D5\u751F\u6210=true"],
-      pageContent:["\u4F1A\u8A71\u5168\u6587\uFF08\u8A71\u8005\u540D\u4ED8\u304D\uFF09","\u30B9\u30EC\u30C3\u30C9\u5185\u5BB9","\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3","\u6DFB\u4ED8\u30D5\u30A1\u30A4\u30EB"],
-      notionAi:"\u4F1A\u8A71\u8981\u7D04 / \u6C7A\u5B9A\u4E8B\u9805\u62BD\u51FA / \u30D5\u30A9\u30ED\u30FC\u30A2\u30C3\u30D7\u5FC5\u8981\u6027\u5224\u5B9A",
-      blockers:["\u9867\u5BA2\u30C1\u30E3\u30F3\u30CD\u30EB\u547D\u540D\u898F\u5247\u306E\u7D71\u4E00\u304C\u5FC5\u8981"]
+      propsUsed:["活動タイプ=Slack会話","ソースチャネル=Slack","ソースURL=パーマリンク","自動生成=true"],
+      pageContent:["会話全文（話者名付き）","スレッド内容","リアクション","添付ファイル"],
+      notionAi:"会話要約 / 決定事項抽出 / フォローアップ必要性判定",
+      blockers:["顧客チャンネル命名規則の統一が必要"]
     },
     {
-      id:"notta", name:"Notta\uFF08\u4F1A\u8B70\u6587\u5B57\u8D77\u3053\u3057\uFF09", icon:"\u{1F399}\uFE0F", color:"#00C853", difficulty:"Easy", time:"30\u5206-2\u6642\u9593",
-      method:"Zapier\uFF08Notta Business \u2192 Notion\uFF09",
-      existing:"Notta\u30D3\u30B8\u30CD\u30B9\u30D7\u30E9\u30F3\u5951\u7D04\u6E08\u307F\u3002Notion\u9023\u643A\u6E08\u307F\u3002Zapier\u5229\u7528\u53EF\u80FD",
+      id:"notta", name:"Notta（会議文字起こし）", icon:"&#127897;", color:"#00C853", difficulty:"Easy", time:"30分-2時間",
+      method:"Zapier（Notta Business → Notion）",
+      existing:"Nottaビジネスプラン契約済み。Notion連携済み。Zapier利用可能",
       flow:[
-        "Notta Zapier\u30C8\u30EA\u30AC\u30FC: \u65B0\u3057\u3044\u9332\u97F3\u304C\u6587\u5B57\u8D77\u3053\u3057\u5B8C\u4E86",
-        "Zapier\u30A2\u30AF\u30B7\u30E7\u30F3: DB6\u306B\u30DA\u30FC\u30B8\u4F5C\u6210",
-        "\u4F1A\u8B70\u30BF\u30A4\u30C8\u30EB, \u6587\u5B57\u8D77\u3053\u3057\u5168\u6587, \u53C2\u52A0\u8005, \u6642\u9593\u3092\u30DE\u30C3\u30D4\u30F3\u30B0",
-        "Notion AI \u2192 \u8B70\u4E8B\u9332\u8981\u7D04\u3001\u6C7A\u5B9A\u4E8B\u9805\u3001\u30A2\u30AF\u30B7\u30E7\u30F3\u30A2\u30A4\u30C6\u30E0"
+        "Notta Zapierトリガー: 新しい録音が文字起こし完了",
+        "Zapierアクション: DB7にページ作成",
+        "会議タイトル, 文字起こし全文, 参加者, 時間をマッピング",
+        "Notion AI → 議事録要約、決定事項、アクションアイテム"
       ],
-      propsUsed:["\u6D3B\u52D5\u30BF\u30A4\u30D7=Web\u4F1A\u8B70 or Notta\u6587\u5B57\u8D77\u3053\u3057","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=Notta","\u6587\u5B57\u8D77\u3053\u3057=\u5168\u6587","\u81EA\u52D5\u751F\u6210=true"],
-      pageContent:["\u6587\u5B57\u8D77\u3053\u3057\u5168\u6587\uFF08\u8A71\u8005\u5206\u96E2\u4ED8\u304D\uFF09","\u53C2\u52A0\u8005\u4E00\u89A7","\u4F1A\u8B70\u30E1\u30BF\u30C7\u30FC\u30BF\uFF08\u6642\u9593/\u30D7\u30E9\u30C3\u30C8\u30D5\u30A9\u30FC\u30E0\uFF09"],
-      notionAi:"\u8B70\u4E8B\u9332\u8981\u7D04 / \u6C7A\u5B9A\u4E8B\u9805\u30EA\u30B9\u30C8 / \u30A2\u30AF\u30B7\u30E7\u30F3\u30A2\u30A4\u30C6\u30E0\u62BD\u51FA / DB16\u81EA\u52D5\u4F5C\u6210",
-      blockers:["Zapier\u306ENotta\u9023\u643A\u30C6\u30B9\u30C8\u304C\u5FC5\u8981"]
+      propsUsed:["活動タイプ=Web会議 or Notta","ソースチャネル=Notta","文字起こし=全文","自動生成=true"],
+      pageContent:["文字起こし全文（話者分離付き）","参加者一覧","会議メタデータ（時間/プラットフォーム）"],
+      notionAi:"議事録要約 / 決定事項リスト / アクションアイテム抽出 / DB9自動作成",
+      blockers:["ZapierのNotta連携テストが必要"]
     },
     {
-      id:"db12", name:"\u5546\u8AC7\u5831\u544A\u30D5\u30A9\u30FC\u30E0\uFF08DB12\uFF09", icon:"\u{1F4DD}", color:"#EC4899", difficulty:"Easy", time:"30\u5206",
-      method:"Notion\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u30AA\u30FC\u30C8\u30E1\u30FC\u30B7\u30E7\u30F3\uFF08Notion\u5185\u3067\u5B8C\u7D50\uFF09",
-      existing:"DB12\u4F5C\u6210\u6E08\u307F\u3002\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u4F5C\u6210\u6E08\u307F\u3002\u30D5\u30A9\u30FC\u30E0\u30D3\u30E5\u30FC\u4F5C\u6210\u6E08\u307F",
+      id:"db10", name:"商談報告フォーム（DB10）", icon:"&#128221;", color:"#EC4899", difficulty:"Easy", time:"30分",
+      method:"Notionデータベースオートメーション（Notion内で完結）",
+      existing:"DB10作成済み。テンプレート作成済み。フォームビュー作成済み",
       flow:[
-        "\u55B6\u696D\u30DE\u30F3\u304CDB12\u306B\u30D5\u30A9\u30FC\u30E0\u5165\u529B\uFF08\u53D6\u5F15\u5148/\u65BD\u8A2D/\u6D3B\u52D5\u30BF\u30A4\u30D7/\u5831\u544A\u5185\u5BB9\uFF09",
-        "Notion\u30AA\u30FC\u30C8\u30E1\u30FC\u30B7\u30E7\u30F3: \u30DA\u30FC\u30B8\u8FFD\u52A0\u30C8\u30EA\u30AC\u30FC \u2192 DB6\u306B\u81EA\u52D5\u4F5C\u6210",
-        "\u53D6\u5F15\u5148/\u65BD\u8A2D/\u540D\u523A\u30EA\u30EC\u30FC\u30B7\u30E7\u30F3\u3092\u81EA\u52D5\u30B3\u30D4\u30FC",
-        "Notion AI \u2192 \u8B70\u4E8B\u9332\u751F\u6210\u3001\u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3\u62BD\u51FA"
+        "営業マンがDB10にフォーム入力（取引先/施設/活動タイプ/報告内容）",
+        "Notionオートメーション: ページ追加トリガー → DB7に自動作成",
+        "取引先/施設/名刺リレーションを自動コピー",
+        "Notion AI → 議事録生成、次のアクション抽出"
       ],
-      propsUsed:["DB12\u306E\u6D3B\u52D5\u30BF\u30A4\u30D7/\u53D6\u5F15\u5148/\u65BD\u8A2D/\u540D\u523A\u3092\u30B3\u30D4\u30FC","\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB=DB12\u5831\u544A","\u81EA\u52D5\u751F\u6210=true"],
-      pageContent:["\u5831\u544A\u5185\u5BB9","\u6587\u5B57\u8D77\u3053\u3057\uFF08\u3042\u308C\u3070\uFF09","\u53C2\u52A0\u8005\u30E1\u30E2","Notion AI\u8B70\u4E8B\u9332"],
-      notionAi:"\u8B70\u4E8B\u9332\u81EA\u52D5\u751F\u6210 / \u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3\u62BD\u51FA / \u55B6\u696D\u30B9\u30C6\u30FC\u30BF\u30B9\u66F4\u65B0\u63D0\u6848",
-      blockers:["Notion\u30AA\u30FC\u30C8\u30E1\u30FC\u30B7\u30E7\u30F3\u306E\u8A2D\u5B9A\uFF08GUI\u64CD\u4F5C\u3002API\u4E0D\u53EF\uFF09"]
+      propsUsed:["DB10の活動タイプ/取引先/施設/名刺をコピー","ソースチャネル=DB10報告","自動生成=true"],
+      pageContent:["報告内容","文字起こし（あれば）","参加者メモ","Notion AI議事録"],
+      notionAi:"議事録自動生成 / 次のアクション抽出 / 営業ステータス更新提案",
+      blockers:["Notionオートメーションの設定（GUI操作。API不可）"]
     },
     {
-      id:"sns", name:"SNS\u6295\u7A3F\u8A18\u9332", icon:"\u{1F4E2}", color:"#F59E0B", difficulty:"Hard", time:"3-5\u65E5",
-      method:"Buffer/Hootsuite \u2192 Zapier \u2192 DB13\u3002DB6\u306B\u306F\u5165\u308C\u306A\u3044",
-      existing:"SNS 11\u30A2\u30AB\u30A6\u30F3\u30C8\u904B\u7528\u4E2D\u3002Mac Mini\u56FA\u5B9A\u7832\u53F0",
+      id:"sns", name:"SNS投稿記録", icon:"&#128226;", color:"#F59E0B", difficulty:"Hard", time:"3-5日",
+      method:"Buffer/Hootsuite → Zapier → DB19。DB7には入れない",
+      existing:"SNS 11アカウント運用中",
       flow:[
-        "SNS\u6295\u7A3F\u306FDB13(\u767A\u4FE1\u30B3\u30F3\u30C6\u30F3\u30C4DB)\u3067\u7BA1\u7406\uFF08DB6\u3067\u306F\u306A\u3044\uFF09",
-        "\u7406\u7531: SNS\u6295\u7A3F\u306F\u300C\u6D3B\u52D5\u300D\u3067\u306F\u306A\u304F\u300C\u30B3\u30F3\u30C6\u30F3\u30C4\u300D\u3002\u9867\u5BA2\u3068\u306E1:1\u30B3\u30DF\u30E5\u30CB\u30B1\u30FC\u30B7\u30E7\u30F3\u3067\u306F\u306A\u3044",
-        "\u30A8\u30F3\u30B2\u30FC\u30B8\u30E1\u30F3\u30C8\uFF08\u3044\u3044\u306D/RT/\u30B3\u30E1\u30F3\u30C8\uFF09\u306FDB13\u3067\u8FFD\u8DE1",
-        "\u9867\u5BA2\u304B\u3089\u306EDM/\u30B3\u30E1\u30F3\u30C8\u3078\u306E\u8FD4\u4FE1\u306F\u5225\u9014DB6\u306B\u624B\u52D5\u8A18\u9332"
+        "SNS投稿はDB19(発信コンテンツDB)で管理（DB7ではない）",
+        "理由: SNS投稿は「活動」ではなく「コンテンツ」。顧客との1:1コミュニケーションではない",
+        "エンゲージメント（いいね/RT/コメント）はDB19で追跡",
+        "顧客からのDM/コメントへの返信は別途DB7に手動記録"
       ],
-      propsUsed:["DB13\u3067\u7BA1\u7406\u3002DB6\u306B\u306F\u5165\u3089\u306A\u3044"],
+      propsUsed:["DB19で管理。DB7には入らない"],
       pageContent:[],
-      notionAi:"DB13\u3067\u30A8\u30F3\u30B2\u30FC\u30B8\u30E1\u30F3\u30C8\u5206\u6790 / \u6295\u7A3F\u52B9\u679C\u6E2C\u5B9A",
-      blockers:["note.com\u306F\u516C\u5F0FAPI\u7121\u3057\uFF08\u624B\u52D5\u306E\u307F\uFF09","X API\u30E1\u30C8\u30EA\u30AF\u30B9\u306FBasic $200/\u6708","LinkedIn\u5BE9\u67FB\u306B\u6570\u9031\u9593"]
+      notionAi:"DB19でエンゲージメント分析 / 投稿効果測定",
+      blockers:["note.comは公式API無し（手動のみ）","X APIメトリクスはBasic $200/月","LinkedIn審査に数週間"]
     }
   ];
 
-  const db6Props = [
-    {group:"\u57FA\u672C\u60C5\u5831", count:7, props:[
-      {n:"\u4EF6\u540D",t:"title",d:"\u6D3B\u52D5\u306E\u30BF\u30A4\u30C8\u30EB"},
-      {n:"\u6D3B\u52D5\u30B3\u30FC\u30C9",t:"unique_id",d:"\u81EA\u52D5\u63A1\u756A ACT-XXXX"},
-      {n:"\u6D3B\u52D5\u30BF\u30A4\u30D7",t:"select",d:"\u8A2A\u554F/\u96FB\u8A71/\u30E1\u30FC\u30EB/Web\u4F1A\u8B70/\u30C7\u30E2/Slack\u4F1A\u8A71/Notta\u6587\u5B57\u8D77\u3053\u3057\u7B4913\u7A2E"},
-      {n:"\u4F1A\u8B70\u7A2E\u5225",t:"select",d:"\u55B6\u696D\u5546\u8AC7/\u30C8\u30E9\u30A4\u30A2\u30EB\u30D5\u30A9\u30ED\u30FC/PM\u4F1A/\u5B9A\u4F8BMTG\u7B49"},
-      {n:"\u6D3B\u52D5\u65E5\u6642",t:"date",d:"\u6D3B\u52D5\u304C\u884C\u308F\u308C\u305F\u65E5\u6642"},
-      {n:"\u5B8C\u4E86",t:"checkbox",d:"\u6D3B\u52D5\u306E\u5B8C\u4E86\u30D5\u30E9\u30B0"},
-      {n:"\u5DE5\u6570(h)",t:"number",d:"\u6D3B\u52D5\u306B\u304B\u304B\u3063\u305F\u6642\u9593"}
+  const db7Props = [
+    {group:"基本情報", count:7, props:[
+      {n:"件名",t:"title",d:"活動のタイトル"},
+      {n:"活動コード",t:"unique_id",d:"自動採番 ACT-XXXX"},
+      {n:"活動タイプ",t:"select",d:"訪問/電話/メール/Web会議/デモ/Slack会話/Notta等12種"},
+      {n:"ソースチャネル",t:"select",d:"Zoom Phone/Gmail/Slack/Notta/DB10報告/SNS/手動"},
+      {n:"活動日時",t:"date",d:"活動が行われた日時"},
+      {n:"自動生成",t:"checkbox",d:"自動投入されたレコードかtrue"},
+      {n:"通話時間(秒)",t:"number",d:"通話の長さ（秒単位）"}
     ]},
-    {group:"CRM\u30EA\u30EC\u30FC\u30B7\u30E7\u30F3", count:5, props:[
-      {n:"\u53D6\u5F15\u5148",t:"relation\u2192DB1",d:"\u95A2\u9023\u3059\u308B\u6CD5\u4EBA"},
-      {n:"\u65BD\u8A2D",t:"relation\u2192DB2",d:"\u95A2\u9023\u3059\u308B\u65BD\u8A2D"},
-      {n:"\u5546\u8AC7",t:"relation\u2192DB5",d:"\u95A2\u9023\u3059\u308B\u5546\u8AC7"},
-      {n:"\u53C2\u52A0\u8005",t:"relation\u2192DB4",d:"\u53C2\u52A0\u3057\u305F\u540D\u523A\uFF08\u4EBA\u7269\uFF09"},
-      {n:"\u30C9\u30AD\u30E5\u30E1\u30F3\u30C8\u4E00\u89A7",t:"relation\u2192DB11",d:"\u95A2\u9023\u30C9\u30AD\u30E5\u30E1\u30F3\u30C8"}
+    {group:"CRMリレーション", count:4, props:[
+      {n:"取引先",t:"relation→DB1",d:"関連する法人"},
+      {n:"施設",t:"relation→DB2",d:"関連する施設"},
+      {n:"商談",t:"relation→DB6",d:"関連する商談"},
+      {n:"参加者",t:"relation→DB4",d:"参加した名刺（人物）"}
     ]},
-    {group:"\u4EBA\u7269", count:3, props:[
-      {n:"PM",t:"people",d:"\u62C5\u5F53PM"},
-      {n:"\u30E1\u30F3\u30D0\u30FC",t:"people",d:"\u53C2\u52A0\u30E1\u30F3\u30D0\u30FC"},
-      {n:"\u55B6\u696D\u62C5\u5F53",t:"people",d:"\u55B6\u696D\u62C5\u5F53\u8005"}
+    {group:"ソース情報", count:9, props:[
+      {n:"ソースURL",t:"url",d:"元データへのリンク（Gmail/Slack等）"},
+      {n:"ソースID",t:"rich_text",d:"元データのID（スレッドID/コールID等）"},
+      {n:"文字起こし",t:"rich_text",d:"通話・会議の文字起こし全文"},
+      {n:"サマリ",t:"rich_text",d:"Notion AIが自動生成する要約"},
+      {n:"通話方向",t:"select",d:"着信/発信"},
+      {n:"通話結果",t:"select",d:"応答済み/不在/切断"}
     ]},
-    {group:"\u30BD\u30FC\u30B9\u60C5\u5831", count:6, props:[
-      {n:"\u30BD\u30FC\u30B9URL",t:"url",d:"\u5143\u30C7\u30FC\u30BF\u3078\u306E\u30EA\u30F3\u30AF\uFF08Gmail/Slack\u7B49\uFF09"},
-      {n:"\u30BD\u30FC\u30B9ID",t:"rich_text",d:"\u5143\u30C7\u30FC\u30BF\u306EID\uFF08\u30B9\u30EC\u30C3\u30C9ID/\u30B3\u30FC\u30EBID\u7B49\uFF09"},
-      {n:"\u30BD\u30FC\u30B9\u30C1\u30E3\u30CD\u30EB",t:"select",d:"Zoom Phone/Gmail/Slack/Notta/DB12\u5831\u544A/\u624B\u52D5\u5165\u529B"},
-      {n:"\u6587\u5B57\u8D77\u3053\u3057",t:"rich_text",d:"\u901A\u8A71\u30FB\u4F1A\u8B70\u306E\u6587\u5B57\u8D77\u3053\u3057\u5168\u6587"},
-      {n:"\u30B5\u30DE\u30EA",t:"rich_text",d:"Notion AI\u304C\u81EA\u52D5\u751F\u6210\u3059\u308B\u8981\u7D04"},
-      {n:"\u81EA\u52D5\u751F\u6210",t:"checkbox",d:"\u81EA\u52D5\u6295\u5165\u3055\u308C\u305F\u30EC\u30B3\u30FC\u30C9\u304Btrue"}
-    ]},
-    {group:"\u96FB\u8A71\u56FA\u6709", count:3, props:[
-      {n:"\u901A\u8A71\u6642\u9593(\u79D2)",t:"number",d:"\u901A\u8A71\u306E\u9577\u3055\uFF08\u79D2\u5358\u4F4D\uFF09"},
-      {n:"\u901A\u8A71\u65B9\u5411",t:"select",d:"\u7740\u4FE1/\u767A\u4FE1/\u4E0D\u5728\u7740\u4FE1"},
-      {n:"\u901A\u8A71\u7D50\u679C",t:"select",d:"\u5FDC\u7B54/\u4E0D\u5728/\u7559\u5B88\u96FB/\u8EE2\u9001"}
-    ]},
-    {group:"\u30E1\u30BF", count:2, props:[
-      {n:"\u6B21\u306E\u30A2\u30AF\u30B7\u30E7\u30F3",t:"rich_text",d:"\u6B21\u306B\u3084\u308B\u3079\u304D\u3053\u3068"},
-      {n:"\u5099\u8003",t:"rich_text",d:"\u81EA\u7531\u8A18\u8FF0\u6B04"}
-    ]},
-    {group:"\u30B7\u30B9\u30C6\u30E0", count:2, props:[
-      {n:"\u4F5C\u6210\u65E5\u6642",t:"created_time",d:"\u30EC\u30B3\u30FC\u30C9\u4F5C\u6210\u65E5\u6642"},
-      {n:"\u6700\u7D42\u66F4\u65B0\u65E5\u6642",t:"last_edited_time",d:"\u6700\u7D42\u66F4\u65B0\u65E5\u6642"}
+    {group:"メタ", count:2, props:[
+      {n:"作成日時",t:"created_time",d:"レコード作成日時"},
+      {n:"最終更新日時",t:"last_edited_time",d:"最終更新日時"}
     ]}
   ];
 
-  let html = "";
-
-  // A. 設計方針
-  html += `<div class="hub-callout">
-    <h3>\u{1F3AF} \u8A2D\u8A08\u65B9\u91DD</h3>
+  let html = `<div class="hub-callout">
+    <h3>設計方針</h3>
     <ul>
-      <li><strong>\u30C7\u30FC\u30BF\u6295\u5165 = Python + GitHub Actions</strong>\uFF08\u5404\u30C1\u30E3\u30CD\u30EB\u304B\u3089\u53D6\u5F97\u2192\u6295\u5165\u3059\u308B\u3060\u3051\uFF09</li>
-      <li><strong>\u8981\u7D04\u30FB\u5206\u6790\u30FB\u63D0\u6848 = Notion AI</strong>\uFF08DB\u5185\u3067\u81EA\u52D5\u51E6\u7406\uFF09</li>
-      <li><strong>Claude\u7B49\u306E\u5916\u90E8AI\u306F\u9023\u7D9A\u81EA\u52D5\u5B9F\u884C\u3067\u304D\u306A\u3044\u305F\u3081\u3001Notion AI\u3092\u3075\u3093\u3060\u3093\u306B\u6D3B\u7528</strong></li>
+      <li><strong>データ投入 = Python + GitHub Actions</strong>（各チャネルから取得→投入するだけ）</li>
+      <li><strong>要約・分析・提案 = Notion AI</strong>（DB内で自動処理）</li>
+      <li><strong>DB7（CRM Activity）が統合ハブ</strong>。HR活動はDB12、IR活動はDB16で分離管理</li>
     </ul>
   </div>`;
 
-  // B. DB6 プロパティ構成
   html += `<div style="margin-bottom:28px;">
-    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--border);">\u{1F4CB} DB6 \u30D7\u30ED\u30D1\u30C6\u30A3\u69CB\u6210\uFF0828\u500B\uFF09</h2>
+    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--border);">DB7 プロパティ構成</h2>
     <table class="hub-prop-table">
-      <thead><tr><th>\u30D7\u30ED\u30D1\u30C6\u30A3\u540D</th><th>\u30BF\u30A4\u30D7</th><th>\u8AAC\u660E</th></tr></thead>
+      <thead><tr><th>プロパティ名</th><th>タイプ</th><th>説明</th></tr></thead>
       <tbody>`;
-  for (const g of db6Props) {
-    html += `<tr class="hub-group-row"><td colspan="3">${g.group}\uFF08${g.count}\uFF09</td></tr>`;
+  for (const g of db7Props) {
+    html += `<tr class="hub-group-row"><td colspan="3">${g.group}（${g.count}）</td></tr>`;
     for (const p of g.props) {
       html += `<tr><td style="font-weight:600;">${p.n}</td><td><span class="prop-type-badge">${p.t}</span></td><td style="color:var(--text2);font-size:0.8rem;">${p.d}</td></tr>`;
     }
   }
   html += `</tbody></table></div>`;
 
-  // C. チャネル別投入フロー
-  html += `<h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--border);">\u{1F504} \u30C1\u30E3\u30CD\u30EB\u5225\u6295\u5165\u30D5\u30ED\u30FC</h2>`;
+  html += `<h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--border);">チャネル別投入フロー</h2>`;
   for (const ch of channels) {
     const diffClass = ch.difficulty === "Easy" ? "hub-diff-easy" : ch.difficulty === "Medium" ? "hub-diff-medium" : "hub-diff-hard";
     html += `<div class="hub-channel" style="border-left:4px solid ${ch.color};">`;
@@ -2104,89 +1559,68 @@ function renderHub() {
       <span class="hub-channel-icon">${ch.icon}</span>
       <span class="hub-channel-name">${ch.name}</span>
       <span class="hub-diff ${diffClass}">${ch.difficulty}</span>
-      <span style="font-size:0.82rem;color:var(--text2);">\u2248 ${ch.time}</span>
+      <span style="font-size:0.82rem;color:var(--text2);">= ${ch.time}</span>
     </div>`;
-    html += `<div style="font-size:0.82rem;color:var(--text2);margin-bottom:4px;"><strong>\u65B9\u6CD5:</strong> ${ch.method}</div>`;
-    html += `<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px;"><strong>\u65E2\u5B58\u74B0\u5883:</strong> ${ch.existing}</div>`;
-
-    // Flow
-    html += `<div class="hub-section-title">\u30D5\u30ED\u30FC</div><ul class="hub-flow">`;
-    for (const step of ch.flow) {
-      html += `<li>${step}</li>`;
-    }
+    html += `<div style="font-size:0.82rem;color:var(--text2);margin-bottom:4px;"><strong>方法:</strong> ${ch.method}</div>`;
+    html += `<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px;"><strong>既存環境:</strong> ${ch.existing}</div>`;
+    html += `<div class="hub-section-title">フロー</div><ul class="hub-flow">`;
+    for (const step of ch.flow) { html += `<li>${step}</li>`; }
     html += `</ul>`;
-
-    // Props used
-    html += `<div class="hub-section-title">DB6\u306B\u5165\u308B\u30D7\u30ED\u30D1\u30C6\u30A3</div><div class="hub-props">`;
-    for (const p of ch.propsUsed) {
-      html += `<span class="hub-prop">${p}</span>`;
-    }
+    html += `<div class="hub-section-title">DB7に入るプロパティ</div><div class="hub-props">`;
+    for (const p of ch.propsUsed) { html += `<span class="hub-prop">${p}</span>`; }
     html += `</div>`;
-
-    // Page content
     if (ch.pageContent.length > 0) {
-      html += `<div class="hub-section-title">\u30DA\u30FC\u30B8\u672C\u6587\u306B\u5165\u308B\u3082\u306E</div><ul class="hub-page-content">`;
-      for (const pc of ch.pageContent) {
-        html += `<li>${pc}</li>`;
-      }
+      html += `<div class="hub-section-title">ページ本文に入るもの</div><ul class="hub-page-content">`;
+      for (const pc of ch.pageContent) { html += `<li>${pc}</li>`; }
       html += `</ul>`;
     }
-
-    // Notion AI role
-    html += `<div class="hub-section-title">Notion AI\u306E\u5F79\u5272</div><div class="hub-notion-role">${ch.notionAi}</div>`;
-
-    // Blockers
+    html += `<div class="hub-section-title">Notion AIの役割</div><div class="hub-notion-role">${ch.notionAi}</div>`;
     if (ch.blockers.length > 0) {
-      html += `<div class="hub-section-title" style="color:#ef4444;">\u30D6\u30ED\u30C3\u30AB\u30FC</div>`;
-      for (const b of ch.blockers) {
-        html += `<div class="hub-blocker">\u26A0\uFE0F ${b}</div>`;
-      }
+      html += `<div class="hub-section-title" style="color:#ef4444;">ブロッカー</div>`;
+      for (const b of ch.blockers) { html += `<div class="hub-blocker">! ${b}</div>`; }
     }
-
     html += `</div>`;
   }
 
-  // D. Notion AIの活用ポイント
   html += `<div class="hub-notion-ai">
-    <h3>\u{1F916} Notion AI\u306E\u6D3B\u7528\u30DD\u30A4\u30F3\u30C8</h3>
+    <h3>Notion AIの活用ポイント</h3>
     <ol>
-      <li><strong>AI Autofill:</strong> \u300C\u30B5\u30DE\u30EA\u300D\u30D7\u30ED\u30D1\u30C6\u30A3\u306B\u30DA\u30FC\u30B8\u672C\u6587\u306E\u81EA\u52D5\u8981\u7D04</li>
-      <li><strong>Notion\u30AA\u30FC\u30C8\u30E1\u30FC\u30B7\u30E7\u30F3 + AI:</strong> \u30EC\u30B3\u30FC\u30C9\u8FFD\u52A0 \u2192 AI\u51E6\u7406 \u2192 \u30D7\u30ED\u30D1\u30C6\u30A3\u81EA\u52D5\u5165\u529B</li>
-      <li><strong>Custom AI\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8:</strong>
+      <li><strong>AI Autofill:</strong> 「サマリ」プロパティにページ本文の自動要約</li>
+      <li><strong>Notionオートメーション + AI:</strong> レコード追加 → AI処理 → プロパティ自動入力</li>
+      <li><strong>Custom AIエージェント:</strong>
         <ul>
-          <li><code>\u300C\u3053\u306E\u9867\u5BA2\u3068\u6700\u5F8C\u306B\u4F55\u8A71\u3057\u305F\uFF1F\u300D</code> \u2192 DB6\u30D5\u30A3\u30EB\u30BF \u2192 \u30DA\u30FC\u30B8\u672C\u6587\u304B\u3089\u56DE\u7B54</li>
-          <li><code>\u300C\u4ECA\u9031\u30D5\u30A9\u30ED\u30FC\u3059\u3079\u304D\u9867\u5BA2\u306F\uFF1F\u300D</code> \u2192 DB6+DB16\u6A2A\u65AD\u5206\u6790</li>
-          <li><code>\u300C\u798F\u5BFF\u5712\u306E\u30C8\u30E9\u30A4\u30A2\u30EB\u72B6\u6CC1\u306F\uFF1F\u300D</code> \u2192 DB1+DB3+DB6+DB7\u6A2A\u65AD</li>
+          <li><code>「この顧客と最後に何話した？」</code> → DB7フィルタ → ページ本文から回答</li>
+          <li><code>「今週フォローすべき顧客は？」</code> → DB7+DB9横断分析</li>
+          <li><code>「福寿園のトライアル状況は？」</code> → DB1+DB3+DB7+DB8横断</li>
         </ul>
       </li>
     </ol>
   </div>`;
 
-  // E. 実装優先順位
   html += `<div class="hub-roadmap">
-    <h3>\u{1F4C5} \u5B9F\u88C5\u512A\u5148\u9806\u4F4D</h3>
+    <h3>実装優先順位</h3>
     <div class="hub-roadmap-item">
       <span class="hub-roadmap-week">Week 1</span>
-      <span class="hub-roadmap-desc">DB12\u2192DB6 (30\u5206) + Notta\u2192DB6 (2h)</span>
-      <span class="hub-roadmap-note">\u2192 \u5373\u52B9\u6027</span>
+      <span class="hub-roadmap-desc">DB10→DB7 (30分) + Notta→DB7 (2h)</span>
+      <span class="hub-roadmap-note">→ 即効性</span>
     </div>
     <div class="hub-roadmap-item">
       <span class="hub-roadmap-week">Week 2</span>
-      <span class="hub-roadmap-desc">Zoom Phone\u62E1\u5F35 (3h)</span>
-      <span class="hub-roadmap-note">\u2192 \u65E2\u5B58\u57FA\u76E4\u6D3B\u7528</span>
+      <span class="hub-roadmap-desc">Zoom Phone拡張 (3h)</span>
+      <span class="hub-roadmap-note">→ 既存基盤活用</span>
     </div>
     <div class="hub-roadmap-item">
       <span class="hub-roadmap-week">Week 3</span>
-      <span class="hub-roadmap-desc">Gmail\u9023\u643A (2\u65E5)</span>
-      <span class="hub-roadmap-note">\u2192 \u5168\u54E1\u5206\u30E1\u30FC\u30EB\u7D71\u5408</span>
+      <span class="hub-roadmap-desc">Gmail連携 (2日)</span>
+      <span class="hub-roadmap-note">→ 全員分メール統合</span>
     </div>
     <div class="hub-roadmap-item">
       <span class="hub-roadmap-week">Week 4</span>
-      <span class="hub-roadmap-desc">Slack\u9023\u643A (2\u65E5)</span>
-      <span class="hub-roadmap-note">\u2192 \u9867\u5BA2\u30C1\u30E3\u30F3\u30CD\u30EB\u7D71\u5408</span>
+      <span class="hub-roadmap-desc">Slack連携 (2日)</span>
+      <span class="hub-roadmap-note">→ 顧客チャンネル統合</span>
     </div>
     <div style="margin-top:12px;padding:10px 16px;background:linear-gradient(135deg,#ecfdf5,#f0fdf4);border-radius:8px;font-size:0.9rem;font-weight:600;color:#16a34a;">
-      \u2192 \u3053\u3053\u307E\u3067\u3067\u7D71\u5408\u30CF\u30D6\u306E80%\u304C\u5B8C\u6210
+      → ここまでで統合ハブの80%が完成
     </div>
   </div>`;
 
