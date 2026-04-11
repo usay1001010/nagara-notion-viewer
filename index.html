@@ -218,7 +218,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
 <header>
   <h1>NAGARA Notion Architecture Viewer</h1>
-  <p>25 DBs / 7 Layers / Full property &amp; relation map</p>
+  <p>25 DBs / 7 Layers / 4,829ページ移行完了 / 自動化4/6稼働 — 最終更新: 2026-04-10</p>
 </header>
 
 <div class="container">
@@ -230,6 +230,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
     <button class="tab" data-tab="rationale">設計根拠</button>
     <button class="tab" data-tab="issues">課題一覧</button>
     <button class="tab" data-tab="hub">統合ハブ構想</button>
+    <button class="tab" data-tab="nextactions">Next Actions</button>
     <button class="tab" data-tab="agents">Notionエージェント</button>
   </div>
 
@@ -265,6 +266,10 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
   <div class="tab-content" id="tab-hub">
     <div id="hubContent"></div>
+  </div>
+
+  <div class="tab-content" id="tab-nextactions">
+    <div id="nextActionsContent"></div>
   </div>
 
   <div class="tab-content" id="tab-agents">
@@ -586,19 +591,35 @@ const phases = [
     {l:"全DBビュー設計・構築",s:"pending"},
     {l:"全DBテンプレート作成",s:"pending"},
   ]},
-  {name:"Phase 2: データ移行・連携",items:[
-    {l:"旧People DB→DB1-4正規化移行",s:"pending"},
-    {l:"旧Tasks/Projects/Departments移行",s:"pending"},
-    {l:"Notta→DB7自動連携",s:"pending"},
-    {l:"DB10→DB7 Notionオートメーション",s:"pending"},
-    {l:"Zoom Phone拡張（文字起こし+DB7投入）",s:"pending"},
+  {name:"Phase 2: データ移行・連携 ✅ 完了（2026-04-10）",items:[
+    {l:"ページ作成完了（4,829件: DB1/DB2/DB4/DB22/DB23）",s:"done"},
+    {l:"ブロックコピー DB1(372件)/DB2(851件) 完了",s:"done"},
+    {l:"ブロックコピー DB4(361件)/DB22(681件)/DB23(2,564件) 完了",s:"done"},
+    {l:"81件再挿入（組織区分未設定ページ）完了",s:"done"},
+    {l:"DB2→DB1移動 98件（組織区分変更）完了",s:"done"},
+    {l:"重複削除 DB1(60件)+DB2(742件) アーカイブ完了",s:"done"},
+    {l:"リレーション値設定 DB22/DB23 完了",s:"done"},
+    {l:"検証サンプリング: タイトル全件一致・ブロック全件一致",s:"done"},
+    {l:"リレーション整合性: DB1↔DB2, DB4↔DB1/DB2 サンプル全件正常",s:"done"},
+    {l:"DB20(部門)・DB21(プロジェクト) 構築済み・データ投入済み",s:"done"},
+  ]},
+  {name:"Phase 2.5: 自動化ツール接続 ✅ 4/6稼働中",items:[
+    {l:"zoom-phone-notion: DB7通話ログ自動書き込み（Phase 1-2完了）",s:"done"},
+    {l:"gmail-notion-sync: WIF+DWD全ユーザーGmail監視→DB7（10分cron）",s:"done"},
+    {l:"notion-phone-normalizer: 5DB・228件正規化（毎日0:00 JST）",s:"done"},
+    {l:"asana-notion-sync: DB20/DB21同期（GitHub Actions hourly cron）",s:"done"},
+    {l:"Notta→DB7自動連携（プラン確認後設定）",s:"pending"},
+    {l:"Zoom Phone拡張: 文字起こし+AI要約（スコープ追加待ち）",s:"pending"},
   ]},
   {name:"Phase 3: 全チャネル統合・全社展開",items:[
-    {l:"Gmail→DB7（Service Account+ドメイン委任）",s:"pending"},
-    {l:"Slack→DB7 連携",s:"pending"},
+    {l:"Gmail→DB7（Service Account+ドメイン委任）",s:"done"},
+    {l:"Slack→DB7 連携（対象外・実施しない）",s:"done"},
+    {l:"DB3 事業所・DB5 支店の振り分け",s:"pending"},
+    {l:"child_database手動再作成",s:"pending"},
+    {l:"ビュー設定・テンプレート・オートメーション・権限（手動）",s:"pending"},
     {l:"SNS→DB19 パイプライン",s:"pending"},
     {l:"Notion AIエージェント構築",s:"pending"},
-    {l:"旧WS完全移行・アーカイブ",s:"pending"},
+    {l:"旧WS完全アーカイブ",s:"pending"},
   ]},
 ];
 
@@ -1854,14 +1875,14 @@ function showMatrixDetail(fromId, toId) {
 const issues = [
   {id:"ISS-001",category:"データ移行",severity:"critical",
    title:"旧People DB（846件）の正規化移行が未実施",
-   desc:"現行WSのPeople DB（神テーブル）を法人(DB1)/施設(DB2)/事業所(DB3)/名刺(DB4)/支店(DB5)に分割して移行する必要がある。",
-   impact:"新WSに実データが0件のため、全DBが空の状態。運用開始できない",
-   blockedBy:[],blocks:["ISS-002","ISS-003","ISS-005"],relatedDbs:["DB1","DB2","DB3","DB4","DB5"],status:"pending"},
+   desc:"現行WSのPeople DB（神テーブル）を法人(DB1)/施設(DB2)/名刺(DB4)に分割して移行完了。4,829ページ移行済み（2026-04-10）。検証サンプリング全件一致。",
+   impact:"✅ 解決済み: DB1(372)+DB2(851)+DB4(361)+DB22(681)+DB23(2564)=4,829ページ移行完了",
+   blockedBy:[],blocks:["ISS-002","ISS-003","ISS-005"],relatedDbs:["DB1","DB2","DB3","DB4","DB5"],status:"done"},
   {id:"ISS-002",category:"データ移行",severity:"critical",
    title:"旧Tasks/Projects/Departments DBの移行",
-   desc:"現行WSの旧Tasks/Projects/Departments DBの実運用データを新WSのDB20-22に移行。",
-   impact:"社内タスク・PJ管理が新WSで使えない",
-   blockedBy:["ISS-001"],blocks:["ISS-005"],relatedDbs:["DB20","DB21","DB22"],status:"pending"},
+   desc:"DB20(部門)・DB21(プロジェクト)構築済み・データ投入済み。DB22(タスク)681件移行完了（2026-04-10）。",
+   impact:"✅ 解決済み: DB20/DB21/DB22全て構築・移行完了",
+   blockedBy:["ISS-001"],blocks:["ISS-005"],relatedDbs:["DB20","DB21","DB22"],status:"done"},
   {id:"ISS-003",category:"データ移行",severity:"high",
    title:"市場データCSV（244K事業所）のTier1投入",
    desc:"244,232事業所/70,383法人/198,233施設からTier1（187法人）をDB1/DB2/DB3に投入。",
@@ -1874,9 +1895,9 @@ const issues = [
    blockedBy:[],blocks:[],relatedDbs:["DB25"],status:"pending"},
   {id:"ISS-005",category:"環境構築",severity:"critical",
    title:"新WSのMCPサーバーがVSCode拡張で起動しない",
-   desc:"settings.json/mcp.jsonにnotion-new-nagaraを設定済みだが、VSCode拡張がセルフホスト型MCPサーバーを起動しない。",
-   impact:"Notion MCPツールが新WSに対して使えない",
-   blockedBy:[],blocks:["ISS-011"],relatedDbs:[],status:"workaround"},
+   desc:"notion-new-nagaraのMCPサーバーは正常稼働中。全自動化ツールも新WS接続済み。",
+   impact:"✅ 解決済み: notion-new-nagara MCP正常稼働、全ツール接続完了",
+   blockedBy:[],blocks:["ISS-011"],relatedDbs:[],status:"done"},
   {id:"ISS-006",category:"テンプレート",severity:"medium",
    title:"大部分のDBのテンプレートが未作成",
    desc:"DB1/DB2/DB10のテンプレートは作成済み。残り22DBのテンプレートが未作成。特にDB6(商談)とDB9(CRMタスク)は営業運用に必須。",
@@ -1894,24 +1915,24 @@ const issues = [
    blockedBy:[],blocks:["ISS-012"],relatedDbs:["DB7","DB23"],status:"pending"},
   {id:"ISS-009",category:"自動化",severity:"high",
    title:"Gmail→CRM連携Skillが未構築",
-   desc:"Gmail MCP→Claude Code→Notion MCPでメール要約をDB7(活動)に自動記録するSkillが未構築。",
-   impact:"メール履歴がCRMに紐付かない",
-   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB7"],status:"pending"},
+   desc:"gmail-notion-sync本番稼働中（2026-04-09〜）。WIF+DWDで全ユーザーGmail監視、10分cron。DB1/DB2/DB4マッチ→DB7自動保存。PM/メンバー実装済み、重複防止強化済み。",
+   impact:"✅ 解決済み: gmail-notion-sync稼働中（nagara-internal/gmail-notion-sync）",
+   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB7"],status:"done"},
   {id:"ISS-010",category:"自動化",severity:"high",
    title:"Slack→CRM連携Skillが未構築",
-   desc:"Slack MCP→Claude Code→Notion MCPで顧客チャンネルの重要会話をDB7に自動記録するSkillが未構築。",
-   impact:"Slack上の顧客とのやり取りがCRMに反映されない",
-   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB7"],status:"pending"},
+   desc:"技術調査の結果、Slack連携は対象外（実施しない）と決定。",
+   impact:"✅ 対象外: Slack連携は実施しない方針",
+   blockedBy:[],blocks:[],relatedDbs:["DB7"],status:"done"},
   {id:"ISS-011",category:"自動化",severity:"medium",
    title:"Asana<->Notion双方向同期が未構築",
-   desc:"人間=Asana、AI=Notionの棲み分け方針は決定済み。実装未着手。",
-   impact:"タスク管理がAsanaとNotionで二重管理になるリスク",
-   blockedBy:["ISS-002"],blocks:[],relatedDbs:["DB21","DB22"],status:"pending"},
+   desc:"asana-notion-sync稼働中。new NAGARA接続、セクション階層・部門自動同期・クリーンアップ実装済み。GitHub Actions hourly cron稼働中。",
+   impact:"✅ 解決済み: asana-notion-sync稼働中（DB20/DB21同期）",
+   blockedBy:[],blocks:[],relatedDbs:["DB21","DB22"],status:"done"},
   {id:"ISS-012",category:"自動化",severity:"critical",
-   title:"統合アクティビティハブ（DB7）が機能していない",
-   desc:"DB7を全コミュニケーションの統合ハブにする構想があるが、自動連携フロー（Notta/Gmail/Slack/Zoom）が全て未構築。",
-   impact:"「この顧客と最後にいつ何を話した？」にAIが即答できる世界が実現できない",
-   blockedBy:["ISS-008","ISS-009","ISS-010"],blocks:[],relatedDbs:["DB7"],status:"pending"},
+   title:"統合アクティビティハブ（DB7）が部分稼働中",
+   desc:"DB7に2チャネル接続済み: zoom-phone-notion（通話ログ）+ gmail-notion-sync（メール）。Slack対象外。残: Notta連携 + Zoom文字起こし拡張。",
+   impact:"⚡ 部分稼働: 2/3チャネル接続済み（通話+メール）、残りNotta+Zoom拡張",
+   blockedBy:["ISS-008"],blocks:[],relatedDbs:["DB7"],status:"workaround"},
   {id:"ISS-013",category:"権限・組織",severity:"high",
    title:"Teamspace構造が未決定",
    desc:"新WSに作るTeamspaceの数と構成が未決定。7レイヤー（SSOT/CRM/HR/IR/Corp/General/Exec）とTeamspaceの対応を決める必要がある。",
@@ -2966,6 +2987,115 @@ const limitations = [
   },
 ];
 
+function renderNextActions() {
+  const c = document.getElementById('nextActionsContent');
+  if (!c) return;
+
+  const naCategories = [
+    {name:"Notion環境 手動仕上げ", color:"#7c3aed", items:[
+      {priority:"high", title:"child_database手動再作成", desc:"各ページ内のインラインDBはAPI制約で移行不可。必要に応じて手動再作成", owner:"Yusei"},
+      {priority:"high", title:"ビュー設計・構築", desc:"全DBのフィルター・ソート設定（リンクドビュー含む）", owner:"Yusei"},
+      {priority:"medium", title:"テンプレート作成", desc:"DB6(商談)・DB9(CRMタスク)等の営業運用必須テンプレート", owner:"Yusei"},
+      {priority:"medium", title:"オートメーション設定", desc:"プロパティ変更トリガーのNotion内自動化", owner:"Yusei"},
+      {priority:"medium", title:"Teamspace権限設定", desc:"メンバー17名の権限マトリクス定義・適用", owner:"Yusei"},
+    ]},
+    {name:"自動化ツール 残タスク", color:"#2563eb", items:[
+      {priority:"high", title:"Zoom Phone スコープ追加", desc:"marketplace.zoom.usで phone:read:recording_transcript:admin + phone:read:ai_call_summary:admin を追加 → Phase 3（文字起こし・AI要約）実装", owner:"Yusei"},
+      {priority:"medium", title:"Notta→DB7連携", desc:"Nottaプラン確認後、ネイティブ連携（手動）またはZapier（自動）を設定", owner:"Yusei"},
+      {priority:"low", title:"notion-phone-normalizer 手動修正22件", desc:"自動正規化できなかった22件の電話番号を手動修正", owner:"Yusei"},
+    ]},
+    {name:"新規DB構築", color:"#059669", items:[
+      {priority:"medium", title:"DB3事業所・DB5支店の振り分け", desc:"DB2からの事業所・支店データ分離", owner:"AI+Yusei"},
+      {priority:"low", title:"HR層（DB11-14）新規構築", desc:"人事・採用管理4DB。スキーマ設計済み", owner:"AI"},
+      {priority:"low", title:"IR層（DB15-18）新規構築", desc:"投資家関係管理4DB。スキーマ設計済み", owner:"AI"},
+      {priority:"low", title:"DB5支店・DB24プロダクト・DB25 1on1構築", desc:"追加DB群の構築", owner:"AI"},
+    ]},
+    {name:"将来タスク", color:"#94a3b8", items:[
+      {priority:"low", title:"DB12→DB6連携（30分）", desc:"統合コミュニケーション: フォーム→商談パイプライン", owner:"AI"},
+      {priority:"low", title:"SNS→DB19パイプライン", desc:"X API $200/月、note.com API不可 — コスト判断待ち", owner:"Yusei"},
+      {priority:"low", title:"Notion AIエージェント構築", desc:"CRM営業支援Bot等8エージェント構想", owner:"AI+Yusei"},
+    ]},
+  ];
+
+  const priorityColors = {high:"#ef4444", medium:"#f59e0b", low:"#94a3b8"};
+  const priorityLabels = {high:"高", medium:"中", low:"低"};
+
+  // Summary stats
+  const allItems = naCategories.flatMap(c => c.items);
+  const highCount = allItems.filter(i => i.priority === "high").length;
+  const medCount = allItems.filter(i => i.priority === "medium").length;
+  const lowCount = allItems.filter(i => i.priority === "low").length;
+
+  let html = `
+    <div style="background:linear-gradient(135deg,#f0fdf4,#ecfeff);border:2px solid #22c55e;border-radius:12px;padding:20px;margin-bottom:24px;">
+      <h3 style="font-size:1.1rem;font-weight:700;color:#16a34a;margin-bottom:8px;">📊 プロジェクト進捗サマリー（2026-04-10時点）</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px;">
+        <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:800;color:#22c55e;">4,829</div>
+          <div style="font-size:0.78rem;color:var(--text2);">ページ移行完了</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:800;color:#2563eb;">4/6</div>
+          <div style="font-size:0.78rem;color:var(--text2);">自動化ツール稼働中</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:800;color:#ef4444;">${highCount}</div>
+          <div style="font-size:0.78rem;color:var(--text2);">高優先度NA</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:800;color:#f59e0b;">${medCount + lowCount}</div>
+          <div style="font-size:0.78rem;color:var(--text2);">中・低優先度NA</div>
+        </div>
+      </div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.7;">
+        <strong>完了:</strong> データ移行全Phase(A/B/C/D)、重複削除、リレーション整合性検証、4自動化ツール本番接続<br>
+        <strong>稼働中:</strong> zoom-phone-notion / gmail-notion-sync / notion-phone-normalizer / asana-notion-sync
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:1.5rem;font-weight:800;color:#ef4444;">${highCount}</div>
+        <div style="font-size:0.78rem;color:var(--text2);">高優先度</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:1.5rem;font-weight:800;color:#f59e0b;">${medCount}</div>
+        <div style="font-size:0.78rem;color:var(--text2);">中優先度</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:1.5rem;font-weight:800;color:#94a3b8;">${lowCount}</div>
+        <div style="font-size:0.78rem;color:var(--text2);">低優先度</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--accent);">${allItems.length}</div>
+        <div style="font-size:0.78rem;color:var(--text2);">合計NA</div>
+      </div>
+    </div>
+  `;
+
+  for (const cat of naCategories) {
+    html += `<div style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:4px;height:24px;border-radius:2px;background:${cat.color};"></div>
+        <h3 style="font-size:1.05rem;font-weight:700;">${cat.name}</h3>
+        <span style="font-size:0.72rem;color:var(--text2);">${cat.items.length}件</span>
+      </div>`;
+    for (const item of cat.items) {
+      html += `<div style="background:var(--surface);border:1px solid var(--border);border-left:4px solid ${priorityColors[item.priority]};border-radius:0 10px 10px 0;padding:14px 16px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:0.65rem;padding:2px 8px;border-radius:4px;font-weight:700;color:#fff;background:${priorityColors[item.priority]};">${priorityLabels[item.priority]}</span>
+          <span style="font-size:0.92rem;font-weight:700;">${item.title}</span>
+          <span style="font-size:0.7rem;color:var(--text2);margin-left:auto;">担当: ${item.owner}</span>
+        </div>
+        <div style="font-size:0.82rem;color:var(--text2);">${item.desc}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  c.innerHTML = html;
+}
+
 function renderAgents() {
   const c = document.getElementById('agentsContent');
   if (!c) return;
@@ -3306,6 +3436,7 @@ renderActionPlan();
 renderRationale();
 renderIssues();
 renderHub();
+renderNextActions();
 renderAgents();
 </script>
 </body>
