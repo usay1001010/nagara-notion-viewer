@@ -705,7 +705,7 @@ function renderStats() {
 
 function renderLayerSections(filter) {
   const container = document.getElementById("layerSections");
-  const layerOrder = ["ssot","crm","hr","ir","corporate","general","executive"];
+  const layerOrder = ["sales","hr","ir","general","shachoushitsu","gaiko","dev"];
   let html = "";
   for (const lk of layerOrder) {
     const ly = layers[lk];
@@ -3393,15 +3393,14 @@ function renderAgents() {
     return `<span style="font-size:0.65rem;padding:1px 7px;border-radius:4px;font-weight:700;background:#f1f5f9;color:#6b7294;">${status}</span>`;
   }
 
-  // Layer grouping for Section B
+  // Layer grouping for Section B (v2: 7 Teamspaces)
   const layerGroups = [
-    {key:"ssot", label:"SSOT基盤", color:"#7c3aed", dbs:["DB1","DB2","DB3","DB4","DB5"]},
-    {key:"crm", label:"CRM・営業", color:"#2563eb", dbs:["DB6","DB7","DB8","DB9","DB10"]},
-    {key:"hr", label:"人事・採用", color:"#059669", dbs:["DB11","DB12","DB13","DB14"]},
-    {key:"ir", label:"投資家関係", color:"#dc2626", dbs:["DB15","DB16","DB17","DB18"]},
-    {key:"corporate", label:"コーポレート", color:"#f59e0b", dbs:["DB19"]},
-    {key:"general", label:"General", color:"#0ea5e9", dbs:["DB20","DB21","DB22","DB23","DB24"]},
-    {key:"executive", label:"Executive", color:"#ec4899", dbs:["DB25"]},
+    {key:"sales", label:"Sales (CRM基盤+営業)", color:"#2563eb", dbs:["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10"]},
+    {key:"hr", label:"HR 人事・採用", color:"#059669", dbs:["DB11","DB12","DB13","DB14","DB26"]},
+    {key:"ir", label:"IR 投資家関係", color:"#dc2626", dbs:["DB15","DB16","DB17","DB18"]},
+    {key:"general", label:"General 社内運営", color:"#0ea5e9", dbs:["DB20","DB21","DB22","DB23"]},
+    {key:"shachoushitsu", label:"社長室", color:"#f59e0b", dbs:["DB19","DB24"]},
+    {key:"gaiko", label:"外交 (ステークホルダー基盤)", color:"#7c3aed", dbs:["DB31","DB32","DB33","DB34","DB35"]},
   ];
 
   let html = '';
