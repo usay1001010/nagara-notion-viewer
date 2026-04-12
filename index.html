@@ -218,7 +218,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
 <header>
   <h1>NAGARA Notion Architecture Viewer</h1>
-  <p>25 DBs / 7 Layers / 4,829ページ移行完了 / 自動化4/6稼働 — 最終更新: 2026-04-10</p>
+  <p>29 DBs / 7 Teamspaces (Dev=TBD) / 4,829ページ移行完了 / 自動化4/6稼働 — 最終更新: 2026-04-12 <span style="background:#7c3aed;color:#fff;padding:2px 8px;border-radius:10px;font-size:0.7rem;margin-left:6px;">v2 理想案適用</span></p>
 </header>
 
 <div class="container">
@@ -245,6 +245,15 @@ canvas#archCanvas { display:block; margin:0 auto; }
   </div>
 
   <div class="tab-content" id="tab-diagram">
+    <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:0.85rem;line-height:1.6;">
+      <b style="color:#7c3aed;">v2 リレーション設計ルール</b>
+      <ul style="margin:6px 0 0;padding-left:20px;color:var(--text2);">
+        <li>CRM基盤(Sales DB1-4) → 外交(DB31-35) は<b>紹介元の一方向のみ</b></li>
+        <li>DB1-4 相互リレーション は<b>原則なし</b>（自己参照=Phase 0-8判断待ち）</li>
+        <li>外交TS内: DB31→DB32→DB33 の階層リレーションで完結</li>
+        <li>HR/IR → 外交 は Closed→TBD 接続（権限テストPhase 0-4要）</li>
+      </ul>
+    </div>
     <div class="canvas-wrap">
       <canvas id="archCanvas" width="1400" height="640"></canvas>
     </div>
@@ -280,76 +289,69 @@ canvas#archCanvas { display:block; margin:0 auto; }
 <script>
 // ===== DATA =====
 const layers = {
-  ssot:      {name:"SSOT基盤",    color:"#7c3aed", bg:"#f5f3ff", count:5, desc:"全社共通マスタ"},
-  crm:       {name:"CRM・営業",   color:"#2563eb", bg:"#eff6ff", count:5, desc:"営業パイプライン"},
-  hr:        {name:"人事・採用",   color:"#059669", bg:"#ecfdf5", count:4, desc:"採用管理 Closed"},
-  ir:        {name:"投資家関係",   color:"#dc2626", bg:"#fef2f2", count:4, desc:"投資家管理 Closed"},
-  corporate: {name:"コーポレート", color:"#f59e0b", bg:"#fffbeb", count:1, desc:"マーケティング"},
-  general:   {name:"General",     color:"#0ea5e9", bg:"#ecfeff", count:5, desc:"社内運営"},
-  executive: {name:"Executive",   color:"#ec4899", bg:"#fdf2f8", count:1, desc:"経営層 Closed"},
+  sales:        {name:"Sales",      color:"#2563eb", bg:"#eff6ff", count:9, desc:"CRM基盤(DB1-4顧客)+営業パイプライン Open"},
+  hr:           {name:"HR",         color:"#059669", bg:"#ecfdf5", count:5, desc:"採用管理 Closed"},
+  ir:           {name:"IR",         color:"#dc2626", bg:"#fef2f2", count:4, desc:"投資家管理 Closed"},
+  general:      {name:"General",    color:"#0ea5e9", bg:"#ecfeff", count:4, desc:"社内運営 Open"},
+  shachoushitsu:{name:"社長室",     color:"#f59e0b", bg:"#fffbeb", count:2, desc:"経営層 Closed"},
+  gaiko:        {name:"外交",       color:"#7c3aed", bg:"#f5f3ff", count:5, desc:"ステークホルダー基盤 TBD"},
+  dev:          {name:"Dev",        color:"#64748b", bg:"#f1f5f9", count:0, desc:"開発部長管轄 Closed TBD（目的未定）"},
 };
 
 const dbs = [
-  // SSOT基盤
-  {id:"DB1",name:"法人（Accounts）",layer:"ssot",desc:"法人管理の最上位。施設/事業所/支店/人の全起点",
+  // === Sales Teamspace: CRM基盤 (DB1-4) + 営業パイプライン (DB6-10) ===
+  {id:"DB1",name:"法人（Accounts）",layer:"sales",desc:"顧客法人管理の最上位。施設/事業所/人の全起点",
    props:[
      {n:"法人名",t:"title"},{n:"法人コード",t:"unique_id",x:"ACC"},
      {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","商談中","関係継続中","契約法人","見送り","一時中断"]},
      {n:"組織区分",t:"select",o:["社会福祉法人","医療法人","株式会社","合同会社","NPO法人","行政","社団法人","その他"]},
      {n:"ランク",t:"select",o:["S","A","B","C"]},
-     {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元","投資家","エージェント"]},
+     {n:"取引種別",t:"multi_select",o:["顧客","パートナー"]},
      {n:"エリア（都道府県）",t:"select",o:["47都道府県"]},
      {n:"接触元",t:"select",o:["紹介","SNS","HP問合せ","テレアポ","展示会","セミナー","その他"]},
      {n:"電話番号",t:"phone_number"},{n:"メールアドレス",t:"email"},{n:"HP",t:"url"},
      {n:"施設一覧",t:"relation",to:"DB2"},{n:"事業所一覧",t:"relation",to:"DB3"},
-     {n:"名刺一覧",t:"relation",to:"DB4"},{n:"支店一覧",t:"relation",to:"DB5"},
+     {n:"名刺一覧",t:"relation",to:"DB4"},
      {n:"商談一覧",t:"relation",to:"DB6"},{n:"活動一覧",t:"relation",to:"DB7"},
      {n:"契約一覧",t:"relation",to:"DB8"},{n:"ドキュメント一覧",t:"relation",to:"DB23"},
      {n:"Generalタスク",t:"relation",to:"DB22"},{n:"IRタスク",t:"relation",to:"DB18"},
-     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},
+     {n:"紹介元（法人SH）",t:"relation",to:"DB31"},
      {n:"紹介元（個人）",t:"relation",to:"DB4"},
+     {n:"子法人一覧",t:"relation",to:"DB1"},{n:"親法人",t:"relation",to:"DB1"},
      {n:"施設数",t:"rollup",rp:"施設一覧",tp:"施設名",fn:"count"},
      {n:"事業所数",t:"rollup",rp:"事業所一覧",tp:"事業所名",fn:"count"},
    ]},
-  {id:"DB2",name:"施設（Facilities）",layer:"ssot",desc:"法人配下の施設。営業ステータス・エリア追跡",
+  {id:"DB2",name:"施設（Facilities）",layer:"sales",desc:"法人配下の施設。営業ステータス・エリア追跡",
    props:[
      {n:"施設名",t:"title"},{n:"施設コード",t:"unique_id",x:"FAC"},
      {n:"営業ステータス（記録）",t:"select",o:["未接触","アプローチ中","日程調整中","アポ取得","商談済み","契約施設"]},
      {n:"エリア（都道府県）",t:"select",o:["47都道府県"]},
      {n:"上位法人",t:"relation",to:"DB1"},{n:"事業所一覧",t:"relation",to:"DB3"},
      {n:"所属メンバー",t:"relation",to:"DB4"},
-     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+     {n:"紹介元（法人SH）",t:"relation",to:"DB31"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
    ]},
-  {id:"DB3",name:"事業所（Offices）",layer:"ssot",desc:"介護事業所。サービス種別・導入ステータス・定員管理",
+  {id:"DB3",name:"事業所（Offices）",layer:"sales",desc:"介護事業所。サービス種別・導入ステータス・定員管理",
    props:[
      {n:"事業所名",t:"title"},{n:"事業所コード",t:"unique_id",x:"OFF"},
      {n:"サービス種別",t:"select",o:["居宅介護支援","訪問介護","通所介護","特養","グループホーム","他"]},
      {n:"導入ステータス",t:"select",o:["未導入","トライアル見込み","準備中","トライアル中","契約中"]},
      {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},
      {n:"名刺一覧",t:"relation",to:"DB4"},{n:"契約一覧",t:"relation",to:"DB8"},{n:"プロダクト",t:"relation",to:"DB24"},
-     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+     {n:"紹介元（法人SH）",t:"relation",to:"DB31"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
      {n:"定員",t:"number"},
    ]},
-  {id:"DB4",name:"人・名刺（Contacts）",layer:"ssot",desc:"個人の連絡先。顧客/採用候補/投資家を兼任可能",
+  {id:"DB4",name:"人・名刺（Contacts）",layer:"sales",desc:"顧客の連絡先。CRM基盤の個人マスタ",
    props:[
      {n:"氏名",t:"title"},{n:"名刺コード",t:"unique_id",x:"CON"},
-     {n:"取引種別",t:"multi_select",o:["顧客","ステークホルダー","パートナー","紹介元","投資家","採用候補"]},
-     {n:"カテゴリ",t:"multi_select",o:["顧客","パートナー","投資家","チームメンバー","アドバイザー"]},
-     {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},{n:"所属事業所",t:"relation",to:"DB3"},{n:"所属支店",t:"relation",to:"DB5"},
+     {n:"取引種別",t:"multi_select",o:["顧客","パートナー"]},
+     {n:"カテゴリ",t:"multi_select",o:["顧客","パートナー","チームメンバー","アドバイザー"]},
+     {n:"所属法人",t:"relation",to:"DB1"},{n:"所属施設",t:"relation",to:"DB2"},{n:"所属事業所",t:"relation",to:"DB3"},
      {n:"IRタスク",t:"relation",to:"DB18"},
-     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
+     {n:"紹介元（個人）",t:"relation",to:"DB4"},
      {n:"電話番号",t:"phone_number"},{n:"メール",t:"email"},
    ]},
-  {id:"DB5",name:"支店（Branches）",layer:"ssot",desc:"法人配下の支店。銀行等のエリア追跡・紹介元管理",
-   props:[
-     {n:"支店名",t:"title"},{n:"支店コード",t:"unique_id",x:"BRN"},
-     {n:"上位法人",t:"relation",to:"DB1"},{n:"所属メンバー",t:"relation",to:"DB4"},
-     {n:"エリア（都道府県）",t:"select",o:["47都道府県"]},
-     {n:"住所",t:"rich_text"},{n:"電話番号",t:"phone_number"},{n:"備考",t:"rich_text"},
-     {n:"紹介元（法人）",t:"relation",to:"DB1"},{n:"紹介元（支店）",t:"relation",to:"DB5"},{n:"紹介元（個人）",t:"relation",to:"DB4"},
-   ]},
-  // CRM・営業
-  {id:"DB6",name:"商談（Deals）",layer:"crm",desc:"営業パイプライン。ステージ・確度・MRR管理",
+  // Sales: 営業パイプライン
+  {id:"DB6",name:"商談（Deals）",layer:"sales",desc:"営業パイプライン。ステージ・確度・MRR管理",
    props:[
      {n:"商談名",t:"title"},{n:"商談コード",t:"unique_id",x:"DEL"},
      {n:"パイプラインステージ",t:"select",o:["リード","アプローチ","ヒアリング","提案","見積","受注","失注"]},
@@ -358,7 +360,7 @@ const dbs = [
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"事業所",t:"relation",to:"DB3"},
      {n:"主担当者",t:"relation",to:"DB4"},{n:"活動一覧",t:"relation",to:"DB7"},{n:"契約",t:"relation",to:"DB8"},
    ]},
-  {id:"DB7",name:"活動（CRM Activity）",layer:"crm",desc:"全コミュニケーション統合ハブ。28プロパティ。自動投入対応",
+  {id:"DB7",name:"活動（CRM Activity）",layer:"sales",desc:"全コミュニケーション統合ハブ。28プロパティ。自動投入対応",
    props:[
      {n:"件名",t:"title"},{n:"活動コード",t:"unique_id",x:"ACT"},
      {n:"活動タイプ",t:"select",o:["訪問","電話","メール","Web会議","デモ","社内MTG","Slack会話","Notta","展示会","個人電話","カレンダー","その他"]},
@@ -369,14 +371,14 @@ const dbs = [
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
      {n:"商談",t:"relation",to:"DB6"},{n:"参加者",t:"relation",to:"DB4"},
    ]},
-  {id:"DB8",name:"契約（Contracts）",layer:"crm",desc:"契約ライフサイクル。MRR・自動更新・解約理由",
+  {id:"DB8",name:"契約（Contracts）",layer:"sales",desc:"契約ライフサイクル。MRR・自動更新・解約理由",
    props:[
      {n:"契約名",t:"title"},{n:"契約コード",t:"unique_id",x:"CTR"},
      {n:"契約ステータス",t:"select",o:["依頼中","準備中","送付済","締結完了","解約"]},
      {n:"MRR",t:"number"},{n:"契約開始日",t:"date"},{n:"契約終了日",t:"date"},
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"商談",t:"relation",to:"DB6"},
    ]},
-  {id:"DB9",name:"CRMタスク（Sales Tasks）",layer:"crm",desc:"顧客への次のアクション。営業専用タスク",
+  {id:"DB9",name:"CRMタスク（Sales Tasks）",layer:"sales",desc:"顧客への次のアクション。営業専用タスク",
    props:[
      {n:"タスク名",t:"title"},{n:"タスクコード",t:"unique_id",x:"STK"},
      {n:"ステータス",t:"select",o:["未着手","Next Action","進行中","返信待ち","完了"]},
@@ -385,7 +387,7 @@ const dbs = [
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
      {n:"商談",t:"relation",to:"DB6"},{n:"関連先",t:"relation",to:"DB4"},
    ]},
-  {id:"DB10",name:"商談報告フォーム（Sales Report）",layer:"crm",desc:"営業現場からの報告入力。文字起こし→議事録生成",
+  {id:"DB10",name:"商談報告フォーム（Sales Report）",layer:"sales",desc:"営業現場からの報告入力。文字起こし→議事録生成",
    props:[
      {n:"報告タイトル",t:"title"},{n:"報告コード",t:"unique_id",x:"RPT"},
      {n:"活動タイプ",t:"select",o:["訪問","Web会議","電話","メール","デモ"]},
@@ -393,63 +395,69 @@ const dbs = [
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},
      {n:"商談",t:"relation",to:"DB6"},{n:"名刺",t:"relation",to:"DB4"},
    ]},
-  // 人事・採用 Closed
+  // === HR Teamspace (DB11-14, DB26) Closed ===
   {id:"DB11",name:"面談（HR Interviews）",layer:"hr",desc:"採用面談の進捗管理。エージェント追跡",
    props:[
      {n:"タイトル",t:"title"},{n:"面談コード",t:"unique_id",x:"HRI"},
      {n:"ステータス",t:"select",o:["リード","面談調整中","面談済み","オファー","採用","不採用"]},
-     {n:"候補者",t:"relation",to:"DB4"},{n:"エージェント",t:"relation",to:"DB1"},
+     {n:"候補者",t:"relation",to:"DB33"},{n:"エージェント",t:"relation",to:"DB31"},
      {n:"面談日",t:"date"},{n:"評価",t:"select",o:["A","B","C","D"]},
    ]},
   {id:"DB12",name:"活動（HR Activity）",layer:"hr",desc:"採用活動の記録。面談・メール等",
    props:[
      {n:"件名",t:"title"},{n:"活動タイプ",t:"select",o:["面談","メール","電話","エージェントMTG"]},
-     {n:"活動日時",t:"date"},{n:"候補者",t:"relation",to:"DB4"},{n:"エージェント",t:"relation",to:"DB1"},
+     {n:"活動日時",t:"date"},{n:"候補者",t:"relation",to:"DB33"},{n:"エージェント",t:"relation",to:"DB31"},
      {n:"面談",t:"relation",to:"DB11"},
    ]},
   {id:"DB13",name:"雇契約（Employment）",layer:"hr",desc:"雇用契約管理",
    props:[
      {n:"契約名",t:"title"},{n:"ステータス",t:"select",o:["準備中","締結","終了"]},
-     {n:"候補者",t:"relation",to:"DB4"},{n:"雇用形態",t:"select",o:["正社員","契約","業務委託","インターン"]},
+     {n:"候補者",t:"relation",to:"DB33"},{n:"雇用形態",t:"select",o:["正社員","契約","業務委託","インターン"]},
      {n:"開始日",t:"date"},
    ]},
   {id:"DB14",name:"人事タスク（HR Tasks）",layer:"hr",desc:"採用関連タスク",
    props:[
      {n:"タスク名",t:"title"},{n:"ステータス",t:"select",o:["未着手","進行中","完了"]},
      {n:"担当者",t:"people"},{n:"締切",t:"date"},
-     {n:"候補者",t:"relation",to:"DB4"},{n:"面談",t:"relation",to:"DB11"},
+     {n:"候補者",t:"relation",to:"DB33"},{n:"面談",t:"relation",to:"DB11"},
    ]},
-  // 投資家関係 Closed
+  {id:"DB26",name:"採用ポジション（Positions）",layer:"hr",desc:"募集職種管理。選考との紐付け",
+   props:[
+     {n:"ポジション名",t:"title"},{n:"ポジションコード",t:"unique_id",x:"POS"},
+     {n:"ステータス",t:"select",o:["募集中","停止","充足"]},
+     {n:"部門",t:"relation",to:"DB20"},{n:"面談一覧",t:"relation",to:"DB11"},
+   ]},
+  // === IR Teamspace (DB15-18) Closed ===
   {id:"DB15",name:"面談（IR Meetings）",layer:"ir",desc:"投資家面談・ピッチ管理",
    props:[
      {n:"タイトル",t:"title"},{n:"面談コード",t:"unique_id",x:"IRM"},
      {n:"ステータス",t:"select",o:["リード","面談調整中","ピッチ済み","DD中","契約交渉","クロージング"]},
-     {n:"投資家（法人）",t:"relation",to:"DB1"},{n:"投資家（個人）",t:"relation",to:"DB4"},
-     {n:"支店",t:"relation",to:"DB5"},
+     {n:"投資家（法人）",t:"relation",to:"DB31"},{n:"投資家（個人）",t:"relation",to:"DB33"},
+     {n:"支店",t:"relation",to:"DB32"},
      {n:"面談日",t:"date"},
    ]},
   {id:"DB16",name:"活動（IR Activity）",layer:"ir",desc:"投資家との活動記録",
    props:[
      {n:"件名",t:"title"},{n:"活動タイプ",t:"select",o:["面談","メール","電話","ピッチ"]},
      {n:"活動日時",t:"date"},
-     {n:"投資家（法人）",t:"relation",to:"DB1"},{n:"投資家（個人）",t:"relation",to:"DB4"},
-     {n:"支店",t:"relation",to:"DB5"},
+     {n:"投資家（法人）",t:"relation",to:"DB31"},{n:"投資家（個人）",t:"relation",to:"DB33"},
+     {n:"支店",t:"relation",to:"DB32"},
      {n:"面談",t:"relation",to:"DB15"},
    ]},
   {id:"DB17",name:"契約（IR Contracts）",layer:"ir",desc:"投資契約管理",
    props:[
      {n:"契約名",t:"title"},{n:"ステータス",t:"select",o:["交渉中","締結","終了"]},
-     {n:"投資額",t:"number"},{n:"投資家",t:"relation",to:"DB1"},{n:"支店",t:"relation",to:"DB5"},{n:"開始日",t:"date"},
+     {n:"投資額",t:"number"},{n:"投資家",t:"relation",to:"DB31"},{n:"支店",t:"relation",to:"DB32"},{n:"開始日",t:"date"},
    ]},
   {id:"DB18",name:"タスク（IR Tasks）",layer:"ir",desc:"投資関連タスク",
    props:[
      {n:"タスク名",t:"title"},{n:"ステータス",t:"select",o:["未着手","進行中","完了"]},
      {n:"担当者",t:"people"},{n:"締切",t:"date"},
      {n:"面談",t:"relation",to:"DB15"},
-     {n:"投資家法人",t:"relation",to:"DB1"},{n:"投資家個人",t:"relation",to:"DB4"},{n:"支店",t:"relation",to:"DB5"},
+     {n:"投資家法人",t:"relation",to:"DB31"},{n:"投資家個人",t:"relation",to:"DB33"},{n:"支店",t:"relation",to:"DB32"},
    ]},
-  // コーポレート
-  {id:"DB19",name:"発信コンテンツ（Contents）",layer:"corporate",desc:"SNS投稿パイプライン。11アカウント対応",
+  // === 社長室 Teamspace (DB19, DB24) Closed ===
+  {id:"DB19",name:"発信コンテンツ（Contents）",layer:"shachoushitsu",desc:"SNS投稿パイプライン。11アカウント対応",
    props:[
      {n:"タイトル",t:"title"},{n:"コンテンツコード",t:"unique_id",x:"CNT"},
      {n:"ステータス",t:"select",o:["企画","下書き","レビュー","承認済","公開済"]},
@@ -457,7 +465,14 @@ const dbs = [
      {n:"取引先",t:"relation",to:"DB1"},{n:"施設",t:"relation",to:"DB2"},{n:"人・名刺",t:"relation",to:"DB4"},
      {n:"プロジェクト",t:"relation",to:"DB21"},
    ]},
-  // General
+  {id:"DB24",name:"プロダクト（Products）",layer:"shachoushitsu",desc:"自社プロダクト管理。ながらかいご/キクノート等",
+   props:[
+     {n:"プロダクト名",t:"title"},{n:"プロダクトコード",t:"unique_id",x:"PRD"},
+     {n:"ステータス",t:"select",o:["企画","開発中","ベータ","リリース済","終了"]},
+     {n:"カテゴリ",t:"select",o:["SaaS","ハードウェア","コンサル"]},
+     {n:"ローンチ日",t:"date"},
+   ]},
+  // === General Teamspace (DB20-23) Open ===
   {id:"DB20",name:"部門（Departments）",layer:"general",desc:"組織階層管理。上位DEPT自己参照",
    props:[
      {n:"部門名",t:"title"},{n:"部署コード",t:"unique_id",x:"DPT"},
@@ -492,134 +507,165 @@ const dbs = [
      {n:"取引先",t:"relation",to:"DB1"},{n:"プロジェクト",t:"relation",to:"DB21"},{n:"部門",t:"relation",to:"DB20"},
      {n:"プロダクト",t:"relation",to:"DB24"},{n:"タスク",t:"relation",to:"DB22"},
    ]},
-  {id:"DB24",name:"プロダクト（Products）",layer:"general",desc:"自社プロダクト管理。ながらかいご/キクノート等",
+  // === 外交 Teamspace (DB31-35) ===
+  {id:"DB31",name:"法人（SH Accounts）",layer:"gaiko",desc:"ステークホルダー法人。銀行/投資家/エージェント/紹介元",
    props:[
-     {n:"プロダクト名",t:"title"},{n:"プロダクトコード",t:"unique_id",x:"PRD"},
-     {n:"ステータス",t:"select",o:["企画","開発中","ベータ","リリース済","終了"]},
-     {n:"カテゴリ",t:"select",o:["SaaS","ハードウェア","コンサル"]},
-     {n:"ローンチ日",t:"date"},
+     {n:"法人名",t:"title"},{n:"SH法人コード",t:"unique_id",x:"SHA"},
+     {n:"SH種別",t:"multi_select",o:["投資家","エージェント","紹介元","銀行","パートナー"]},
+     {n:"エリア（都道府県）",t:"select",o:["47都道府県"]},
+     {n:"電話番号",t:"phone_number"},{n:"メールアドレス",t:"email"},{n:"HP",t:"url"},
+     {n:"支店一覧",t:"relation",to:"DB32"},{n:"メンバー一覧",t:"relation",to:"DB33"},
+     {n:"SHタスク一覧",t:"relation",to:"DB34"},{n:"SH活動一覧",t:"relation",to:"DB35"},
    ]},
-  // Executive
-  {id:"DB25",name:"1on1記録（One-on-One）",layer:"executive",desc:"メンバー別1on1。ムード追跡。経営層限定",
+  {id:"DB32",name:"支店（SH Branches）",layer:"gaiko",desc:"ステークホルダー法人配下の支店。旧DB5",
    props:[
-     {n:"タイトル",t:"title"},{n:"1on1コード",t:"unique_id",x:"OOO"},
-     {n:"ムード",t:"select",o:["良好","普通","要注意"]},
-     {n:"日付",t:"date"},{n:"メンバー",t:"people"},{n:"マネージャー",t:"people"},
-     {n:"部門",t:"relation",to:"DB20"},
+     {n:"支店名",t:"title"},{n:"支店コード",t:"unique_id",x:"BRN"},
+     {n:"上位法人",t:"relation",to:"DB31"},{n:"所属メンバー",t:"relation",to:"DB33"},
+     {n:"エリア（都道府県）",t:"select",o:["47都道府県"]},
+     {n:"住所",t:"rich_text"},{n:"電話番号",t:"phone_number"},{n:"備考",t:"rich_text"},
+   ]},
+  {id:"DB33",name:"人（SH Contacts）",layer:"gaiko",desc:"ステークホルダー個人。投資家/採用候補/エージェント担当者",
+   props:[
+     {n:"氏名",t:"title"},{n:"SH人コード",t:"unique_id",x:"SHC"},
+     {n:"SH種別",t:"multi_select",o:["投資家","エージェント","紹介元","採用候補","アドバイザー"]},
+     {n:"所属法人",t:"relation",to:"DB31"},{n:"所属支店",t:"relation",to:"DB32"},
+     {n:"電話番号",t:"phone_number"},{n:"メール",t:"email"},
+   ]},
+  {id:"DB34",name:"SHタスク（SH Tasks）",layer:"gaiko",desc:"ステークホルダー対応タスク",
+   props:[
+     {n:"タスク名",t:"title"},{n:"SHタスクコード",t:"unique_id",x:"SHT"},
+     {n:"ステータス",t:"select",o:["未着手","進行中","完了"]},
+     {n:"優先度",t:"select",o:["至急","高","中","低"]},
+     {n:"締切",t:"date"},{n:"担当者",t:"people"},
+     {n:"法人SH",t:"relation",to:"DB31"},{n:"人SH",t:"relation",to:"DB33"},
+   ]},
+  {id:"DB35",name:"SH活動（SH Activity）",layer:"gaiko",desc:"ステークホルダーとの活動記録",
+   props:[
+     {n:"件名",t:"title"},{n:"SH活動コード",t:"unique_id",x:"SAC"},
+     {n:"活動タイプ",t:"select",o:["面談","メール","電話","訪問","Web会議"]},
+     {n:"活動日時",t:"date"},{n:"サマリ",t:"rich_text"},
+     {n:"法人SH",t:"relation",to:"DB31"},{n:"支店SH",t:"relation",to:"DB32"},{n:"人SH",t:"relation",to:"DB33"},
    ]},
 ];
 
 const relations = [
-  // === SSOT hierarchy ===
-  {f:"DB1",t:"DB2",l:"施設一覧"},{f:"DB1",t:"DB3",l:"事業所一覧"},{f:"DB1",t:"DB4",l:"名刺一覧"},{f:"DB1",t:"DB5",l:"支店一覧"},
+  // === Sales CRM基盤 hierarchy ===
+  {f:"DB1",t:"DB2",l:"施設一覧"},{f:"DB1",t:"DB3",l:"事業所一覧"},{f:"DB1",t:"DB4",l:"名刺一覧"},
   {f:"DB2",t:"DB3",l:"事業所一覧"},{f:"DB2",t:"DB4",l:"所属メンバー"},
-  {f:"DB3",t:"DB4",l:"名刺一覧"},        // #6 追加（バグ修正）
-  {f:"DB3",t:"DB8",l:"契約一覧"},         // #7 追加（バグ修正）
-  {f:"DB3",t:"DB24",l:"プロダクト"},      // NEW: 事業所→プロダクト（導入管理の基点）
-  {f:"DB5",t:"DB4",l:"所属メンバー"},
-  // SSOT self-ref
-  {f:"DB1",t:"DB1",l:"紹介元（法人）"},
-  {f:"DB5",t:"DB5",l:"紹介元（支店）"},
+  {f:"DB3",t:"DB4",l:"名刺一覧"},
+  {f:"DB3",t:"DB8",l:"契約一覧"},
+  {f:"DB3",t:"DB24",l:"プロダクト"},
+  // CRM基盤 self-ref
+  {f:"DB1",t:"DB1",l:"子法人一覧/親法人"},
   {f:"DB4",t:"DB4",l:"紹介元（個人）"},
 
-  // === CRM → SSOT ===
+  // === Sales CRM活動 → CRM基盤 ===
   {f:"DB6",t:"DB1",l:"取引先"},{f:"DB6",t:"DB2",l:"施設"},{f:"DB6",t:"DB3",l:"事業所"},{f:"DB6",t:"DB4",l:"主担当者"},
   {f:"DB7",t:"DB1",l:"取引先"},{f:"DB7",t:"DB2",l:"施設"},{f:"DB7",t:"DB6",l:"商談"},{f:"DB7",t:"DB4",l:"参加者"},
   {f:"DB8",t:"DB1",l:"取引先"},{f:"DB8",t:"DB2",l:"施設"},{f:"DB8",t:"DB6",l:"商談"},
   {f:"DB9",t:"DB1",l:"取引先"},{f:"DB9",t:"DB2",l:"施設"},{f:"DB9",t:"DB6",l:"商談"},{f:"DB9",t:"DB4",l:"関連先"},
   {f:"DB10",t:"DB1",l:"取引先"},{f:"DB10",t:"DB2",l:"施設"},{f:"DB10",t:"DB6",l:"商談"},{f:"DB10",t:"DB4",l:"名刺"},
-  // CRM internal
+  // Sales internal
   {f:"DB6",t:"DB7",l:"活動一覧"},{f:"DB6",t:"DB8",l:"契約"},
 
-  // === HR → SSOT ===
-  {f:"DB11",t:"DB4",l:"候補者"},{f:"DB11",t:"DB1",l:"エージェント"},
-  {f:"DB12",t:"DB4",l:"候補者"},{f:"DB12",t:"DB1",l:"エージェント"},{f:"DB12",t:"DB11",l:"面談"},
-  {f:"DB13",t:"DB4",l:"候補者"},
-  {f:"DB14",t:"DB4",l:"候補者"},{f:"DB14",t:"DB11",l:"面談"},
+  // === HR → 外交基盤 ===
+  {f:"DB11",t:"DB33",l:"候補者"},{f:"DB11",t:"DB31",l:"エージェント"},
+  {f:"DB12",t:"DB33",l:"候補者"},{f:"DB12",t:"DB31",l:"エージェント"},{f:"DB12",t:"DB11",l:"面談"},
+  {f:"DB13",t:"DB33",l:"候補者"},
+  {f:"DB14",t:"DB33",l:"候補者"},{f:"DB14",t:"DB11",l:"面談"},
+  {f:"DB26",t:"DB20",l:"部門"},{f:"DB26",t:"DB11",l:"面談一覧"},
 
-  // === IR → SSOT ===
-  {f:"DB15",t:"DB1",l:"投資家法人"},{f:"DB15",t:"DB4",l:"投資家個人"},
-  {f:"DB15",t:"DB5",l:"支店"},            // #16 追加
-  {f:"DB16",t:"DB1",l:"投資家法人"},{f:"DB16",t:"DB4",l:"投資家個人"},{f:"DB16",t:"DB15",l:"面談"},
-  {f:"DB16",t:"DB5",l:"支店"},            // #17 追加
-  {f:"DB17",t:"DB1",l:"投資家"},
-  {f:"DB17",t:"DB5",l:"支店"},            // #18 追加
-  {f:"DB18",t:"DB15",l:"面談"},
-  {f:"DB18",t:"DB1",l:"投資家法人"},       // #1 追加
-  {f:"DB18",t:"DB4",l:"投資家個人"},       // #9 追加
-  {f:"DB18",t:"DB5",l:"支店"},            // #13 追加
+  // === IR → 外交基盤 ===
+  {f:"DB15",t:"DB31",l:"投資家法人"},{f:"DB15",t:"DB33",l:"投資家個人"},{f:"DB15",t:"DB32",l:"支店"},
+  {f:"DB16",t:"DB31",l:"投資家法人"},{f:"DB16",t:"DB33",l:"投資家個人"},{f:"DB16",t:"DB15",l:"面談"},{f:"DB16",t:"DB32",l:"支店"},
+  {f:"DB17",t:"DB31",l:"投資家法人"},{f:"DB17",t:"DB32",l:"支店"},
+  {f:"DB18",t:"DB15",l:"面談"},{f:"DB18",t:"DB31",l:"投資家法人"},{f:"DB18",t:"DB33",l:"投資家個人"},{f:"DB18",t:"DB32",l:"支店"},
 
-  // === Corporate → SSOT/General ===
-  {f:"DB19",t:"DB1",l:"取引先"},
-  {f:"DB19",t:"DB2",l:"施設"},            // #19 追加
-  {f:"DB19",t:"DB4",l:"人・名刺"},        // #20 追加
+  // === 社長室 ===
   {f:"DB19",t:"DB21",l:"PJ"},
 
   // === General internal ===
   {f:"DB20",t:"DB20",l:"上位DEPT"},{f:"DB20",t:"DB21",l:"PJ一覧"},{f:"DB20",t:"DB22",l:"タスク"},{f:"DB20",t:"DB23",l:"ドキュメント"},
   {f:"DB21",t:"DB21",l:"上位PJ"},{f:"DB21",t:"DB22",l:"タスク"},{f:"DB21",t:"DB23",l:"ドキュメント"},
   {f:"DB22",t:"DB22",l:"親タスク"},
-  {f:"DB22",t:"DB23",l:"ドキュメント"},    // #21 追加
-  {f:"DB23",t:"DB24",l:"プロダクト"},      // #23 追加
+  {f:"DB22",t:"DB23",l:"ドキュメント"},
+  {f:"DB23",t:"DB24",l:"プロダクト"},
 
-  // === Executive → General ===
-  {f:"DB25",t:"DB20",l:"部門"},
-  // DB25↔DB22 削除（#22）
-  // DB24↔DB21 削除（#27）
+  // === 外交 internal ===
+  {f:"DB31",t:"DB32",l:"支店一覧"},{f:"DB31",t:"DB33",l:"メンバー一覧"},
+  {f:"DB31",t:"DB34",l:"SHタスク"},{f:"DB31",t:"DB35",l:"SH活動"},
+  {f:"DB32",t:"DB33",l:"所属メンバー"},
+  {f:"DB34",t:"DB33",l:"人SH"},
+  {f:"DB35",t:"DB32",l:"支店SH"},{f:"DB35",t:"DB33",l:"人SH"},
 
-  // === Cross-layer ===
-  {f:"DB1",t:"DB23",l:"ドキュメント"},     // #25 残す
-  {f:"DB1",t:"DB22",l:"Generalタスク"},   // #3 追加
-  {f:"DB1",t:"DB18",l:"IRタスク"},        // #1 追加（逆方向も）
-  // DB7↔DB23 削除（#14）
+  // === Cross-Teamspace ===
+  {f:"DB1",t:"DB31",l:"紹介元（法人SH）"},
+  {f:"DB2",t:"DB31",l:"紹介元（法人SH）"},
+  {f:"DB3",t:"DB31",l:"紹介元（法人SH）"},
+  {f:"DB1",t:"DB23",l:"ドキュメント"},
+  {f:"DB1",t:"DB22",l:"Generalタスク"},
+  {f:"DB1",t:"DB18",l:"IRタスク"},
 ];
 
 const phases = [
-  {name:"Phase 0: 基盤確定",items:[
-    {l:"SSOT基盤 DB1-5 構築",s:"done"},{l:"CRM DB6-10 構築",s:"done"},
-    {l:"DB7 活動タイプ13種+ソース追跡9props",s:"done"},
-    {l:"紹介元リレーション（法人/支店/人）設計",s:"done"},
-    {l:"DB番号振り直し（25DB/7レイヤー）",s:"done"},
-    {l:"DB5 支店DB設計",s:"pending"},{l:"DB24 プロダクトDB設計",s:"pending"},
-    {l:"Teamspace構造決定",s:"pending"},{l:"権限設計（17名）",s:"pending"},
+  {name:"Phase 0: 検証・準備・人間判断",items:[
+    {l:"0-1 DB1(441件)の取引種別 分布集計（顧客/紹介元/投資家/エージェント）",s:"pending"},
+    {l:"0-2 DB4(361件)の取引種別 分布集計（同上）",s:"pending"},
+    {l:"0-3 グレーゾーン（顧客∧紹介元）の件数と方針決定",s:"pending"},
+    {l:"0-4 クロスTeamspaceリレーションの権限テスト（Sales Open→外交 TBD可視性）",s:"pending"},
+    {l:"0-5 Dev Teamspaceの目的決定（プロダクトDB移設 / PJ管理 / 廃止）",s:"pending"},
+    {l:"0-6 IR Teamspace 5th DB（投資家情報集約）要否決定",s:"pending"},
+    {l:"0-7 外交Teamspace権限方針決定（Open / Closed / Custom）",s:"pending"},
+    {l:"0-8 DB1-4 自己参照リレーション 廃止 or 維持の判断",s:"pending"},
+    {l:"既存自動化ツール4本の影響範囲マッピング",s:"pending"},
   ]},
-  {name:"Phase 1: 新レイヤー構築",items:[
-    {l:"DB11-14 人事・採用レイヤー構築",s:"pending"},
-    {l:"DB15-18 投資家レイヤー構築",s:"pending"},
-    {l:"DB24 プロダクトDB構築",s:"pending"},
-    {l:"DB25 1on1記録DB構築",s:"pending"},
-    {l:"全DBビュー設計・構築",s:"pending"},
-    {l:"全DBテンプレート作成",s:"pending"},
+  {name:"Phase 1: 新規DB作成 + 命名変更",items:[
+    {l:"DB1 リネーム: 法人 → 法人（顧客）",s:"pending"},
+    {l:"DB4 リネーム: 名刺 → 人（顧客）",s:"pending"},
+    {l:"DB31 法人（ステークホルダー）— 外交TS",s:"pending"},
+    {l:"DB33 人（ステークホルダー）— 外交TS",s:"pending"},
+    {l:"DB34 SHタスク — 外交TS",s:"pending"},
+    {l:"DB35 SH活動 — 外交TS",s:"pending"},
+    {l:"DB5→DB32 リネーム+外交TSへ移動",s:"pending"},
+    {l:"DB9 CRMタスク — Sales TS",s:"pending"},
+    {l:"DB12 活動(HR) — HR TS",s:"pending"},
+    {l:"DB16 活動(IR) — IR TS",s:"pending"},
+    {l:"DB17 契約(IR) — IR TS",s:"pending"},
+    {l:"DB26 採用ポジション（旧DB15リナンバー）— HR TS",s:"pending"},
+    {l:"Dev Teamspace 作成（目的確定後）",s:"pending"},
   ]},
-  {name:"Phase 2: データ移行・連携 ✅ 完了（2026-04-10）",items:[
-    {l:"ページ作成完了（4,829件: DB1/DB2/DB4/DB22/DB23）",s:"done"},
-    {l:"ブロックコピー DB1(372件)/DB2(851件) 完了",s:"done"},
-    {l:"ブロックコピー DB4(361件)/DB22(681件)/DB23(2,564件) 完了",s:"done"},
-    {l:"81件再挿入（組織区分未設定ページ）完了",s:"done"},
-    {l:"DB2→DB1移動 98件（組織区分変更）完了",s:"done"},
-    {l:"重複削除 DB1(60件)+DB2(742件) アーカイブ完了",s:"done"},
-    {l:"リレーション値設定 DB22/DB23 完了",s:"done"},
-    {l:"検証サンプリング: タイトル全件一致・ブロック全件一致",s:"done"},
-    {l:"リレーション整合性: DB1↔DB2, DB4↔DB1/DB2 サンプル全件正常",s:"done"},
-    {l:"DB20(部門)・DB21(プロジェクト) 構築済み・データ投入済み",s:"done"},
+  {name:"Phase 2: データ分割・移行",items:[
+    {l:"DB1→DB31: ステークホルダー法人の移動（0-1分布に基づく）",s:"pending"},
+    {l:"DB4→DB33: ステークホルダー個人の移動（0-2分布に基づく）",s:"pending"},
+    {l:"DB32(旧DB5): リレーション張り替え（DB1→DB31参照に変更）",s:"pending"},
+    {l:"紹介元リレーション: CRM→SH 片方向のみ（DB1→DB31, DB4→DB33）",s:"pending"},
+    {l:"DB1-4自己参照の処理（0-8判断に従う）",s:"pending"},
+    {l:"既存リレーション参照の整合性検証",s:"pending"},
   ]},
-  {name:"Phase 2.5: 自動化ツール接続 ✅ 4/6稼働中",items:[
-    {l:"zoom-phone-notion: DB7通話ログ自動書き込み（Phase 1-2完了）",s:"done"},
+  {name:"Phase 3: 自動化ツール更新（DB31-33再接続）",items:[
+    {l:"zoom-phone-notion: DB1/DB2/DB4検索にDB31/DB32/DB33を追加",s:"pending"},
+    {l:"gmail-notion-sync: マッチ対象にDB31/DB33を追加、DB35(SH活動)書き込み分岐",s:"pending"},
+    {l:"notion-phone-normalizer: 正規化対象5DB→8DBへ拡張",s:"pending"},
+    {l:"asana-notion-sync: 影響なし（DB20/DB21のみ）— 動作確認のみ",s:"pending"},
+    {l:"全ツール動作検証（1週間モニタ）",s:"pending"},
+  ]},
+  {name:"Phase 4: 権限・ビュー・仕上げ",items:[
+    {l:"Teamspace権限設定（Sales Open / HR・IR・社長室 Closed / 外交 TBD）",s:"pending"},
+    {l:"各DBのビュー再構築",s:"pending"},
+    {l:"テンプレート・オートメーション設定",s:"pending"},
+    {l:"ビューア更新・ドキュメント更新",s:"pending"},
+  ]},
+  {name:"完了済み: データ移行（2026-04-10）",items:[
+    {l:"4,829ページ移行完了（DB1/DB2/DB4/DB22/DB23）",s:"done"},
+    {l:"重複削除 DB1(60件)+DB2(742件) アーカイブ",s:"done"},
+    {l:"リレーション整合性検証+修正完了（2026-04-11）",s:"done"},
+    {l:"DB1子法人一覧/親法人 自己参照リレーション新設",s:"done"},
+  ]},
+  {name:"完了済み: 自動化ツール接続（4/6稼働）",items:[
+    {l:"zoom-phone-notion: DB7通話ログ自動書き込み",s:"done"},
     {l:"gmail-notion-sync: WIF+DWD全ユーザーGmail監視→DB7（10分cron）",s:"done"},
     {l:"notion-phone-normalizer: 5DB・228件正規化（毎日0:00 JST）",s:"done"},
     {l:"asana-notion-sync: DB20/DB21同期（GitHub Actions hourly cron）",s:"done"},
-    {l:"Notta→DB7自動連携（プラン確認後設定）",s:"pending"},
-    {l:"Zoom Phone拡張: 文字起こし+AI要約（スコープ追加待ち）",s:"pending"},
-  ]},
-  {name:"Phase 3: 全チャネル統合・全社展開",items:[
-    {l:"Gmail→DB7（Service Account+ドメイン委任）",s:"done"},
-    {l:"Slack→DB7 連携（対象外・実施しない）",s:"done"},
-    {l:"DB3 事業所・DB5 支店の振り分け",s:"pending"},
-    {l:"child_database手動再作成",s:"pending"},
-    {l:"ビュー設定・テンプレート・オートメーション・権限（手動）",s:"pending"},
-    {l:"SNS→DB19 パイプライン",s:"pending"},
-    {l:"Notion AIエージェント構築",s:"pending"},
-    {l:"旧WS完全アーカイブ",s:"pending"},
   ]},
 ];
 
@@ -838,45 +884,45 @@ function renderActionPlan() {
 // ===== CANVAS DIAGRAM =====
 const nodePositions = {};
 let selectedNode = null;
-const canvasW = 1400, canvasH = 640;
+const canvasW = 1400, canvasH = 760;
 
 function layoutNodes() {
   const nw = 110, nh = 46;
-  const padX = 20;
+  const padX = 16;
 
-  // Row 1: SSOT (DB1-5) y=60
-  const row1 = ["DB1","DB2","DB3","DB4","DB5"];
+  // Row 1: Sales — CRM基盤(DB1-4) + CRM活動(DB6-10) = 9 nodes, y=60
+  const row1 = ["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10"];
   const row1Total = row1.length * nw + (row1.length - 1) * padX;
   let r1s = (canvasW - row1Total) / 2;
   row1.forEach((id, i) => { nodePositions[id] = {x: r1s + i*(nw+padX), y:60, w:nw, h:nh}; });
 
-  // Row 2: CRM (DB6-10) y=180
-  const row2 = ["DB6","DB7","DB8","DB9","DB10"];
-  const row2Total = row2.length * nw + (row2.length - 1) * padX;
-  let r2s = (canvasW - row2Total) / 2;
-  row2.forEach((id, i) => { nodePositions[id] = {x: r2s + i*(nw+padX), y:180, w:nw, h:nh}; });
+  // Row 2: HR(DB11-14,DB26) | IR(DB15-18) = 9 nodes, y=200
+  const row2a = ["DB11","DB12","DB13","DB14","DB26"];
+  const row2b = ["DB15","DB16","DB17","DB18"];
+  const gap2 = 50;
+  const r2aTotal = row2a.length * nw + (row2a.length-1)*padX;
+  const r2bTotal = row2b.length * nw + (row2b.length-1)*padX;
+  let r2s = (canvasW - (r2aTotal + gap2 + r2bTotal)) / 2;
+  row2a.forEach((id, i) => { nodePositions[id] = {x: r2s + i*(nw+padX), y:200, w:nw, h:nh}; });
+  let r2bs = r2s + r2aTotal + gap2;
+  row2b.forEach((id, i) => { nodePositions[id] = {x: r2bs + i*(nw+padX), y:200, w:nw, h:nh}; });
 
-  // Row 3: HR (DB11-14) | IR (DB15-18) y=320
-  const row3a = ["DB11","DB12","DB13","DB14"];
-  const row3b = ["DB15","DB16","DB17","DB18"];
-  const gap3 = 60;
+  // Row 3: General(DB20-23) | 社長室(DB19,DB24) = 6 nodes, y=340
+  const row3a = ["DB20","DB21","DB22","DB23"];
+  const row3b = ["DB19","DB24"];
+  const gap3 = 50;
   const r3aTotal = row3a.length * nw + (row3a.length-1)*padX;
   const r3bTotal = row3b.length * nw + (row3b.length-1)*padX;
   let r3s = (canvasW - (r3aTotal + gap3 + r3bTotal)) / 2;
-  row3a.forEach((id, i) => { nodePositions[id] = {x: r3s + i*(nw+padX), y:320, w:nw, h:nh}; });
+  row3a.forEach((id, i) => { nodePositions[id] = {x: r3s + i*(nw+padX), y:340, w:nw, h:nh}; });
   let r3bs = r3s + r3aTotal + gap3;
-  row3b.forEach((id, i) => { nodePositions[id] = {x: r3bs + i*(nw+padX), y:320, w:nw, h:nh}; });
+  row3b.forEach((id, i) => { nodePositions[id] = {x: r3bs + i*(nw+padX), y:340, w:nw, h:nh}; });
 
-  // Row 4: Corp(DB19) | General(DB20-24) | Exec(DB25) y=460
-  const row4b = ["DB20","DB21","DB22","DB23","DB24"];
-  const r4bTotal = row4b.length * nw + (row4b.length-1)*padX;
-  const gap4 = 40;
-  const r4fullTotal = nw + gap4 + r4bTotal + gap4 + nw;
-  let r4s = (canvasW - r4fullTotal) / 2;
-  nodePositions["DB19"] = {x: r4s, y:460, w:nw, h:nh};
-  let r4bs = r4s + nw + gap4;
-  row4b.forEach((id, i) => { nodePositions[id] = {x: r4bs + i*(nw+padX), y:460, w:nw, h:nh}; });
-  nodePositions["DB25"] = {x: r4bs + r4bTotal + gap4, y:460, w:nw, h:nh};
+  // Row 4: 外交(DB31-35) = 5 nodes, y=480
+  const row4 = ["DB31","DB32","DB33","DB34","DB35"];
+  const row4Total = row4.length * nw + (row4.length - 1) * padX;
+  let r4s = (canvasW - row4Total) / 2;
+  row4.forEach((id, i) => { nodePositions[id] = {x: r4s + i*(nw+padX), y:480, w:nw, h:nh}; });
 }
 
 function drawDiagram() {
@@ -894,23 +940,27 @@ function drawDiagram() {
 
   // Draw layer bands
   const bands = [
-    {y:36, h:86, layer:"ssot",      label:"SSOT基盤 (DB1-5)"},
-    {y:155, h:86, layer:"crm",      label:"CRM・営業 (DB6-10)"},
-    {y:290, h:98, layer:"hr",       label:"人事(DB11-14) / 投資家(DB15-18)"},
-    {y:430, h:98, layer:"general",  label:"コーポレート(DB19) / General(DB20-24) / Executive(DB25)"},
+    {y:36, h:86, layer:"sales",          label:"Sales (DB1-4, DB6-10) — Open"},
+    {y:170, h:98, layer:"hr",            label:"HR (DB11-14, DB26) — Closed"},
+    {y:170, h:98, layer:"ir",            label:"IR (DB15-18) — Closed", xOffset: 0.55},
+    {y:312, h:86, layer:"general",       label:"General (DB20-23) — Open"},
+    {y:312, h:86, layer:"shachoushitsu", label:"社長室 (DB19, DB24) — Closed", xOffset: 0.62},
+    {y:452, h:86, layer:"gaiko",         label:"外交 (DB31-35)"},
   ];
   for (const b of bands) {
     const lyr = layers[b.layer] || {bg:"#f5f5f5", color:"#888"};
+    const bx = b.xOffset ? 16 + (canvasW - 32) * b.xOffset : 16;
+    const bw = b.xOffset ? (canvasW - 32) * (1 - b.xOffset) : (b.xOffset === undefined && bands.some(o => o !== b && o.y === b.y)) ? (canvasW - 32) * 0.53 : canvasW - 32;
     ctx.fillStyle = lyr.bg;
     ctx.globalAlpha = 0.55;
     ctx.beginPath();
-    ctx.roundRect(16, b.y, canvasW - 32, b.h, 10);
+    ctx.roundRect(bx, b.y, bw, b.h, 10);
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.fillStyle = lyr.color;
     ctx.font = "bold 11px Inter, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(b.label, 26, b.y + 16);
+    ctx.fillText(b.label, bx + 10, b.y + 16);
   }
 
   // Draw relations
@@ -1040,81 +1090,99 @@ document.getElementById("archCanvas").addEventListener("click", (e) => {
 
 // ===== IDEAL TAB =====
 const idealStatus = [
-  {db:"DB1",n:"法人",schema:true,views:true,tpl:true,data:false,auto:false,
-   ideal:"Notta/Gmail連携でDB7活動と自動紐付け。顧客360ビュー完成",
-   missing:["データ移行（旧People DB 法人分）","リンクドビュー配置"]},
-  {db:"DB2",n:"施設",schema:true,views:true,tpl:true,data:false,auto:false,
+  // === Sales (DB1-4, DB6-10) ===
+  {db:"DB1",n:"法人（顧客）",schema:true,views:true,tpl:true,data:true,auto:true,
+   ideal:"顧客法人の360ビュー。Gmail/Zoom自動紐付け。紹介元はDB31へ参照",
+   missing:["紹介元リレーション→DB31への張り替え","非顧客データのDB31移動"]},
+  {db:"DB2",n:"施設",schema:true,views:true,tpl:true,data:true,auto:true,
    ideal:"施設ページから配下事業所・導入状況が一目でわかる",
-   missing:["データ移行（旧People DB 施設分）","リンクドビュー配置"]},
+   missing:["紹介元リレーション→DB31への張り替え"]},
   {db:"DB3",n:"事業所",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"244K事業所マスタからTier1を投入。導入ステータス追跡が機能",
    missing:["テンプレート作成","市場データCSV初期投入"]},
-  {db:"DB4",n:"人・名刺",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"名刺スキャナーアプリから自動登録。法人/施設に自動紐付け",
-   missing:["テンプレート作成","名刺スキャナー連携テスト","旧People DB個人データ移行"]},
-  {db:"DB5",n:"支店",schema:false,views:false,tpl:false,data:false,auto:false,
-   ideal:"法人の支店ネットワークを可視化。エリア別の紹介元追跡",
-   missing:["DB作成","スキーマ構築","ビュー作成","支店データ投入"]},
+  {db:"DB4",n:"人（顧客担当者）",schema:true,views:true,tpl:false,data:true,auto:true,
+   ideal:"名刺スキャナーから自動登録。顧客担当者のみ（SH個人はDB33へ）",
+   missing:["テンプレート作成","非顧客データのDB33移動"]},
   {db:"DB6",n:"商談",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"パイプラインボードでステージ管理。MRR予測。失注分析",
    missing:["テンプレート作成","パイプライン自動化"]},
-  {db:"DB7",n:"活動(CRM)",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"全チャネル（Notta/Gmail/Slack/Zoom/訪問）の活動が自動集約される統合ハブ",
-   missing:["テンプレート作成","Notta/Gmail/Slack→DB7自動投入フロー"]},
+  {db:"DB7",n:"活動(CRM)",schema:true,views:true,tpl:false,data:true,auto:true,
+   ideal:"全チャネル自動集約ハブ。Zoom/Gmail/Notta連携済み",
+   missing:["テンプレート作成","Notta連携"]},
   {db:"DB8",n:"契約",schema:true,views:true,tpl:false,data:false,auto:false,
    ideal:"MRR追跡・自動更新通知・解約アラート",
    missing:["テンプレート作成","MF電子契約連携"]},
-  {db:"DB9",n:"CRMタスク",schema:true,views:true,tpl:false,data:false,auto:false,
+  {db:"DB9",n:"CRMタスク",schema:false,views:false,tpl:false,data:false,auto:false,
    ideal:"顧客ごとの次のアクションが一目でわかる",
-   missing:["テンプレート作成","AIエージェント連携"]},
-  {db:"DB10",n:"商談報告",schema:true,views:true,tpl:true,data:false,auto:false,
-   ideal:"営業現場からフォーム入力→文字起こし→AI議事録自動生成→DB7に反映",
-   missing:["議事録自動生成フロー構築"]},
-  {db:"DB11",n:"面談(HR)",schema:false,views:false,tpl:false,data:false,auto:false,
-   ideal:"採用パイプライン管理。候補者ステータス一覧",
    missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB10",n:"商談報告",schema:true,views:true,tpl:true,data:false,auto:false,
+   ideal:"営業現場からフォーム入力→AI議事録自動生成→DB7に反映",
+   missing:["議事録自動生成フロー構築"]},
+  // === HR (DB11-14, DB26) ===
+  {db:"DB11",n:"面談(HR)",schema:true,views:false,tpl:false,data:false,auto:false,
+   ideal:"採用パイプライン管理。候補者(DB33)・エージェント(DB31)と連携",
+   missing:["ビュー作成","テンプレート作成"]},
   {db:"DB12",n:"活動(HR)",schema:false,views:false,tpl:false,data:false,auto:false,
    ideal:"採用活動の全履歴。面談記録・連絡履歴の統合",
    missing:["DB作成","スキーマ構築","ビュー作成"]},
-  {db:"DB13",n:"雇契約",schema:false,views:false,tpl:false,data:false,auto:false,
+  {db:"DB13",n:"雇契約",schema:true,views:false,tpl:false,data:false,auto:false,
    ideal:"雇用契約の一元管理。契約状況の可視化",
-   missing:["DB作成","スキーマ構築","ビュー作成"]},
-  {db:"DB14",n:"人事タスク",schema:false,views:false,tpl:false,data:false,auto:false,
+   missing:["ビュー作成","テンプレート作成"]},
+  {db:"DB14",n:"人事タスク",schema:true,views:false,tpl:false,data:false,auto:false,
    ideal:"採用プロセスのタスク管理",
+   missing:["ビュー作成","テンプレート作成"]},
+  {db:"DB26",n:"採用ポジション",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"ポジション別に面談を集約。部門(DB20)と連携",
    missing:["DB作成","スキーマ構築","ビュー作成"]},
-  {db:"DB15",n:"面談(IR)",schema:false,views:false,tpl:false,data:false,auto:false,
-   ideal:"投資家パイプライン管理。ピッチ/DD/交渉のステージ追跡",
-   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  // === IR (DB15-18) ===
+  {db:"DB15",n:"面談(IR)",schema:true,views:false,tpl:false,data:false,auto:false,
+   ideal:"投資家パイプライン管理。投資家法人(DB31)/個人(DB33)/支店(DB32)と連携",
+   missing:["ビュー作成","テンプレート作成","リレーション→DB31/DB33/DB32へ張り替え"]},
   {db:"DB16",n:"活動(IR)",schema:false,views:false,tpl:false,data:false,auto:false,
    ideal:"投資家とのコミュニケーション全履歴",
    missing:["DB作成","スキーマ構築","ビュー作成"]},
   {db:"DB17",n:"契約(IR)",schema:false,views:false,tpl:false,data:false,auto:false,
    ideal:"投資契約の一元管理。投資額・条件の可視化",
    missing:["DB作成","スキーマ構築","ビュー作成"]},
-  {db:"DB18",n:"タスク(IR)",schema:false,views:false,tpl:false,data:false,auto:false,
+  {db:"DB18",n:"タスク(IR)",schema:true,views:false,tpl:false,data:false,auto:false,
    ideal:"IR関連タスクの管理。DD資料準備等",
-   missing:["DB作成","スキーマ構築","ビュー作成"]},
-  {db:"DB19",n:"発信コンテンツ",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"32エージェントがコンテンツ生成→レビュー→承認→各SNS自動投稿",
-   missing:["テンプレート作成","32エージェント投稿パイプライン設定"]},
-  {db:"DB20",n:"部門",schema:true,views:true,tpl:false,data:false,auto:false,
+   missing:["ビュー作成","テンプレート作成"]},
+  // === General (DB20-23) ===
+  {db:"DB20",n:"部門",schema:true,views:true,tpl:false,data:true,auto:true,
    ideal:"組織図が自動表示。部門ページから配下PJ/タスク/メンバーが一覧",
-   missing:["テンプレート作成","部門データ投入"]},
-  {db:"DB21",n:"PJ",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"タイムラインでPJ進捗を俯瞰。Asanaと双方向同期",
-   missing:["テンプレート作成","Asana同期設計"]},
-  {db:"DB22",n:"タスク(社内)",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"GTDベースのタスク管理。Asanaと同期",
-   missing:["テンプレート作成","Asana同期"]},
-  {db:"DB23",n:"ドキュメント",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"全レイヤー横断の統一ドキュメントDB",
-   missing:["テンプレート作成","レイヤー別ビュー作成"]},
+   missing:["テンプレート作成"]},
+  {db:"DB21",n:"PJ",schema:true,views:true,tpl:false,data:true,auto:true,
+   ideal:"タイムラインでPJ進捗を俯瞰。Asanaと双方向同期済み",
+   missing:["テンプレート作成"]},
+  {db:"DB22",n:"タスク(社内)",schema:true,views:true,tpl:false,data:true,auto:true,
+   ideal:"GTDベースのタスク管理。Asanaと同期済み",
+   missing:["テンプレート作成"]},
+  {db:"DB23",n:"ドキュメント",schema:true,views:true,tpl:false,data:true,auto:false,
+   ideal:"全Teamspace横断の統一ドキュメントDB",
+   missing:["テンプレート作成","Teamspace別ビュー作成"]},
+  // === 社長室 (DB19, DB24) ===
+  {db:"DB19",n:"発信コンテンツ",schema:true,views:true,tpl:false,data:false,auto:false,
+   ideal:"コンテンツ生成→レビュー→承認→各SNS自動投稿",
+   missing:["テンプレート作成","SNS投稿パイプライン設定"]},
   {db:"DB24",n:"プロダクト",schema:false,views:false,tpl:false,data:false,auto:false,
    ideal:"自社プロダクトの開発ステータス・カテゴリ管理",
    missing:["DB作成","スキーマ構築","ビュー作成","プロダクトデータ投入"]},
-  {db:"DB25",n:"1on1記録",schema:true,views:true,tpl:false,data:false,auto:false,
-   ideal:"メンバー別1on1をムード追跡。非公開Teamspaceで経営層のみアクセス",
-   missing:["テンプレート作成","旧6個の1on1 DB移行","Teamspace権限設定"]},
+  // === 外交 (DB31-35) ===
+  {db:"DB31",n:"法人(SH)",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"銀行/投資家/エージェント/紹介元の法人管理。DB1からの分割先",
+   missing:["DB作成","スキーマ構築","ビュー作成","DB1からデータ分割・移動"]},
+  {db:"DB32",n:"支店(SH)",schema:true,views:false,tpl:false,data:false,auto:false,
+   ideal:"SH法人配下の支店管理。旧DB5からリネーム・移動",
+   missing:["リネーム","外交TSへ移動","リレーション張り替え"]},
+  {db:"DB33",n:"人(SH)",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"投資家/採用候補/エージェント担当者。DB4からの分割先",
+   missing:["DB作成","スキーマ構築","ビュー作成","DB4からデータ分割・移動"]},
+  {db:"DB34",n:"SHタスク",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"ステークホルダー対応タスクの一元管理",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
+  {db:"DB35",n:"SH活動",schema:false,views:false,tpl:false,data:false,auto:false,
+   ideal:"ステークホルダーとの活動記録（面談/メール/電話/訪問/Web会議）",
+   missing:["DB作成","スキーマ構築","ビュー作成"]},
 ];
 
 function renderIdealTab() {
@@ -1126,7 +1194,24 @@ function renderIdealTab() {
   const dataOk = idealStatus.filter(d=>d.data).length;
   const autoOk = idealStatus.filter(d=>d.auto).length;
 
-  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px;">
+  let html = `<div style="background:linear-gradient(135deg,#7c3aed11,#2563eb11);border:1px solid #7c3aed44;border-radius:12px;padding:16px 20px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <span style="background:#7c3aed;color:#fff;padding:3px 10px;border-radius:10px;font-size:0.72rem;font-weight:700;">v2 理想案</span>
+      <span style="font-weight:700;font-size:1.05rem;">新理想案の核心（2026-04-12 確定）</span>
+    </div>
+    <ul style="margin:0;padding-left:20px;font-size:0.88rem;line-height:1.7;color:var(--text2);">
+      <li><b>7 Teamspace構成</b>（Sales / HR / IR / General / 社長室 / 外交 / <span style="color:#64748b;">Dev=TBD</span>）</li>
+      <li><b>SSOT物理分割</b>: CRM基盤(DB1-4 顧客) ⟷ ステークホルダー基盤(DB31-35) を完全に別Teamspaceへ</li>
+      <li><b>DB命名変更</b>: DB1 法人→<b>法人（顧客）</b>, DB4 名刺→<b>人（顧客）</b>, DB5→<b>DB32 支店</b>(外交)</li>
+      <li><b>紹介元リレーションは片方向のみ</b>: CRM→SH (DB1→DB31, DB4→DB33)。SH→CRM は張らない</li>
+      <li><b>DB1-4間の相互リレーションは原則なし</b>（自己参照は判断待ち: Phase 0-8）</li>
+      <li>新規9DB: DB9 / DB12 / DB16 / DB17 / DB26 / DB31 / DB33 / DB34 / DB35</li>
+    </ul>
+    <div style="margin-top:10px;font-size:0.78rem;color:#b45309;background:#fffbeb;border:1px solid #fbbf24;border-radius:6px;padding:8px 12px;">
+      ⚠ Phase 0 で <b>人間の判断</b> が必要な論点が 8件（0-1〜0-8）。特に <b>0-5 Dev TS目的 / 0-6 IR 5th DB / 0-7 外交権限 / 0-8 自己参照廃止</b> が未確定。
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px;">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
       <div style="font-size:1.8rem;font-weight:800;color:#22c55e;">${schemaOk}/${totalDb}</div>
       <div style="font-size:0.8rem;color:var(--text2);">スキーマ</div>
@@ -1208,16 +1293,16 @@ function renderRationale() {
   let html = "";
 
   html += `<div class="rationale-overview">
-    <h2>SSOT設計の原則（25 DB / 7 Layer版）</h2>
+    <h2>SSOT設計の原則（29 DB / 6 Teamspace版）</h2>
     <p><strong>Single Source of Truth（唯一の情報源）</strong> - 各情報は1箇所にのみ存在し、他のDBからはリレーション/ロールアップで参照する。</p>
-    <p style="margin-top:10px;"><strong>7レイヤーの設計意図:</strong></p>
-    <p>1. <strong>SSOT基盤（DB1-5）</strong> - 全社共通マスタ。法人/施設/事業所/人/支店の5実体。全DBの起点。</p>
-    <p>2. <strong>CRM（DB6-10）</strong> - 営業パイプライン。SSOT実体を参照して活動記録。DB7が統合ハブ。</p>
-    <p>3. <strong>人事（DB11-14）</strong> - CRMと同構造で採用管理。Closed Teamspace。</p>
-    <p>4. <strong>IR（DB15-18）</strong> - CRMと同構造で投資家管理。Closed Teamspace。</p>
-    <p>5. <strong>コーポレート（DB19）</strong> - SNS発信パイプライン。11アカウント対応。</p>
-    <p>6. <strong>General（DB20-24）</strong> - 社内運営基盤。部門/PJ/タスク/ドキュメント/プロダクト。</p>
-    <p>7. <strong>Executive（DB25）</strong> - 経営層限定。1on1記録。ムード追跡。</p>
+    <p style="margin-top:10px;"><strong>核心変更: SSOT物理分割</strong> — 旧SSOT基盤(DB1-5)を <strong>CRM基盤(DB1-4)</strong> と <strong>ステークホルダー基盤(DB31-33)</strong> に物理分割。顧客と非顧客（投資家/エージェント/紹介元）の情報境界を明確化。</p>
+    <p style="margin-top:10px;"><strong>6 Teamspaceの設計意図:</strong></p>
+    <p>1. <strong>Sales（DB1-4, DB6-10）</strong> - CRM基盤+営業パイプライン。Open。顧客法人/施設/事業所/名刺のマスタ＋商談/活動/契約。</p>
+    <p>2. <strong>HR（DB11-14, DB26）</strong> - 採用管理。Closed。面談→活動→契約→タスク＋採用ポジション。候補者/エージェントは外交基盤を参照。</p>
+    <p>3. <strong>IR（DB15-18）</strong> - 投資家管理。Closed。面談→活動→契約→タスク。投資家法人/個人は外交基盤を参照。</p>
+    <p>4. <strong>General（DB20-23）</strong> - 社内運営基盤。Open。部門/PJ/タスク/ドキュメント。</p>
+    <p>5. <strong>社長室（DB19, DB24）</strong> - 経営層限定。Closed。発信コンテンツ＋プロダクト管理。</p>
+    <p>6. <strong>外交（DB31-35）</strong> - ステークホルダー専用。法人SH/支店/人SH/タスク/活動。CRM/HR/IRの共通外部マスタ。</p>
   </div>`;
 
   html += `<div class="rationale-section">
@@ -1267,28 +1352,31 @@ function renderRationale() {
 
   // ===== FULL 25×25 MATRIX =====
 
-  // Layer color mapping
+  // Teamspace color mapping
   const layerColor = {
-    ssot:"#7c3aed", crm:"#2563eb", hr:"#059669",
-    ir:"#dc2626", corporate:"#f59e0b", general:"#0ea5e9", executive:"#ec4899"
+    sales:"#2563eb", hr:"#059669", ir:"#dc2626",
+    general:"#0ea5e9", shachoushitsu:"#f59e0b", gaiko:"#7c3aed"
   };
   const layerBg = {
-    ssot:"#f5f3ff", crm:"#eff6ff", hr:"#ecfdf5",
-    ir:"#fef2f2", corporate:"#fffbeb", general:"#ecfeff", executive:"#fdf2f8"
+    sales:"#eff6ff", hr:"#ecfdf5", ir:"#fef2f2",
+    general:"#ecfeff", shachoushitsu:"#fffbeb", gaiko:"#f5f3ff"
   };
-  const dbOrder = ["DB1","DB2","DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB10",
-                   "DB11","DB12","DB13","DB14","DB15","DB16","DB17","DB18","DB19",
-                   "DB20","DB21","DB22","DB23","DB24","DB25"];
+  const dbOrder = ["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10",
+                   "DB11","DB12","DB13","DB14","DB26",
+                   "DB15","DB16","DB17","DB18",
+                   "DB19","DB24",
+                   "DB20","DB21","DB22","DB23",
+                   "DB31","DB32","DB33","DB34","DB35"];
 
   // Short names for matrix headers
   const dbShort = {
-    DB1:"法人",DB2:"施設",DB3:"事業所",DB4:"人/名刺",DB5:"支店",
+    DB1:"法人",DB2:"施設",DB3:"事業所",DB4:"名刺",
     DB6:"商談",DB7:"活動",DB8:"契約",DB9:"CRMTask",DB10:"報告",
-    DB11:"HR面談",DB12:"HR活動",DB13:"雇契約",DB14:"HRTask",
+    DB11:"HR面談",DB12:"HR活動",DB13:"雇契約",DB14:"HRTask",DB26:"採用POS",
     DB15:"IR面談",DB16:"IR活動",DB17:"IR契約",DB18:"IRTask",
-    DB19:"コンテンツ",
-    DB20:"部門",DB21:"PJ",DB22:"Gtask",DB23:"ドキュメント",DB24:"プロダクト",
-    DB25:"1on1"
+    DB19:"コンテンツ",DB24:"プロダクト",
+    DB20:"部門",DB21:"PJ",DB22:"Gtask",DB23:"ドキュメント",
+    DB31:"法人SH",DB32:"支店SH",DB33:"人SH",DB34:"SHTask",DB35:"SH活動"
   };
 
   // Helper: get layer from dbId
@@ -1302,15 +1390,14 @@ function renderRationale() {
     return relations.some(r => r.f === f && r.t === t);
   }
 
-  // ===== COMPLETE RATIONALE DATA (ALL 325 pairs) =====
+  // ===== COMPLETE RATIONALE DATA (29×29 = 435 pairs) =====
   const relRationale = {};
 
   // -- Self-references --
-  relRationale["DB1-DB1"] = {exists:true,  reason:"🔄 法人自己参照（紹介元法人）。法人Aが法人Bを紹介するケースを記録。紹介元ランキングに使用。"};
+  relRationale["DB1-DB1"] = {exists:true,  reason:"🔄 法人自己参照（子法人一覧/親法人）。グループ企業の親子階層を表現。"};
   relRationale["DB2-DB2"] = {exists:false, reason:"施設は法人の配下に位置し自己参照は不要。上位階層は法人(DB1)が担う。"};
   relRationale["DB3-DB3"] = {exists:false, reason:"事業所は施設の配下に位置し自己参照は不要。階層管理は DB1→DB2→DB3 で完結。"};
-  relRationale["DB4-DB4"] = {exists:true,  reason:"🔄 人・名刺自己参照（紹介元個人）。個人Aが個人Bを紹介するケースを記録。"};
-  relRationale["DB5-DB5"] = {exists:true,  reason:"🔄 支店自己参照（紹介元支店）。支店Aが支店Bを紹介するケースを記録。"};
+  relRationale["DB4-DB4"] = {exists:true,  reason:"🔄 名刺自己参照（紹介元個人）。個人Aが個人Bを紹介するケースを記録。"};
   relRationale["DB6-DB6"] = {exists:false, reason:"商談の親子関係はフェーズ管理プロパティで十分。自己参照によるネストは運用上の混乱を招く。"};
   relRationale["DB7-DB7"] = {exists:false, reason:"活動記録は単発の記録単位。活動同士の自己参照は不要。スレッド構造はページ本文で表現。"};
   relRationale["DB8-DB8"] = {exists:false, reason:"契約は独立したレコード。更新契約は新レコードとして追跡するため自己参照は不要。"};
@@ -1319,372 +1406,477 @@ function renderRationale() {
   relRationale["DB11-DB11"] = {exists:false, reason:"面談の追跡は活動(DB12)が担う。面談同士の自己参照は必要なく、ステータス遷移で管理。"};
   relRationale["DB12-DB12"] = {exists:false, reason:"HR活動は単発記録。活動同士の参照はせず、面談(DB11)経由で統合。"};
   relRationale["DB13-DB13"] = {exists:false, reason:"雇用契約は独立レコード。更新は新レコード作成。自己参照は不要。"};
-  relRationale["DB14-DB14"] = {exists:false, reason:"HR タスクは面談(DB11)を起点に管理。自己参照によるネストは不要。"};
+  relRationale["DB14-DB14"] = {exists:false, reason:"HRタスクは面談(DB11)を起点に管理。自己参照によるネストは不要。"};
+  relRationale["DB26-DB26"] = {exists:false, reason:"採用ポジションは独立したレコード。自己参照は不要。"};
   relRationale["DB15-DB15"] = {exists:false, reason:"IR面談の追跡は活動(DB16)が担う。自己参照は必要なくステータスで遷移管理。"};
   relRationale["DB16-DB16"] = {exists:false, reason:"IR活動は単発記録。面談(DB15)経由で統合。自己参照は不要。"};
   relRationale["DB17-DB17"] = {exists:false, reason:"投資契約は独立レコード。ラウンド別に新レコードを作成。自己参照は不要。"};
   relRationale["DB18-DB18"] = {exists:false, reason:"IRタスクはIR面談(DB15)起点。自己参照によるネストは不要。"};
   relRationale["DB19-DB19"] = {exists:false, reason:"コンテンツは単発の投稿単位。自己参照ではなく PJ(DB21)に紐づけてシリーズ管理。"};
+  relRationale["DB24-DB24"] = {exists:false, reason:"プロダクトは独立した実体。バージョン管理はページ内で行うため自己参照は不要。"};
   relRationale["DB20-DB20"] = {exists:true,  reason:"🔄 部門自己参照（上位DEPT）。本部→事業部→チームの組織階層を表現。"};
   relRationale["DB21-DB21"] = {exists:true,  reason:"🔄 PJ自己参照（上位PJ）。エピック→ストーリー→サブタスクのPJ階層を表現。"};
   relRationale["DB22-DB22"] = {exists:true,  reason:"🔄 タスク自己参照（親タスク）。GTDベースのタスク分解。親→子タスクチェーンを実現。"};
   relRationale["DB23-DB23"] = {exists:false, reason:"ドキュメントはPJ(DB21)・部門(DB20)で階層管理。ドキュメント同士の自己参照は情報構造を複雑化させる。"};
-  relRationale["DB24-DB24"] = {exists:false, reason:"プロダクトは独立した実体。バージョン管理はページ内で行うため自己参照は不要。"};
-  relRationale["DB25-DB25"] = {exists:false, reason:"1on1は個別の記録単位。セッション同士の参照は必要なく、メンバープロパティで集約。"};
+  relRationale["DB31-DB31"] = {exists:false, reason:"法人SHの階層管理は不要。CRM側のDB1→DB1(親法人)とは異なり、SH法人はフラット管理。"};
+  relRationale["DB32-DB32"] = {exists:false, reason:"支店SHは法人SH(DB31)配下でフラット管理。自己参照は不要。"};
+  relRationale["DB33-DB33"] = {exists:false, reason:"人SHはフラット管理。個人の紹介関係はCRM側DB4→DB4で表現。"};
+  relRationale["DB34-DB34"] = {exists:false, reason:"SHタスクはフラット管理。タスクの親子関係はGeneral Tasks(DB22)の責務。"};
+  relRationale["DB35-DB35"] = {exists:false, reason:"SH活動は単発記録。活動同士の自己参照は不要。"};
 
-  // -- SSOT internal --
-  relRationale["DB1-DB2"] = {exists:true,  reason:"法人→施設の1:N。1法人が複数施設を運営する介護業界の基本構造。SSOT階層の根幹。"};
+  // -- Sales CRM基盤 internal (DB1-4) --
+  relRationale["DB1-DB2"] = {exists:true,  reason:"法人→施設の1:N。1法人が複数施設を運営する介護業界の基本構造。CRM基盤階層の根幹。"};
   relRationale["DB1-DB3"] = {exists:true,  reason:"法人→事業所の1:N（施設を経由しない法人直属事業所にも対応）。検索・集計の起点として必須。"};
-  relRationale["DB1-DB4"] = {exists:true,  reason:"法人→人・名刺の1:N。法人に所属する担当者を一覧表示。営業活動の人物特定に使用。"};
-  relRationale["DB1-DB5"] = {exists:true,  reason:"法人→支店の1:N。銀行・大手法人の複数支店を管理するため。紹介元追跡に必須。"};
+  relRationale["DB1-DB4"] = {exists:true,  reason:"法人→名刺の1:N。法人に所属する担当者を一覧表示。営業活動の人物特定に使用。"};
   relRationale["DB2-DB3"] = {exists:true,  reason:"施設→事業所の1:N。1施設が複数の介護サービス(事業所)を運営。事業所の親組織を特定。"};
   relRationale["DB2-DB4"] = {exists:true,  reason:"施設→担当者の1:N。施設に所属する連絡先を一覧表示。訪問・電話時の窓口特定に使用。"};
-  relRationale["DB2-DB5"] = {exists:false, reason:"施設と支店は直接の組織関係がない。支店は法人(DB1)配下で管理し、施設は別ライン。"};
-  relRationale["DB3-DB4"] = {exists:true,  reason:"事業所→担当者の1:N（バグ修正#6で追加）。事業所管理者・現場担当を事業所レコードから直接参照。"};
-  relRationale["DB3-DB5"] = {exists:false, reason:"事業所と支店は組織的に独立。支店は銀行等の外部組織の単位であり、事業所はNAGARAのサービス単位。"};
-  relRationale["DB4-DB5"] = {exists:false, reason:"人・名刺の所属支店は DB5→DB4 方向で管理（支店が所属メンバーを持つ）。逆方向は不要。"};
+  relRationale["DB3-DB4"] = {exists:true,  reason:"事業所→担当者の1:N。事業所管理者・現場担当を事業所レコードから直接参照。"};
 
-  // -- SSOT → CRM --
-  relRationale["DB1-DB6"] = {exists:false, reason:"DB6からDB1へのリレーションで参照済み（双方向）。Notion双方向リレーションにより DB1側からも商談一覧を参照可能。"};
-  relRationale["DB1-DB7"] = {exists:false, reason:"DB7からDB1へのリレーションで参照済み（双方向）。DB1ページから活動一覧をロールアップで参照可能。"};
-  relRationale["DB1-DB8"] = {exists:false, reason:"DB8からDB1へのリレーションで参照済み（双方向）。DB1ページから契約一覧を参照可能。"};
-  relRationale["DB1-DB9"] = {exists:false, reason:"DB9からDB1へのリレーションで参照済み（双方向）。DB1ページからCRMタスクを参照可能。"};
-  relRationale["DB1-DB10"] = {exists:false, reason:"DB10からDB1へのリレーションで参照済み（双方向）。報告フォームは DB6 経由で DB1 に集約。"};
-  relRationale["DB2-DB6"] = {exists:false, reason:"DB6からDB2へのリレーションで参照済み（双方向）。施設単位の商談はDB7経由でも追跡可能。"};
-  relRationale["DB2-DB7"] = {exists:false, reason:"DB7からDB2へのリレーションで参照済み（双方向）。施設単位の活動記録は双方向参照で達成。"};
-  relRationale["DB2-DB8"] = {exists:false, reason:"DB8からDB2へのリレーションで参照済み（双方向）。施設単位の契約は DB1→DB2 経由でも追跡可能。"};
-  relRationale["DB2-DB9"] = {exists:false, reason:"DB9からDB2へのリレーションで参照済み（双方向）。施設単位のタスクは DB6 経由で管理。"};
-  relRationale["DB2-DB10"] = {exists:false, reason:"DB10からDB2へのリレーションで参照済み（双方向）。報告フォームの施設参照は双方向で達成。"};
-  relRationale["DB3-DB6"] = {exists:false, reason:"商談は施設(DB2)または法人(DB1)に紐づけ。DB3(事業所)→商談の直接リレーションは粒度が細かすぎる。"};
-  relRationale["DB3-DB7"] = {exists:false, reason:"活動記録は DB1/DB2 レベルで追跡。事業所粒度の活動追跡は DB3→DB4 経由で担当者を特定後に対応。"};
-  relRationale["DB3-DB8"] = {exists:true,  reason:"事業所→契約のリレーション（バグ修正#7で追加）。介護サービス契約は事業所単位で締結されるため、事業所から契約一覧を直接参照する。契約ライフサイクル管理の基点。"};
-  relRationale["DB3-DB9"] = {exists:false, reason:"CRMタスクは商談(DB6)・法人(DB1)・施設(DB2)に紐づく。事業所(DB3)への直接リレーションはノイズになる。"};
-  relRationale["DB3-DB10"] = {exists:false, reason:"報告フォームは法人・施設単位で記録。事業所粒度は商談(DB6)経由でカバーされる。"};
-  relRationale["DB4-DB6"] = {exists:false, reason:"商談の主担当者は DB6→DB4 で管理済み（双方向）。DB4から商談への直接リレーションは不要。"};
-  relRationale["DB4-DB7"] = {exists:false, reason:"活動の参加者は DB7→DB4 で管理済み（双方向）。双方向参照が成立している。"};
-  relRationale["DB4-DB8"] = {exists:false, reason:"契約の当事者は法人(DB1)・施設(DB2)が主体。個人(DB4)への契約リレーションは DB1 経由で追跡。"};
-  relRationale["DB4-DB9"] = {exists:false, reason:"CRMタスクの関連先として DB9→DB4 で参照済み（双方向）。DB4からタスクへの逆引きは Notion双方向で実現。"};
-  relRationale["DB4-DB10"] = {exists:false, reason:"報告フォームの名刺参照は DB10→DB4 で管理済み（双方向）。逆方向は不要。"};
-  relRationale["DB5-DB6"] = {exists:false, reason:"商談は法人(DB1)・施設(DB2)起点。支店が商談主体になるケースは法人配下の支店として DB1 経由でカバー。"};
-  relRationale["DB5-DB7"] = {exists:false, reason:"活動記録は法人・施設単位。支店への直接活動リレーションは DB1 経由で担保される。"};
-  relRationale["DB5-DB8"] = {exists:false, reason:"契約の当事者は法人(DB1)が主体。支店との契約は法人の支店として DB1 経由で管理。"};
-  relRationale["DB5-DB9"] = {exists:false, reason:"CRMタスクは法人・施設・商談に紐づく。支店粒度のタスクは DB1→DB5 のロールアップで追跡可能。"};
-  relRationale["DB5-DB10"] = {exists:false, reason:"報告フォームは法人・施設単位。支店粒度は不要。"};
+  // -- Sales CRM活動 (DB6-10) → CRM基盤 (DB1-4) --
+  relRationale["DB1-DB6"] = {exists:false, reason:"DB6→DB1で参照済み（双方向）。法人ページから商談一覧を参照可能。"};
+  relRationale["DB1-DB7"] = {exists:false, reason:"DB7→DB1で参照済み（双方向）。法人ページから活動一覧をロールアップで参照可能。"};
+  relRationale["DB1-DB8"] = {exists:false, reason:"DB8→DB1で参照済み（双方向）。法人ページから契約一覧を参照可能。"};
+  relRationale["DB1-DB9"] = {exists:false, reason:"DB9→DB1で参照済み（双方向）。法人ページからCRMタスクを参照可能。"};
+  relRationale["DB1-DB10"] = {exists:false, reason:"DB10→DB1で参照済み（双方向）。報告フォームはDB6経由でDB1に集約。"};
+  relRationale["DB2-DB6"] = {exists:false, reason:"DB6→DB2で参照済み（双方向）。施設単位の商談はDB7経由でも追跡可能。"};
+  relRationale["DB2-DB7"] = {exists:false, reason:"DB7→DB2で参照済み（双方向）。施設単位の活動記録は双方向参照で達成。"};
+  relRationale["DB2-DB8"] = {exists:false, reason:"DB8→DB2で参照済み（双方向）。施設単位の契約はDB1→DB2経由でも追跡可能。"};
+  relRationale["DB2-DB9"] = {exists:false, reason:"DB9→DB2で参照済み（双方向）。施設単位のタスクはDB6経由で管理。"};
+  relRationale["DB2-DB10"] = {exists:false, reason:"DB10→DB2で参照済み（双方向）。報告フォームの施設参照は双方向で達成。"};
+  relRationale["DB3-DB6"] = {exists:false, reason:"商談は施設(DB2)または法人(DB1)に紐づけ。事業所→商談の直接リレーションは粒度が細かすぎる。"};
+  relRationale["DB3-DB7"] = {exists:false, reason:"活動記録はDB1/DB2レベルで追跡。事業所粒度の活動追跡はDB3→DB4経由で対応。"};
+  relRationale["DB3-DB8"] = {exists:true,  reason:"事業所→契約のリレーション。介護サービス契約は事業所単位で締結されるため必須。"};
+  relRationale["DB3-DB9"] = {exists:false, reason:"CRMタスクは商談(DB6)・法人(DB1)・施設(DB2)に紐づく。事業所への直接リレーションはノイズ。"};
+  relRationale["DB3-DB10"] = {exists:false, reason:"報告フォームは法人・施設単位で記録。事業所粒度は商談(DB6)経由でカバー。"};
+  relRationale["DB4-DB6"] = {exists:false, reason:"商談の主担当者はDB6→DB4で管理済み（双方向）。逆方向は不要。"};
+  relRationale["DB4-DB7"] = {exists:false, reason:"活動の参加者はDB7→DB4で管理済み（双方向）。双方向参照が成立。"};
+  relRationale["DB4-DB8"] = {exists:false, reason:"契約の当事者は法人(DB1)・施設(DB2)が主体。個人への契約リレーションはDB1経由で追跡。"};
+  relRationale["DB4-DB9"] = {exists:false, reason:"DB9→DB4で参照済み（双方向）。逆引きはNotion双方向で実現。"};
+  relRationale["DB4-DB10"] = {exists:false, reason:"DB10→DB4で管理済み（双方向）。逆方向は不要。"};
 
-  // -- SSOT → HR --
-  relRationale["DB1-DB11"] = {exists:false, reason:"HR面談は候補者(DB4)・エージェント(DB1)から逆方向で参照済み。DB1からHR面談への直接リレーションは採用情報の過剰露出リスクがある。"};
-  relRationale["DB1-DB12"] = {exists:false, reason:"HR活動は DB12→DB1 で参照済み（双方向）。DB1(顧客法人)からHR活動を直接見せることは情報分離の観点から不適切。"};
-  relRationale["DB1-DB13"] = {exists:false, reason:"雇用契約は候補者(DB4)と紐づく。法人(DB1)からの直接参照は不要。採用エージェントとしての関係は DB11 経由。"};
-  relRationale["DB1-DB14"] = {exists:false, reason:"HR タスクは面談(DB11)起点。DB1からの直接参照は Closed HR Teamspace の情報分離原則に反する。"};
-  relRationale["DB2-DB11"] = {exists:false, reason:"HR面談は法人(DB1)・候補者(DB4)に紐づく。施設(DB2)とHR面談の直接関係はない。"};
-  relRationale["DB2-DB12"] = {exists:false, reason:"HR活動は採用スコープ。施設(DB2)は営業/CRMスコープ。レイヤー分離を維持。"};
-  relRationale["DB2-DB13"] = {exists:false, reason:"雇用契約は個人(DB4)に紐づく。施設との関係は組織図として別管理。"};
-  relRationale["DB2-DB14"] = {exists:false, reason:"HR タスクは採用プロセス専用。施設(DB2)との直接関係は不要。"};
-  relRationale["DB3-DB11"] = {exists:false, reason:"HR面談と事業所に直接の関係はない。採用はエージェント法人(DB1)経由で管理。"};
-  relRationale["DB3-DB12"] = {exists:false, reason:"事業所はCRM・サービス管理のスコープ。HR活動とのリレーションはレイヤー混在を招く。"};
-  relRationale["DB3-DB13"] = {exists:false, reason:"雇用契約と事業所は組織的に無関係。雇用は法人・個人間の契約。"};
-  relRationale["DB3-DB14"] = {exists:false, reason:"HR タスクは採用プロセス専用。事業所(DB3)との直接リレーションは不要。"};
-  relRationale["DB4-DB11"] = {exists:false, reason:"HR面談の候補者は DB11→DB4 で参照済み（双方向）。DB4から面談への逆引きは双方向リレーションで実現。"};
-  relRationale["DB4-DB12"] = {exists:false, reason:"HR活動の候補者は DB12→DB4 で参照済み（双方向）。逆方向は Notion双方向で実現済み。"};
-  relRationale["DB4-DB13"] = {exists:false, reason:"雇用契約の候補者は DB13→DB4 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB4-DB14"] = {exists:false, reason:"HR タスクの候補者は DB14→DB4 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB5-DB11"] = {exists:false, reason:"支店とHR面談に直接の関係はない。採用エージェントは法人(DB1)として管理。"};
-  relRationale["DB5-DB12"] = {exists:false, reason:"支店とHR活動に直接の関係はない。レイヤー分離を維持。"};
-  relRationale["DB5-DB13"] = {exists:false, reason:"支店と雇用契約に直接の関係はない。雇用は法人・個人間の契約。"};
-  relRationale["DB5-DB14"] = {exists:false, reason:"支店とHRタスクに直接の関係はない。HR Teamspaceの独立性を維持。"};
-
-  // -- SSOT → IR --
-  relRationale["DB1-DB15"] = {exists:false, reason:"IR面談の投資家法人は DB15→DB1 で参照済み（双方向）。DB1からIR面談への直接参照は投資家情報の過剰露出リスク。"};
-  relRationale["DB1-DB16"] = {exists:false, reason:"IR活動の投資家法人は DB16→DB1 で参照済み（双方向）。IR Teamspaceの独立性を維持。"};
-  relRationale["DB1-DB17"] = {exists:false, reason:"IR契約の投資家は DB17→DB1 で参照済み（双方向）。法人ページからIR契約を直接表示することは非推奨。"};
-  relRationale["DB1-DB18"] = {exists:true,  reason:"クロスレイヤー接続（#1追加）。法人(DB1)ページからIRタスクを直接参照。投資家法人のタスク管理を法人ページ上で一元表示するため。"};
-  relRationale["DB2-DB15"] = {exists:false, reason:"IR面談は法人(DB1)・個人(DB4)単位。施設とIR面談に直接の関係はない。"};
-  relRationale["DB2-DB16"] = {exists:false, reason:"IR活動は法人・個人・支店に紐づく。施設(DB2)との直接接続は不要。"};
-  relRationale["DB2-DB17"] = {exists:false, reason:"投資契約の当事者は法人(DB1)が主体。施設(DB2)との直接関係はない。"};
-  relRationale["DB2-DB18"] = {exists:false, reason:"IRタスクは投資家法人(DB1)・個人(DB4)に紐づく。施設(DB2)との直接関係は不要。"};
-  relRationale["DB3-DB15"] = {exists:false, reason:"事業所とIR面談に直接の関係はない。IR管理は法人・個人・支店レベルで完結。"};
-  relRationale["DB3-DB16"] = {exists:false, reason:"事業所とIR活動に直接の関係はない。レイヤー分離を維持。"};
-  relRationale["DB3-DB17"] = {exists:false, reason:"事業所と投資契約に直接の関係はない。"};
-  relRationale["DB3-DB18"] = {exists:false, reason:"事業所とIRタスクに直接の関係はない。"};
-  relRationale["DB4-DB15"] = {exists:false, reason:"IR面談の投資家個人は DB15→DB4 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB4-DB16"] = {exists:false, reason:"IR活動の投資家個人は DB16→DB4 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB4-DB17"] = {exists:false, reason:"IR契約の投資家は法人(DB1)が主体。個人(DB4)との直接契約は想定外。"};
-  relRationale["DB4-DB18"] = {exists:false, reason:"IRタスクの投資家個人は DB18→DB4 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB5-DB15"] = {exists:false, reason:"IR面談の支店は DB15→DB5 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB5-DB16"] = {exists:false, reason:"IR活動の支店は DB16→DB5 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB5-DB17"] = {exists:false, reason:"IR契約の支店は DB17→DB5 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB5-DB18"] = {exists:false, reason:"IRタスクの支店は DB18→DB5 で参照済み（双方向）。逆方向は不要。"};
-
-  // -- SSOT → Corporate --
-  relRationale["DB1-DB19"] = {exists:false, reason:"コンテンツの取引先は DB19→DB1 で参照済み（双方向）。法人ページからコンテンツ一覧を表示する必要は現状ない。"};
-  relRationale["DB2-DB19"] = {exists:false, reason:"コンテンツの施設は DB19→DB2 で参照済み（双方向）。施設ページからコンテンツへの直接参照は不要。"};
-  relRationale["DB3-DB19"] = {exists:false, reason:"事業所とコンテンツに直接の関係はない。コンテンツは法人・施設・人単位で管理。"};
-  relRationale["DB4-DB19"] = {exists:false, reason:"コンテンツの人・名刺は DB19→DB4 で参照済み（双方向）。逆方向は不要。"};
-  relRationale["DB5-DB19"] = {exists:false, reason:"支店とコンテンツに直接の関係はない。コンテンツは法人・施設・人単位で管理。"};
-
-  // -- SSOT → General --
-  relRationale["DB1-DB20"] = {exists:false, reason:"法人と部門に直接の組織的関係はない。部門は社内組織（NAGARA内）、法人は外部顧客。"};
-  relRationale["DB1-DB21"] = {exists:false, reason:"PJは社内プロジェクト。法人(DB1)との直接リレーションは不要。顧客起点のPJは商談(DB6)経由で管理。"};
-  relRationale["DB1-DB22"] = {exists:true,  reason:"クロスレイヤー接続（#3追加）。法人(DB1)ページから顧客関連のGeneralタスクを直接参照。顧客対応タスクの一元管理に必須。"};
-  relRationale["DB1-DB23"] = {exists:true,  reason:"クロスレイヤー接続（#25残す）。法人(DB1)ページから顧客関連ドキュメント（提案書・報告書等）を直接参照。顧客ページの情報ハブ機能に必須。"};
-  relRationale["DB1-DB24"] = {exists:false, reason:"プロダクトは自社製品。法人(DB1)への導入状況は事業所(DB3)→プロダクト(DB24)の経路で管理。"};
-  relRationale["DB2-DB20"] = {exists:false, reason:"施設(外部顧客)と部門(社内組織)に直接の関係はない。"};
-  relRationale["DB2-DB21"] = {exists:false, reason:"施設と社内PJに直接の関係はない。施設関連PJは DB1 経由で検索可能。"};
-  relRationale["DB2-DB22"] = {exists:false, reason:"施設とGeneralタスクに直接の関係はない。施設向けタスクはCRMタスク(DB9)で管理。"};
-  relRationale["DB2-DB23"] = {exists:false, reason:"施設向けドキュメントは DB1(法人)→DB23 の経路でアクセス可能。施設(DB2)→ドキュメントの直接参照は冗長。"};
-  relRationale["DB2-DB24"] = {exists:false, reason:"プロダクト導入は事業所(DB3)単位で管理。施設(DB2)との直接リレーションは粒度が大きすぎる。"};
-  relRationale["DB3-DB20"] = {exists:false, reason:"事業所(外部顧客サービス単位)と部門(社内組織)に直接の関係はない。"};
-  relRationale["DB3-DB21"] = {exists:false, reason:"事業所と社内PJに直接の関係はない。"};
-  relRationale["DB3-DB22"] = {exists:false, reason:"事業所向けタスクはCRMタスク(DB9)で管理。GeneralタスクはNAGARA社内専用。"};
-  relRationale["DB3-DB23"] = {exists:false, reason:"事業所向けドキュメントは法人(DB1)→ドキュメント(DB23)の経路で管理。"};
-  relRationale["DB3-DB24"] = {exists:true,  reason:"事業所→プロダクトのリレーション（#23追加）。どの事業所にどのプロダクトが導入されているかを直接追跡。導入管理の基点として必須。"};
-  relRationale["DB4-DB20"] = {exists:false, reason:"人・名刺(外部顧客・個人)と部門(社内組織)に直接の関係はない。"};
-  relRationale["DB4-DB21"] = {exists:false, reason:"個人と社内PJに直接の関係はない。"};
-  relRationale["DB4-DB22"] = {exists:false, reason:"個人向けタスクはCRMタスク(DB9)・HRタスク(DB14)・IRタスク(DB18)で各レイヤーが管理。"};
-  relRationale["DB4-DB23"] = {exists:false, reason:"個人向けドキュメントは法人(DB1)→ドキュメント(DB23)経由でアクセス可能。直接参照は不要。"};
-  relRationale["DB4-DB24"] = {exists:false, reason:"プロダクト導入は事業所(DB3)単位で管理。個人(DB4)との直接リレーションは不要。"};
-  relRationale["DB5-DB20"] = {exists:false, reason:"支店(外部)と部門(社内組織)に直接の関係はない。"};
-  relRationale["DB5-DB21"] = {exists:false, reason:"支店と社内PJに直接の関係はない。"};
-  relRationale["DB5-DB22"] = {exists:false, reason:"支店向けタスクは法人(DB1)経由で管理。Generalタスクは社内専用。"};
-  relRationale["DB5-DB23"] = {exists:false, reason:"支店向けドキュメントは法人(DB1)→ドキュメント(DB23)経由でアクセス可能。"};
-  relRationale["DB5-DB24"] = {exists:false, reason:"プロダクト導入は事業所(DB3)単位。支店(DB5)との直接リレーションは不要。"};
-
-  // -- SSOT → Executive --
-  relRationale["DB1-DB25"] = {exists:false, reason:"1on1は社内メンバー間の記録。法人(DB1)との直接関係はない。"};
-  relRationale["DB2-DB25"] = {exists:false, reason:"施設と1on1に直接の関係はない。"};
-  relRationale["DB3-DB25"] = {exists:false, reason:"事業所と1on1に直接の関係はない。"};
-  relRationale["DB4-DB25"] = {exists:false, reason:"1on1のメンバーは people型プロパティ（Notionメンバー）で管理。外部名刺(DB4)との直接リレーションは不要。"};
-  relRationale["DB5-DB25"] = {exists:false, reason:"支店と1on1に直接の関係はない。"};
-
-  // -- CRM internal --
-  relRationale["DB6-DB7"] = {exists:true,  reason:"商談→活動の1:N。商談ページから関連する全活動（訪問/電話/メール等）を一覧表示。CRM の中核リレーション。"};
-  relRationale["DB6-DB8"] = {exists:true,  reason:"商談→契約の1:1（または1:N再契約）。商談クローズ後の契約締結を追跡。MRR継続管理の起点。"};
-  relRationale["DB6-DB9"] = {exists:false, reason:"CRMタスクの商談参照は DB9→DB6 で管理済み（双方向）。DB6からタスクへの逆引きは双方向で実現。"};
-  relRationale["DB6-DB10"] = {exists:false, reason:"報告フォームの商談参照は DB10→DB6 で管理済み（双方向）。DB6からの逆引きは双方向で実現。"};
-  relRationale["DB7-DB8"] = {exists:false, reason:"活動と契約は直接の親子関係がない。活動→商談→契約の経路で追跡。直接リレーションは冗長。"};
-  relRationale["DB7-DB9"] = {exists:false, reason:"CRMタスクと活動は独立した記録単位。活動から次のタスクを生成する場合は商談(DB6)を経由。"};
-  relRationale["DB7-DB10"] = {exists:false, reason:"報告フォーム(DB10)は活動(DB7)に変換される（処理フロー）。DB7↔DB10直接リレーションは削除済み（#14）。"};
+  // -- Sales CRM活動 internal (DB6-10) --
+  relRationale["DB6-DB7"] = {exists:true,  reason:"商談→活動の1:N。商談ページから全活動（訪問/電話/メール等）を一覧表示。CRM中核リレーション。"};
+  relRationale["DB6-DB8"] = {exists:true,  reason:"商談→契約の1:1（または1:N再契約）。商談クローズ後の契約締結を追跡。MRR管理の起点。"};
+  relRationale["DB6-DB9"] = {exists:false, reason:"DB9→DB6で管理済み（双方向）。DB6からタスクへの逆引きは双方向で実現。"};
+  relRationale["DB6-DB10"] = {exists:false, reason:"DB10→DB6で管理済み（双方向）。逆引きは双方向で実現。"};
+  relRationale["DB7-DB8"] = {exists:false, reason:"活動と契約は直接の親子関係がない。活動→商談→契約の経路で追跡。"};
+  relRationale["DB7-DB9"] = {exists:false, reason:"CRMタスクと活動は独立した記録単位。商談(DB6)経由でタスク生成。"};
+  relRationale["DB7-DB10"] = {exists:false, reason:"報告フォーム(DB10)は活動(DB7)に変換される処理フロー。直接リレーションは削除済み。"};
   relRationale["DB8-DB9"] = {exists:false, reason:"CRMタスクと契約は直接の関係がない。契約更新タスクは商談(DB6)経由で生成。"};
   relRationale["DB8-DB10"] = {exists:false, reason:"報告フォームと契約に直接の関係はない。"};
-  relRationale["DB9-DB10"] = {exists:false, reason:"CRMタスクと報告フォームに直接の関係はない。いずれも商談(DB6)を起点に独立管理。"};
+  relRationale["DB9-DB10"] = {exists:false, reason:"CRMタスクと報告フォームに直接の関係はない。いずれも商談(DB6)起点で独立管理。"};
 
-  // -- CRM → HR --
-  relRationale["DB6-DB11"] = {exists:false, reason:"CRM層とHR層は意図的に分離。AIエージェントのスコープ制御と権限管理（HR Closed）のため。"};
-  relRationale["DB6-DB12"] = {exists:false, reason:"営業活動(DB7)と採用活動(DB12)は別スコープ。レイヤー分離を維持。"};
-  relRationale["DB6-DB13"] = {exists:false, reason:"営業契約(DB8)と雇用契約(DB13)は性質が異なる。混在はSchemaの汚染になる。"};
-  relRationale["DB6-DB14"] = {exists:false, reason:"CRMタスクとHRタスクは独立管理。横断分析は SSOT(DB1/DB4)経由で可能。"};
-  relRationale["DB7-DB11"] = {exists:false, reason:"CRM活動とHR面談は別スコープ。エージェントのアクセス権を分離するためレイヤーをまたがない。"};
-  relRationale["DB7-DB12"] = {exists:false, reason:"CRM活動とHR活動は同一パターンだが意図的に分離。Closed HR Teamspaceの独立性を維持。"};
-  relRationale["DB7-DB13"] = {exists:false, reason:"CRM活動と雇用契約に直接の関係はない。"};
-  relRationale["DB7-DB14"] = {exists:false, reason:"CRM活動とHRタスクに直接の関係はない。"};
-  relRationale["DB8-DB11"] = {exists:false, reason:"営業契約とHR面談に直接の関係はない。"};
-  relRationale["DB8-DB12"] = {exists:false, reason:"営業契約とHR活動に直接の関係はない。"};
-  relRationale["DB8-DB13"] = {exists:false, reason:"営業契約と雇用契約は性質が根本的に異なる。混在しない。"};
-  relRationale["DB8-DB14"] = {exists:false, reason:"営業契約とHRタスクに直接の関係はない。"};
-  relRationale["DB9-DB11"] = {exists:false, reason:"CRMタスクとHR面談に直接の関係はない。レイヤー分離。"};
-  relRationale["DB9-DB12"] = {exists:false, reason:"CRMタスクとHR活動に直接の関係はない。"};
-  relRationale["DB9-DB13"] = {exists:false, reason:"CRMタスクと雇用契約に直接の関係はない。"};
+  // -- Sales → HR --
+  relRationale["DB1-DB11"] = {exists:false, reason:"HR面談はDB11→DB31(エージェント)で外交基盤を参照。CRM基盤のDB1とは直接接続しない（SSOT分割後）。"};
+  relRationale["DB1-DB12"] = {exists:false, reason:"HR活動はDB12→DB31で外交基盤を参照。CRM顧客法人(DB1)からHR活動を見せることは情報分離の観点から不適切。"};
+  relRationale["DB1-DB13"] = {exists:false, reason:"雇用契約はDB13→DB33(候補者SH)に紐づく。CRM法人(DB1)からの参照は不要。"};
+  relRationale["DB1-DB14"] = {exists:false, reason:"HRタスクは面談(DB11)起点。CRM法人からの参照はClosed HR Teamspaceの情報分離原則に反する。"};
+  relRationale["DB1-DB26"] = {exists:false, reason:"採用ポジションはDB26→DB20(部門)に紐づく。CRM法人(DB1)との直接関係はない。"};
+  relRationale["DB2-DB11"] = {exists:false, reason:"施設(DB2)とHR面談に直接の関係はない。HR→外交基盤で完結。"};
+  relRationale["DB2-DB12"] = {exists:false, reason:"施設(DB2)はCRMスコープ。HR活動は外交基盤を参照。"};
+  relRationale["DB2-DB13"] = {exists:false, reason:"施設と雇用契約は無関係。雇用はDB33(候補者SH)に紐づく。"};
+  relRationale["DB2-DB14"] = {exists:false, reason:"施設とHRタスクは無関係。"};
+  relRationale["DB2-DB26"] = {exists:false, reason:"施設と採用ポジションは無関係。"};
+  relRationale["DB3-DB11"] = {exists:false, reason:"事業所とHR面談は無関係。"};
+  relRationale["DB3-DB12"] = {exists:false, reason:"事業所とHR活動は無関係。"};
+  relRationale["DB3-DB13"] = {exists:false, reason:"事業所と雇用契約は無関係。"};
+  relRationale["DB3-DB14"] = {exists:false, reason:"事業所とHRタスクは無関係。"};
+  relRationale["DB3-DB26"] = {exists:false, reason:"事業所と採用ポジションは無関係。"};
+  relRationale["DB4-DB11"] = {exists:false, reason:"CRM名刺(DB4)とHR面談は直接接続しない。候補者はDB33(人SH)で管理。SSOT分割により分離。"};
+  relRationale["DB4-DB12"] = {exists:false, reason:"CRM名刺(DB4)とHR活動は無関係。候補者はDB33経由。"};
+  relRationale["DB4-DB13"] = {exists:false, reason:"CRM名刺(DB4)と雇用契約は無関係。"};
+  relRationale["DB4-DB14"] = {exists:false, reason:"CRM名刺(DB4)とHRタスクは無関係。"};
+  relRationale["DB4-DB26"] = {exists:false, reason:"CRM名刺と採用ポジションは無関係。"};
+  relRationale["DB6-DB11"] = {exists:false, reason:"CRM商談とHR面談は意図的に分離。Teamspace権限でスコープ制御。"};
+  relRationale["DB6-DB12"] = {exists:false, reason:"営業活動(DB7)とHR活動(DB12)は別スコープ。"};
+  relRationale["DB6-DB13"] = {exists:false, reason:"営業契約(DB8)と雇用契約(DB13)は性質が異なる。"};
+  relRationale["DB6-DB14"] = {exists:false, reason:"CRM商談とHRタスクは独立管理。"};
+  relRationale["DB6-DB26"] = {exists:false, reason:"CRM商談と採用ポジションは無関係。"};
+  relRationale["DB7-DB11"] = {exists:false, reason:"CRM活動とHR面談は別スコープ。"};
+  relRationale["DB7-DB12"] = {exists:false, reason:"CRM活動とHR活動は同一パターンだが意図的に分離。Closed HR Teamspace。"};
+  relRationale["DB7-DB13"] = {exists:false, reason:"CRM活動と雇用契約は無関係。"};
+  relRationale["DB7-DB14"] = {exists:false, reason:"CRM活動とHRタスクは無関係。"};
+  relRationale["DB7-DB26"] = {exists:false, reason:"CRM活動と採用ポジションは無関係。"};
+  relRationale["DB8-DB11"] = {exists:false, reason:"営業契約とHR面談は無関係。"};
+  relRationale["DB8-DB12"] = {exists:false, reason:"営業契約とHR活動は無関係。"};
+  relRationale["DB8-DB13"] = {exists:false, reason:"営業契約と雇用契約は性質が根本的に異なる。"};
+  relRationale["DB8-DB14"] = {exists:false, reason:"営業契約とHRタスクは無関係。"};
+  relRationale["DB8-DB26"] = {exists:false, reason:"営業契約と採用ポジションは無関係。"};
+  relRationale["DB9-DB11"] = {exists:false, reason:"CRMタスクとHR面談は無関係。"};
+  relRationale["DB9-DB12"] = {exists:false, reason:"CRMタスクとHR活動は無関係。"};
+  relRationale["DB9-DB13"] = {exists:false, reason:"CRMタスクと雇用契約は無関係。"};
   relRationale["DB9-DB14"] = {exists:false, reason:"CRMタスクとHRタスクは別レイヤー。General Tasks(DB22)が社内共通。"};
-  relRationale["DB10-DB11"] = {exists:false, reason:"報告フォームとHR面談に直接の関係はない。"};
-  relRationale["DB10-DB12"] = {exists:false, reason:"報告フォームとHR活動に直接の関係はない。"};
-  relRationale["DB10-DB13"] = {exists:false, reason:"報告フォームと雇用契約に直接の関係はない。"};
-  relRationale["DB10-DB14"] = {exists:false, reason:"報告フォームとHRタスクに直接の関係はない。"};
+  relRationale["DB9-DB26"] = {exists:false, reason:"CRMタスクと採用ポジションは無関係。"};
+  relRationale["DB10-DB11"] = {exists:false, reason:"報告フォームとHR面談は無関係。"};
+  relRationale["DB10-DB12"] = {exists:false, reason:"報告フォームとHR活動は無関係。"};
+  relRationale["DB10-DB13"] = {exists:false, reason:"報告フォームと雇用契約は無関係。"};
+  relRationale["DB10-DB14"] = {exists:false, reason:"報告フォームとHRタスクは無関係。"};
+  relRationale["DB10-DB26"] = {exists:false, reason:"報告フォームと採用ポジションは無関係。"};
 
-  // -- CRM → IR --
-  relRationale["DB6-DB15"] = {exists:false, reason:"CRM層とIR層は意図的に分離。顧客情報と投資家情報のアクセス制御を分けるため。"};
-  relRationale["DB6-DB16"] = {exists:false, reason:"CRM活動とIR活動は別スコープ。レイヤー分離を維持。"};
-  relRationale["DB6-DB17"] = {exists:false, reason:"営業契約と投資契約は性質が異なる。混在しない。"};
-  relRationale["DB6-DB18"] = {exists:false, reason:"CRMタスクとIRタスクは別レイヤー。横断が必要な場合は General Tasks(DB22)を使用。"};
-  relRationale["DB7-DB15"] = {exists:false, reason:"CRM活動とIR面談は別スコープ。Closed IR Teamspaceの独立性を維持。"};
-  relRationale["DB7-DB16"] = {exists:false, reason:"CRM活動とIR活動は同一パターンだが意図的に分離。アクセス制御の観点から混在させない。"};
-  relRationale["DB7-DB17"] = {exists:false, reason:"CRM活動と投資契約に直接の関係はない。"};
-  relRationale["DB7-DB18"] = {exists:false, reason:"CRM活動とIRタスクに直接の関係はない。"};
-  relRationale["DB8-DB15"] = {exists:false, reason:"営業契約とIR面談に直接の関係はない。"};
-  relRationale["DB8-DB16"] = {exists:false, reason:"営業契約とIR活動に直接の関係はない。"};
+  // -- Sales → IR --
+  relRationale["DB1-DB15"] = {exists:false, reason:"IR面談はDB15→DB31(投資家法人SH)で外交基盤を参照。CRM基盤(DB1)とは直接接続しない。"};
+  relRationale["DB1-DB16"] = {exists:false, reason:"IR活動はDB16→DB31で外交基盤を参照。CRM法人との接続は不要。"};
+  relRationale["DB1-DB17"] = {exists:false, reason:"IR契約はDB17→DB31で外交基盤を参照。CRM法人との接続は不要。"};
+  relRationale["DB1-DB18"] = {exists:true,  reason:"クロスTeamspace接続。法人(DB1)ページからIRタスクを直接参照。投資家法人のタスク管理を一元表示するため。"};
+  relRationale["DB2-DB15"] = {exists:false, reason:"施設とIR面談は無関係。IR管理は外交基盤(DB31/DB33)で完結。"};
+  relRationale["DB2-DB16"] = {exists:false, reason:"施設とIR活動は無関係。"};
+  relRationale["DB2-DB17"] = {exists:false, reason:"施設と投資契約は無関係。"};
+  relRationale["DB2-DB18"] = {exists:false, reason:"施設とIRタスクは無関係。"};
+  relRationale["DB3-DB15"] = {exists:false, reason:"事業所とIR面談は無関係。"};
+  relRationale["DB3-DB16"] = {exists:false, reason:"事業所とIR活動は無関係。"};
+  relRationale["DB3-DB17"] = {exists:false, reason:"事業所と投資契約は無関係。"};
+  relRationale["DB3-DB18"] = {exists:false, reason:"事業所とIRタスクは無関係。"};
+  relRationale["DB4-DB15"] = {exists:false, reason:"CRM名刺(DB4)とIR面談は直接接続しない。投資家個人はDB33(人SH)で管理。"};
+  relRationale["DB4-DB16"] = {exists:false, reason:"CRM名刺(DB4)とIR活動は無関係。"};
+  relRationale["DB4-DB17"] = {exists:false, reason:"CRM名刺(DB4)とIR契約は無関係。"};
+  relRationale["DB4-DB18"] = {exists:false, reason:"CRM名刺(DB4)とIRタスクは無関係。"};
+  relRationale["DB6-DB15"] = {exists:false, reason:"CRM商談とIR面談は意図的に分離。Teamspace権限でスコープ制御。"};
+  relRationale["DB6-DB16"] = {exists:false, reason:"CRM活動とIR活動は別スコープ。"};
+  relRationale["DB6-DB17"] = {exists:false, reason:"営業契約と投資契約は性質が異なる。"};
+  relRationale["DB6-DB18"] = {exists:false, reason:"CRM商談とIRタスクは別レイヤー。"};
+  relRationale["DB7-DB15"] = {exists:false, reason:"CRM活動とIR面談は別スコープ。Closed IR Teamspace。"};
+  relRationale["DB7-DB16"] = {exists:false, reason:"CRM活動とIR活動は同一パターンだが意図的に分離。"};
+  relRationale["DB7-DB17"] = {exists:false, reason:"CRM活動と投資契約は無関係。"};
+  relRationale["DB7-DB18"] = {exists:false, reason:"CRM活動とIRタスクは無関係。"};
+  relRationale["DB8-DB15"] = {exists:false, reason:"営業契約とIR面談は無関係。"};
+  relRationale["DB8-DB16"] = {exists:false, reason:"営業契約とIR活動は無関係。"};
   relRationale["DB8-DB17"] = {exists:false, reason:"営業契約と投資契約は性質が根本的に異なる。"};
-  relRationale["DB8-DB18"] = {exists:false, reason:"営業契約とIRタスクに直接の関係はない。"};
-  relRationale["DB9-DB15"] = {exists:false, reason:"CRMタスクとIR面談に直接の関係はない。レイヤー分離。"};
-  relRationale["DB9-DB16"] = {exists:false, reason:"CRMタスクとIR活動に直接の関係はない。"};
-  relRationale["DB9-DB17"] = {exists:false, reason:"CRMタスクと投資契約に直接の関係はない。"};
+  relRationale["DB8-DB18"] = {exists:false, reason:"営業契約とIRタスクは無関係。"};
+  relRationale["DB9-DB15"] = {exists:false, reason:"CRMタスクとIR面談は無関係。"};
+  relRationale["DB9-DB16"] = {exists:false, reason:"CRMタスクとIR活動は無関係。"};
+  relRationale["DB9-DB17"] = {exists:false, reason:"CRMタスクと投資契約は無関係。"};
   relRationale["DB9-DB18"] = {exists:false, reason:"CRMタスクとIRタスクは別レイヤー。General Tasks(DB22)が社内共通タスクを担う。"};
-  relRationale["DB10-DB15"] = {exists:false, reason:"報告フォームとIR面談に直接の関係はない。"};
-  relRationale["DB10-DB16"] = {exists:false, reason:"報告フォームとIR活動に直接の関係はない。"};
-  relRationale["DB10-DB17"] = {exists:false, reason:"報告フォームと投資契約に直接の関係はない。"};
-  relRationale["DB10-DB18"] = {exists:false, reason:"報告フォームとIRタスクに直接の関係はない。"};
+  relRationale["DB10-DB15"] = {exists:false, reason:"報告フォームとIR面談は無関係。"};
+  relRationale["DB10-DB16"] = {exists:false, reason:"報告フォームとIR活動は無関係。"};
+  relRationale["DB10-DB17"] = {exists:false, reason:"報告フォームと投資契約は無関係。"};
+  relRationale["DB10-DB18"] = {exists:false, reason:"報告フォームとIRタスクは無関係。"};
 
-  // -- CRM → Corporate --
-  relRationale["DB6-DB19"] = {exists:false, reason:"商談とコンテンツに直接の関係はない。コンテンツの顧客紐づけは DB19→DB1 で管理。"};
-  relRationale["DB7-DB19"] = {exists:false, reason:"活動記録とコンテンツに直接の関係はない。SNS投稿は DB19 が独自管理。"};
-  relRationale["DB8-DB19"] = {exists:false, reason:"契約とコンテンツに直接の関係はない。"};
-  relRationale["DB9-DB19"] = {exists:false, reason:"CRMタスクとコンテンツに直接の関係はない。"};
-  relRationale["DB10-DB19"] = {exists:false, reason:"報告フォームとコンテンツに直接の関係はない。"};
+  // -- Sales → 社長室 (DB19, DB24) --
+  relRationale["DB1-DB19"] = {exists:false, reason:"コンテンツはPJ(DB21)経由で管理。法人ページからコンテンツ一覧は不要。"};
+  relRationale["DB1-DB24"] = {exists:false, reason:"プロダクト導入は事業所(DB3)→DB24で管理。法人(DB1)からの直接参照は不要。"};
+  relRationale["DB2-DB19"] = {exists:false, reason:"施設とコンテンツは無関係。"};
+  relRationale["DB2-DB24"] = {exists:false, reason:"プロダクト導入は事業所(DB3)単位。施設(DB2)からは粒度が大きすぎる。"};
+  relRationale["DB3-DB19"] = {exists:false, reason:"事業所とコンテンツは無関係。"};
+  relRationale["DB3-DB24"] = {exists:true,  reason:"事業所→プロダクトのリレーション。どの事業所にどのプロダクトが導入されているかを直接追跡。導入管理の基点。"};
+  relRationale["DB4-DB19"] = {exists:false, reason:"名刺とコンテンツは無関係。"};
+  relRationale["DB4-DB24"] = {exists:false, reason:"名刺とプロダクトは無関係。プロダクト導入は事業所(DB3)単位。"};
+  relRationale["DB6-DB19"] = {exists:false, reason:"商談とコンテンツは無関係。コンテンツの顧客紐づけはDB19→DB21(PJ)で管理。"};
+  relRationale["DB6-DB24"] = {exists:false, reason:"商談とプロダクトは無関係。導入プロダクトはDB3→DB24で管理。"};
+  relRationale["DB7-DB19"] = {exists:false, reason:"活動記録とコンテンツは無関係。"};
+  relRationale["DB7-DB24"] = {exists:false, reason:"活動記録とプロダクトは無関係。"};
+  relRationale["DB8-DB19"] = {exists:false, reason:"契約とコンテンツは無関係。"};
+  relRationale["DB8-DB24"] = {exists:false, reason:"契約とプロダクトは無関係。"};
+  relRationale["DB9-DB19"] = {exists:false, reason:"CRMタスクとコンテンツは無関係。"};
+  relRationale["DB9-DB24"] = {exists:false, reason:"CRMタスクとプロダクトは無関係。"};
+  relRationale["DB10-DB19"] = {exists:false, reason:"報告フォームとコンテンツは無関係。"};
+  relRationale["DB10-DB24"] = {exists:false, reason:"報告フォームとプロダクトは無関係。"};
 
-  // -- CRM → General --
-  relRationale["DB6-DB20"] = {exists:false, reason:"商談と部門は直接関係がない。担当部門はメンバー(people)プロパティで暗黙管理。"};
-  relRationale["DB6-DB21"] = {exists:false, reason:"商談と社内PJは直接関係がない。顧客PJは商談(DB6)を起点に CRMタスク(DB9)で管理。"};
-  relRationale["DB6-DB22"] = {exists:false, reason:"CRMタスク(DB9)が商談起点のタスクを担う。DB22(General Tasks)との直接リレーションは二重管理になる。"};
-  relRationale["DB6-DB23"] = {exists:false, reason:"商談関連ドキュメントは DB1(法人)→DB23 で参照可能。商談→ドキュメントの直接リレーションは将来拡張候補。"};
-  relRationale["DB6-DB24"] = {exists:false, reason:"商談と自社プロダクトに直接の関係はない。導入プロダクトは事業所(DB3)→DB24 で管理。"};
-  relRationale["DB7-DB20"] = {exists:false, reason:"活動記録と部門に直接の関係はない。担当者情報はメンバー(people)で追跡。"};
-  relRationale["DB7-DB21"] = {exists:false, reason:"活動記録と社内PJに直接の関係はない。活動は顧客起点、PJは社内起点。"};
-  relRationale["DB7-DB22"] = {exists:false, reason:"活動からタスク生成は商談(DB6)→CRMタスク(DB9)の経路で実現。活動→Generalタスクの直接リレーションは不要。"};
-  relRationale["DB7-DB23"] = {exists:false, reason:"活動↔ドキュメントのリレーションは削除済み（#14）。活動の議事録はページ本文に格納。"};
-  relRationale["DB7-DB24"] = {exists:false, reason:"活動記録とプロダクトに直接の関係はない。"};
-  relRationale["DB8-DB20"] = {exists:false, reason:"契約と部門に直接の関係はない。"};
-  relRationale["DB8-DB21"] = {exists:false, reason:"契約と社内PJに直接の関係はない。"};
-  relRationale["DB8-DB22"] = {exists:false, reason:"契約更新タスクはCRMタスク(DB9)で管理。General Tasks(DB22)との直接リレーションは不要。"};
-  relRationale["DB8-DB23"] = {exists:false, reason:"契約書ドキュメントは法人(DB1)→ドキュメント(DB23)経由で管理。直接リレーションは将来拡張候補。"};
-  relRationale["DB8-DB24"] = {exists:false, reason:"契約とプロダクトに直接の関係はない。"};
-  relRationale["DB9-DB20"] = {exists:false, reason:"CRMタスクと部門に直接の関係はない。"};
-  relRationale["DB9-DB21"] = {exists:false, reason:"CRMタスクと社内PJに直接の関係はない。顧客向けタスクはDB9、社内PJはDB21で独立管理。"};
-  relRationale["DB9-DB22"] = {exists:false, reason:"CRMタスク(DB9)とGeneral Tasks(DB22)は役割が異なる。混在はタスク管理の複雑化を招く。"};
-  relRationale["DB9-DB23"] = {exists:false, reason:"CRMタスクとドキュメントに直接の関係はない。"};
-  relRationale["DB9-DB24"] = {exists:false, reason:"CRMタスクとプロダクトに直接の関係はない。"};
-  relRationale["DB10-DB20"] = {exists:false, reason:"報告フォームと部門に直接の関係はない。"};
-  relRationale["DB10-DB21"] = {exists:false, reason:"報告フォームと社内PJに直接の関係はない。"};
-  relRationale["DB10-DB22"] = {exists:false, reason:"報告フォームとGeneralタスクに直接の関係はない。"};
-  relRationale["DB10-DB23"] = {exists:false, reason:"報告フォームとドキュメントに直接の関係はない。処理後は活動(DB7)ページ本文に統合。"};
-  relRationale["DB10-DB24"] = {exists:false, reason:"報告フォームとプロダクトに直接の関係はない。"};
+  // -- Sales → General (DB20-23) --
+  relRationale["DB1-DB20"] = {exists:false, reason:"法人(外部顧客)と部門(社内組織)は無関係。"};
+  relRationale["DB1-DB21"] = {exists:false, reason:"PJは社内プロジェクト。顧客起点のPJは商談(DB6)経由で管理。"};
+  relRationale["DB1-DB22"] = {exists:true,  reason:"クロスTeamspace接続。法人(DB1)ページから顧客関連のGeneralタスクを直接参照。顧客対応タスクの一元管理に必須。"};
+  relRationale["DB1-DB23"] = {exists:true,  reason:"クロスTeamspace接続。法人(DB1)ページから顧客関連ドキュメント（提案書・報告書等）を直接参照。顧客ページの情報ハブに必須。"};
+  relRationale["DB2-DB20"] = {exists:false, reason:"施設(外部)と部門(社内)は無関係。"};
+  relRationale["DB2-DB21"] = {exists:false, reason:"施設と社内PJは無関係。"};
+  relRationale["DB2-DB22"] = {exists:false, reason:"施設とGeneralタスクは無関係。施設向けタスクはCRMタスク(DB9)。"};
+  relRationale["DB2-DB23"] = {exists:false, reason:"施設向けドキュメントはDB1(法人)→DB23経由でアクセス可能。"};
+  relRationale["DB3-DB20"] = {exists:false, reason:"事業所(外部)と部門(社内)は無関係。"};
+  relRationale["DB3-DB21"] = {exists:false, reason:"事業所と社内PJは無関係。"};
+  relRationale["DB3-DB22"] = {exists:false, reason:"事業所向けタスクはCRMタスク(DB9)で管理。"};
+  relRationale["DB3-DB23"] = {exists:false, reason:"事業所向けドキュメントはDB1→DB23経由で管理。"};
+  relRationale["DB4-DB20"] = {exists:false, reason:"名刺(外部個人)と部門(社内組織)は無関係。"};
+  relRationale["DB4-DB21"] = {exists:false, reason:"名刺と社内PJは無関係。"};
+  relRationale["DB4-DB22"] = {exists:false, reason:"個人向けタスクはCRMタスク(DB9)/HRタスク(DB14)/IRタスク(DB18)で各領域が管理。"};
+  relRationale["DB4-DB23"] = {exists:false, reason:"個人向けドキュメントはDB1→DB23経由でアクセス可能。"};
+  relRationale["DB6-DB20"] = {exists:false, reason:"商談と部門は無関係。担当部門はメンバー(people)プロパティで暗黙管理。"};
+  relRationale["DB6-DB21"] = {exists:false, reason:"商談と社内PJは無関係。"};
+  relRationale["DB6-DB22"] = {exists:false, reason:"CRMタスク(DB9)が商談起点のタスクを担う。DB22との直接リレーションは二重管理。"};
+  relRationale["DB6-DB23"] = {exists:false, reason:"商談関連ドキュメントはDB1(法人)→DB23で参照可能。"};
+  relRationale["DB7-DB20"] = {exists:false, reason:"活動記録と部門は無関係。"};
+  relRationale["DB7-DB21"] = {exists:false, reason:"活動記録と社内PJは無関係。"};
+  relRationale["DB7-DB22"] = {exists:false, reason:"活動からタスク生成はDB6→DB9の経路で実現。"};
+  relRationale["DB7-DB23"] = {exists:false, reason:"活動↔ドキュメントのリレーションは削除済み。議事録はページ本文に格納。"};
+  relRationale["DB8-DB20"] = {exists:false, reason:"契約と部門は無関係。"};
+  relRationale["DB8-DB21"] = {exists:false, reason:"契約と社内PJは無関係。"};
+  relRationale["DB8-DB22"] = {exists:false, reason:"契約更新タスクはCRMタスク(DB9)で管理。"};
+  relRationale["DB8-DB23"] = {exists:false, reason:"契約書ドキュメントはDB1→DB23経由で管理。"};
+  relRationale["DB9-DB20"] = {exists:false, reason:"CRMタスクと部門は無関係。"};
+  relRationale["DB9-DB21"] = {exists:false, reason:"CRMタスクと社内PJは無関係。"};
+  relRationale["DB9-DB22"] = {exists:false, reason:"CRMタスク(DB9)とGeneral Tasks(DB22)は役割が異なる。混在は複雑化を招く。"};
+  relRationale["DB9-DB23"] = {exists:false, reason:"CRMタスクとドキュメントは無関係。"};
+  relRationale["DB10-DB20"] = {exists:false, reason:"報告フォームと部門は無関係。"};
+  relRationale["DB10-DB21"] = {exists:false, reason:"報告フォームと社内PJは無関係。"};
+  relRationale["DB10-DB22"] = {exists:false, reason:"報告フォームとGeneralタスクは無関係。"};
+  relRationale["DB10-DB23"] = {exists:false, reason:"報告フォームとドキュメントは無関係。処理後は活動(DB7)本文に統合。"};
 
-  // -- CRM → Executive --
-  relRationale["DB6-DB25"] = {exists:false, reason:"商談と1on1に直接の関係はない。"};
-  relRationale["DB7-DB25"] = {exists:false, reason:"活動記録と1on1に直接の関係はない。"};
-  relRationale["DB8-DB25"] = {exists:false, reason:"契約と1on1に直接の関係はない。"};
-  relRationale["DB9-DB25"] = {exists:false, reason:"CRMタスクと1on1に直接の関係はない。"};
-  relRationale["DB10-DB25"] = {exists:false, reason:"報告フォームと1on1に直接の関係はない。"};
+  // -- Sales → 外交 (DB31-35) --
+  relRationale["DB1-DB31"] = {exists:true,  reason:"🔗 クロスTeamspace接続（紹介元法人SH）。CRM法人→外交法人SHの紹介元リレーション。SSOT分割の接続点。"};
+  relRationale["DB1-DB32"] = {exists:false, reason:"CRM法人→SH支店の直接リレーションは不要。DB1→DB31→DB32の経路で追跡。"};
+  relRationale["DB1-DB33"] = {exists:false, reason:"CRM法人→人SHの直接リレーションは不要。人SHはDB31(法人SH)配下で管理。"};
+  relRationale["DB1-DB34"] = {exists:false, reason:"CRM法人→SHタスクの直接リレーションは不要。外交Teamspace内で完結。"};
+  relRationale["DB1-DB35"] = {exists:false, reason:"CRM法人→SH活動の直接リレーションは不要。外交Teamspace内で完結。"};
+  relRationale["DB2-DB31"] = {exists:true,  reason:"🔗 クロスTeamspace接続（紹介元法人SH）。CRM施設の紹介元をSH法人として記録。"};
+  relRationale["DB2-DB32"] = {exists:false, reason:"施設→SH支店の直接リレーションは不要。"};
+  relRationale["DB2-DB33"] = {exists:false, reason:"施設→人SHの直接リレーションは不要。"};
+  relRationale["DB2-DB34"] = {exists:false, reason:"施設→SHタスクは無関係。"};
+  relRationale["DB2-DB35"] = {exists:false, reason:"施設→SH活動は無関係。"};
+  relRationale["DB3-DB31"] = {exists:true,  reason:"🔗 クロスTeamspace接続（紹介元法人SH）。CRM事業所の紹介元をSH法人として記録。"};
+  relRationale["DB3-DB32"] = {exists:false, reason:"事業所→SH支店は無関係。"};
+  relRationale["DB3-DB33"] = {exists:false, reason:"事業所→人SHは無関係。"};
+  relRationale["DB3-DB34"] = {exists:false, reason:"事業所→SHタスクは無関係。"};
+  relRationale["DB3-DB35"] = {exists:false, reason:"事業所→SH活動は無関係。"};
+  relRationale["DB4-DB31"] = {exists:false, reason:"CRM名刺→法人SHの直接リレーションは不要。紹介元は法人単位でDB1/DB2/DB3→DB31。"};
+  relRationale["DB4-DB32"] = {exists:false, reason:"CRM名刺→SH支店は無関係。"};
+  relRationale["DB4-DB33"] = {exists:false, reason:"CRM名刺→人SHは無関係。CRM名刺(顧客担当者)とSH人(投資家/エージェント個人)は物理分離済み。"};
+  relRationale["DB4-DB34"] = {exists:false, reason:"CRM名刺→SHタスクは無関係。"};
+  relRationale["DB4-DB35"] = {exists:false, reason:"CRM名刺→SH活動は無関係。"};
+  relRationale["DB6-DB31"] = {exists:false, reason:"CRM商談→法人SHは無関係。商談は顧客法人(DB1)起点。"};
+  relRationale["DB6-DB32"] = {exists:false, reason:"CRM商談→SH支店は無関係。"};
+  relRationale["DB6-DB33"] = {exists:false, reason:"CRM商談→人SHは無関係。"};
+  relRationale["DB6-DB34"] = {exists:false, reason:"CRM商談→SHタスクは無関係。"};
+  relRationale["DB6-DB35"] = {exists:false, reason:"CRM商談→SH活動は無関係。"};
+  relRationale["DB7-DB31"] = {exists:false, reason:"CRM活動→法人SHは無関係。活動はCRM基盤(DB1/DB2)を参照。"};
+  relRationale["DB7-DB32"] = {exists:false, reason:"CRM活動→SH支店は無関係。"};
+  relRationale["DB7-DB33"] = {exists:false, reason:"CRM活動→人SHは無関係。"};
+  relRationale["DB7-DB34"] = {exists:false, reason:"CRM活動→SHタスクは無関係。"};
+  relRationale["DB7-DB35"] = {exists:false, reason:"CRM活動→SH活動は無関係。"};
+  relRationale["DB8-DB31"] = {exists:false, reason:"営業契約→法人SHは無関係。"};
+  relRationale["DB8-DB32"] = {exists:false, reason:"営業契約→SH支店は無関係。"};
+  relRationale["DB8-DB33"] = {exists:false, reason:"営業契約→人SHは無関係。"};
+  relRationale["DB8-DB34"] = {exists:false, reason:"営業契約→SHタスクは無関係。"};
+  relRationale["DB8-DB35"] = {exists:false, reason:"営業契約→SH活動は無関係。"};
+  relRationale["DB9-DB31"] = {exists:false, reason:"CRMタスク→法人SHは無関係。"};
+  relRationale["DB9-DB32"] = {exists:false, reason:"CRMタスク→SH支店は無関係。"};
+  relRationale["DB9-DB33"] = {exists:false, reason:"CRMタスク→人SHは無関係。"};
+  relRationale["DB9-DB34"] = {exists:false, reason:"CRMタスク→SHタスクは無関係。"};
+  relRationale["DB9-DB35"] = {exists:false, reason:"CRMタスク→SH活動は無関係。"};
+  relRationale["DB10-DB31"] = {exists:false, reason:"報告フォーム→法人SHは無関係。"};
+  relRationale["DB10-DB32"] = {exists:false, reason:"報告フォーム→SH支店は無関係。"};
+  relRationale["DB10-DB33"] = {exists:false, reason:"報告フォーム→人SHは無関係。"};
+  relRationale["DB10-DB34"] = {exists:false, reason:"報告フォーム→SHタスクは無関係。"};
+  relRationale["DB10-DB35"] = {exists:false, reason:"報告フォーム→SH活動は無関係。"};
 
-  // -- HR internal --
-  relRationale["DB11-DB12"] = {exists:false, reason:"HR活動の面談参照は DB12→DB11 で管理済み（双方向）。HR面談→HR活動の逆引きは双方向で実現。"};
-  relRationale["DB11-DB13"] = {exists:false, reason:"採用面談から雇用契約への遷移は候補者(DB4)を経由して追跡。直接リレーションは冗長。"};
-  relRationale["DB11-DB14"] = {exists:false, reason:"HRタスクの面談参照は DB14→DB11 で管理済み（双方向）。逆引きは双方向で実現。"};
-  relRationale["DB12-DB13"] = {exists:false, reason:"HR活動と雇用契約に直接の親子関係はない。採用成立後は DB13 で独立管理。"};
-  relRationale["DB12-DB14"] = {exists:false, reason:"HR活動とHRタスクは独立した記録単位。タスクから活動を生成するが直接リレーションは不要。"};
-  relRationale["DB13-DB14"] = {exists:false, reason:"雇用契約とHRタスクに直接の関係はない。雇用後タスクは General Tasks(DB22)または社内で別管理。"};
+  // -- HR internal (DB11-14, DB26) --
+  relRationale["DB11-DB12"] = {exists:false, reason:"HR活動の面談参照はDB12→DB11で管理済み（双方向）。逆引きは双方向で実現。"};
+  relRationale["DB11-DB13"] = {exists:false, reason:"採用面談→雇用契約への遷移は候補者(DB33)を経由。直接リレーションは冗長。"};
+  relRationale["DB11-DB14"] = {exists:false, reason:"HRタスクの面談参照はDB14→DB11で管理済み（双方向）。"};
+  relRationale["DB11-DB26"] = {exists:true,  reason:"DB26→DB11で参照済み（双方向）。採用ポジション→面談一覧。ポジションに紐づく面談を追跡。"};
+  relRationale["DB12-DB13"] = {exists:false, reason:"HR活動と雇用契約は直接の親子関係がない。採用成立後はDB13で独立管理。"};
+  relRationale["DB12-DB14"] = {exists:false, reason:"HR活動とHRタスクは独立した記録単位。"};
+  relRationale["DB12-DB26"] = {exists:false, reason:"HR活動と採用ポジションの直接リレーションは不要。面談(DB11)→ポジション(DB26)経由。"};
+  relRationale["DB13-DB14"] = {exists:false, reason:"雇用契約とHRタスクは直接の関係がない。"};
+  relRationale["DB13-DB26"] = {exists:false, reason:"雇用契約と採用ポジションは直接の関係がない。面談(DB11)経由。"};
+  relRationale["DB14-DB26"] = {exists:false, reason:"HRタスクと採用ポジションは直接の関係がない。"};
 
   // -- HR → IR --
   relRationale["DB11-DB15"] = {exists:false, reason:"HR面談とIR面談は別スコープ。採用とIRの情報は意図的に分離。"};
-  relRationale["DB11-DB16"] = {exists:false, reason:"HR面談とIR活動に直接の関係はない。"};
-  relRationale["DB11-DB17"] = {exists:false, reason:"HR面談と投資契約に直接の関係はない。"};
-  relRationale["DB11-DB18"] = {exists:false, reason:"HR面談とIRタスクに直接の関係はない。"};
-  relRationale["DB12-DB15"] = {exists:false, reason:"HR活動とIR面談に直接の関係はない。"};
-  relRationale["DB12-DB16"] = {exists:false, reason:"HR活動とIR活動は同一パターンだが完全に分離。クロスレイヤー分析は SSOT経由で実施。"};
-  relRationale["DB12-DB17"] = {exists:false, reason:"HR活動と投資契約に直接の関係はない。"};
-  relRationale["DB12-DB18"] = {exists:false, reason:"HR活動とIRタスクに直接の関係はない。"};
-  relRationale["DB13-DB15"] = {exists:false, reason:"雇用契約とIR面談に直接の関係はない。"};
-  relRationale["DB13-DB16"] = {exists:false, reason:"雇用契約とIR活動に直接の関係はない。"};
+  relRationale["DB11-DB16"] = {exists:false, reason:"HR面談とIR活動は無関係。"};
+  relRationale["DB11-DB17"] = {exists:false, reason:"HR面談と投資契約は無関係。"};
+  relRationale["DB11-DB18"] = {exists:false, reason:"HR面談とIRタスクは無関係。"};
+  relRationale["DB12-DB15"] = {exists:false, reason:"HR活動とIR面談は無関係。"};
+  relRationale["DB12-DB16"] = {exists:false, reason:"HR活動とIR活動は同一パターンだが完全に分離。"};
+  relRationale["DB12-DB17"] = {exists:false, reason:"HR活動と投資契約は無関係。"};
+  relRationale["DB12-DB18"] = {exists:false, reason:"HR活動とIRタスクは無関係。"};
+  relRationale["DB13-DB15"] = {exists:false, reason:"雇用契約とIR面談は無関係。"};
+  relRationale["DB13-DB16"] = {exists:false, reason:"雇用契約とIR活動は無関係。"};
   relRationale["DB13-DB17"] = {exists:false, reason:"雇用契約と投資契約は性質が根本的に異なる。"};
-  relRationale["DB13-DB18"] = {exists:false, reason:"雇用契約とIRタスクに直接の関係はない。"};
-  relRationale["DB14-DB15"] = {exists:false, reason:"HRタスクとIR面談に直接の関係はない。"};
-  relRationale["DB14-DB16"] = {exists:false, reason:"HRタスクとIR活動に直接の関係はない。"};
-  relRationale["DB14-DB17"] = {exists:false, reason:"HRタスクと投資契約に直接の関係はない。"};
-  relRationale["DB14-DB18"] = {exists:false, reason:"HRタスクとIRタスクは別レイヤー。General Tasks(DB22)が社内共通タスクを担う。"};
+  relRationale["DB13-DB18"] = {exists:false, reason:"雇用契約とIRタスクは無関係。"};
+  relRationale["DB14-DB15"] = {exists:false, reason:"HRタスクとIR面談は無関係。"};
+  relRationale["DB14-DB16"] = {exists:false, reason:"HRタスクとIR活動は無関係。"};
+  relRationale["DB14-DB17"] = {exists:false, reason:"HRタスクと投資契約は無関係。"};
+  relRationale["DB14-DB18"] = {exists:false, reason:"HRタスクとIRタスクは別レイヤー。General Tasks(DB22)が社内共通。"};
+  relRationale["DB26-DB15"] = {exists:false, reason:"採用ポジションとIR面談は無関係。"};
+  relRationale["DB26-DB16"] = {exists:false, reason:"採用ポジションとIR活動は無関係。"};
+  relRationale["DB26-DB17"] = {exists:false, reason:"採用ポジションと投資契約は無関係。"};
+  relRationale["DB26-DB18"] = {exists:false, reason:"採用ポジションとIRタスクは無関係。"};
 
-  // -- HR → Corporate --
-  relRationale["DB11-DB19"] = {exists:false, reason:"HR面談とコンテンツに直接の関係はない。"};
-  relRationale["DB12-DB19"] = {exists:false, reason:"HR活動とコンテンツに直接の関係はない。"};
-  relRationale["DB13-DB19"] = {exists:false, reason:"雇用契約とコンテンツに直接の関係はない。"};
-  relRationale["DB14-DB19"] = {exists:false, reason:"HRタスクとコンテンツに直接の関係はない。"};
+  // -- HR → 社長室 --
+  relRationale["DB11-DB19"] = {exists:false, reason:"HR面談とコンテンツは無関係。"};
+  relRationale["DB11-DB24"] = {exists:false, reason:"HR面談とプロダクトは無関係。"};
+  relRationale["DB12-DB19"] = {exists:false, reason:"HR活動とコンテンツは無関係。"};
+  relRationale["DB12-DB24"] = {exists:false, reason:"HR活動とプロダクトは無関係。"};
+  relRationale["DB13-DB19"] = {exists:false, reason:"雇用契約とコンテンツは無関係。"};
+  relRationale["DB13-DB24"] = {exists:false, reason:"雇用契約とプロダクトは無関係。"};
+  relRationale["DB14-DB19"] = {exists:false, reason:"HRタスクとコンテンツは無関係。"};
+  relRationale["DB14-DB24"] = {exists:false, reason:"HRタスクとプロダクトは無関係。"};
+  relRationale["DB26-DB19"] = {exists:false, reason:"採用ポジションとコンテンツは無関係。"};
+  relRationale["DB26-DB24"] = {exists:false, reason:"採用ポジションとプロダクトは無関係。"};
 
   // -- HR → General --
-  relRationale["DB11-DB20"] = {exists:false, reason:"HR面談と部門に直接の関係はない。採用後の配属はNAGARAの内部処理。"};
-  relRationale["DB11-DB21"] = {exists:false, reason:"HR面談と社内PJに直接の関係はない。"};
-  relRationale["DB11-DB22"] = {exists:false, reason:"HR面談とGeneralタスクに直接の関係はない。面談関連タスクはHRタスク(DB14)が担う。"};
-  relRationale["DB11-DB23"] = {exists:false, reason:"HR面談とドキュメントに直接の関係はない。面談ノートはページ本文に格納。"};
-  relRationale["DB11-DB24"] = {exists:false, reason:"HR面談とプロダクトに直接の関係はない。"};
-  relRationale["DB12-DB20"] = {exists:false, reason:"HR活動と部門に直接の関係はない。"};
-  relRationale["DB12-DB21"] = {exists:false, reason:"HR活動と社内PJに直接の関係はない。"};
-  relRationale["DB12-DB22"] = {exists:false, reason:"HR活動とGeneralタスクに直接の関係はない。"};
-  relRationale["DB12-DB23"] = {exists:false, reason:"HR活動とドキュメントに直接の関係はない。"};
-  relRationale["DB12-DB24"] = {exists:false, reason:"HR活動とプロダクトに直接の関係はない。"};
-  relRationale["DB13-DB20"] = {exists:false, reason:"雇用契約と部門に直接の関係はない。配属部門は別途HR管理システムで追跡。"};
-  relRationale["DB13-DB21"] = {exists:false, reason:"雇用契約と社内PJに直接の関係はない。"};
-  relRationale["DB13-DB22"] = {exists:false, reason:"雇用契約とGeneralタスクに直接の関係はない。"};
-  relRationale["DB13-DB23"] = {exists:false, reason:"雇用契約とドキュメントに直接の関係はない。契約書はページ本文に添付。"};
-  relRationale["DB13-DB24"] = {exists:false, reason:"雇用契約とプロダクトに直接の関係はない。"};
-  relRationale["DB14-DB20"] = {exists:false, reason:"HRタスクと部門に直接の関係はない。"};
-  relRationale["DB14-DB21"] = {exists:false, reason:"HRタスクと社内PJに直接の関係はない。"};
-  relRationale["DB14-DB22"] = {exists:false, reason:"HRタスク(DB14)とGeneral Tasks(DB22)は役割が異なる。混在はタスク管理の複雑化を招く。"};
-  relRationale["DB14-DB23"] = {exists:false, reason:"HRタスクとドキュメントに直接の関係はない。"};
-  relRationale["DB14-DB24"] = {exists:false, reason:"HRタスクとプロダクトに直接の関係はない。"};
+  relRationale["DB11-DB20"] = {exists:false, reason:"HR面談と部門は無関係。採用後の配属は社内処理。"};
+  relRationale["DB11-DB21"] = {exists:false, reason:"HR面談と社内PJは無関係。"};
+  relRationale["DB11-DB22"] = {exists:false, reason:"HR面談とGeneralタスクは無関係。面談タスクはHRタスク(DB14)。"};
+  relRationale["DB11-DB23"] = {exists:false, reason:"HR面談とドキュメントは無関係。面談ノートはページ本文。"};
+  relRationale["DB12-DB20"] = {exists:false, reason:"HR活動と部門は無関係。"};
+  relRationale["DB12-DB21"] = {exists:false, reason:"HR活動と社内PJは無関係。"};
+  relRationale["DB12-DB22"] = {exists:false, reason:"HR活動とGeneralタスクは無関係。"};
+  relRationale["DB12-DB23"] = {exists:false, reason:"HR活動とドキュメントは無関係。"};
+  relRationale["DB13-DB20"] = {exists:false, reason:"雇用契約と部門は無関係。"};
+  relRationale["DB13-DB21"] = {exists:false, reason:"雇用契約と社内PJは無関係。"};
+  relRationale["DB13-DB22"] = {exists:false, reason:"雇用契約とGeneralタスクは無関係。"};
+  relRationale["DB13-DB23"] = {exists:false, reason:"雇用契約とドキュメントは無関係。契約書はページ本文に添付。"};
+  relRationale["DB14-DB20"] = {exists:false, reason:"HRタスクと部門は無関係。"};
+  relRationale["DB14-DB21"] = {exists:false, reason:"HRタスクと社内PJは無関係。"};
+  relRationale["DB14-DB22"] = {exists:false, reason:"HRタスク(DB14)とGeneral Tasks(DB22)は役割が異なる。混在は複雑化を招く。"};
+  relRationale["DB14-DB23"] = {exists:false, reason:"HRタスクとドキュメントは無関係。"};
+  relRationale["DB26-DB20"] = {exists:true,  reason:"採用ポジション→部門のリレーション。どの部門のポジションかを追跡。"};
+  relRationale["DB26-DB21"] = {exists:false, reason:"採用ポジションと社内PJは無関係。"};
+  relRationale["DB26-DB22"] = {exists:false, reason:"採用ポジションとGeneralタスクは無関係。"};
+  relRationale["DB26-DB23"] = {exists:false, reason:"採用ポジションとドキュメントは無関係。"};
 
-  // -- HR → Executive --
-  relRationale["DB11-DB25"] = {exists:false, reason:"HR面談と1on1は別の1対1ミーティングDB。採用面談と社内1on1は混在させない。"};
-  relRationale["DB12-DB25"] = {exists:false, reason:"HR活動と1on1に直接の関係はない。"};
-  relRationale["DB13-DB25"] = {exists:false, reason:"雇用契約と1on1に直接の関係はない。"};
-  relRationale["DB14-DB25"] = {exists:false, reason:"HRタスクと1on1に直接の関係はない。"};
+  // -- HR → 外交 --
+  relRationale["DB11-DB31"] = {exists:true,  reason:"HR面談→法人SH(エージェント)。採用エージェント法人を外交基盤から参照。"};
+  relRationale["DB11-DB32"] = {exists:false, reason:"HR面談→SH支店の直接リレーションは不要。DB31経由。"};
+  relRationale["DB11-DB33"] = {exists:true,  reason:"HR面談→人SH(候補者)。候補者個人を外交基盤から参照。"};
+  relRationale["DB11-DB34"] = {exists:false, reason:"HR面談→SHタスクは無関係。"};
+  relRationale["DB11-DB35"] = {exists:false, reason:"HR面談→SH活動は無関係。"};
+  relRationale["DB12-DB31"] = {exists:true,  reason:"HR活動→法人SH(エージェント)。エージェントとの活動記録。"};
+  relRationale["DB12-DB32"] = {exists:false, reason:"HR活動→SH支店は不要。DB31経由。"};
+  relRationale["DB12-DB33"] = {exists:true,  reason:"HR活動→人SH(候補者)。候補者との活動記録。"};
+  relRationale["DB12-DB34"] = {exists:false, reason:"HR活動→SHタスクは無関係。"};
+  relRationale["DB12-DB35"] = {exists:false, reason:"HR活動→SH活動は無関係。HR活動はHR Teamspace内で完結。"};
+  relRationale["DB13-DB31"] = {exists:false, reason:"雇用契約→法人SHは不要。雇用は候補者(DB33)との契約。"};
+  relRationale["DB13-DB32"] = {exists:false, reason:"雇用契約→SH支店は無関係。"};
+  relRationale["DB13-DB33"] = {exists:true,  reason:"雇用契約→人SH(候補者)。雇用契約の当事者として紐づけ。"};
+  relRationale["DB13-DB34"] = {exists:false, reason:"雇用契約→SHタスクは無関係。"};
+  relRationale["DB13-DB35"] = {exists:false, reason:"雇用契約→SH活動は無関係。"};
+  relRationale["DB14-DB31"] = {exists:false, reason:"HRタスク→法人SHは不要。面談(DB11)経由でエージェントを参照。"};
+  relRationale["DB14-DB32"] = {exists:false, reason:"HRタスク→SH支店は無関係。"};
+  relRationale["DB14-DB33"] = {exists:true,  reason:"HRタスク→人SH(候補者)。候補者関連タスクを紐づけ。"};
+  relRationale["DB14-DB34"] = {exists:false, reason:"HRタスク→SHタスクは無関係。各Teamspaceで独立管理。"};
+  relRationale["DB14-DB35"] = {exists:false, reason:"HRタスク→SH活動は無関係。"};
+  relRationale["DB26-DB31"] = {exists:false, reason:"採用ポジション→法人SHは無関係。"};
+  relRationale["DB26-DB32"] = {exists:false, reason:"採用ポジション→SH支店は無関係。"};
+  relRationale["DB26-DB33"] = {exists:false, reason:"採用ポジション→人SHは無関係。ポジションは部門(DB20)に紐づく。"};
+  relRationale["DB26-DB34"] = {exists:false, reason:"採用ポジション→SHタスクは無関係。"};
+  relRationale["DB26-DB35"] = {exists:false, reason:"採用ポジション→SH活動は無関係。"};
 
-  // -- IR internal --
-  relRationale["DB15-DB16"] = {exists:false, reason:"IR活動の面談参照は DB16→DB15 で管理済み（双方向）。IR面談→IR活動の逆引きは双方向で実現。"};
-  relRationale["DB15-DB17"] = {exists:false, reason:"IR面談から投資契約への遷移は投資家法人(DB1)を経由して追跡。直接リレーションは冗長。"};
-  relRationale["DB15-DB18"] = {exists:false, reason:"IRタスクの面談参照は DB18→DB15 で管理済み（双方向）。逆引きは双方向で実現。"};
-  relRationale["DB16-DB17"] = {exists:false, reason:"IR活動と投資契約に直接の親子関係はない。契約成立後は DB17 で独立管理。"};
-  relRationale["DB16-DB18"] = {exists:false, reason:"IR活動とIRタスクは独立した記録単位。直接リレーションは不要。"};
-  relRationale["DB17-DB18"] = {exists:false, reason:"投資契約とIRタスクに直接の関係はない。投資後タスクは General Tasks(DB22)または社内で別管理。"};
+  // -- IR internal (DB15-18) --
+  relRationale["DB15-DB16"] = {exists:false, reason:"IR活動の面談参照はDB16→DB15で管理済み（双方向）。"};
+  relRationale["DB15-DB17"] = {exists:false, reason:"IR面談→投資契約への遷移は投資家法人(DB31)を経由。直接リレーションは冗長。"};
+  relRationale["DB15-DB18"] = {exists:false, reason:"IRタスクの面談参照はDB18→DB15で管理済み（双方向）。"};
+  relRationale["DB16-DB17"] = {exists:false, reason:"IR活動と投資契約は直接の親子関係がない。契約成立後はDB17で独立管理。"};
+  relRationale["DB16-DB18"] = {exists:false, reason:"IR活動とIRタスクは独立した記録単位。"};
+  relRationale["DB17-DB18"] = {exists:false, reason:"投資契約とIRタスクは直接の関係がない。"};
 
-  // -- IR → Corporate --
-  relRationale["DB15-DB19"] = {exists:false, reason:"IR面談とコンテンツに直接の関係はない。IR関連広報は Corporate(DB19)で別途管理。"};
-  relRationale["DB16-DB19"] = {exists:false, reason:"IR活動とコンテンツに直接の関係はない。"};
-  relRationale["DB17-DB19"] = {exists:false, reason:"投資契約とコンテンツに直接の関係はない。"};
-  relRationale["DB18-DB19"] = {exists:false, reason:"IRタスクとコンテンツに直接の関係はない。"};
+  // -- IR → 社長室 --
+  relRationale["DB15-DB19"] = {exists:false, reason:"IR面談とコンテンツは無関係。"};
+  relRationale["DB15-DB24"] = {exists:false, reason:"IR面談とプロダクトは無関係。"};
+  relRationale["DB16-DB19"] = {exists:false, reason:"IR活動とコンテンツは無関係。"};
+  relRationale["DB16-DB24"] = {exists:false, reason:"IR活動とプロダクトは無関係。"};
+  relRationale["DB17-DB19"] = {exists:false, reason:"投資契約とコンテンツは無関係。"};
+  relRationale["DB17-DB24"] = {exists:false, reason:"投資契約とプロダクトは無関係。"};
+  relRationale["DB18-DB19"] = {exists:false, reason:"IRタスクとコンテンツは無関係。"};
+  relRationale["DB18-DB24"] = {exists:false, reason:"IRタスクとプロダクトは無関係。"};
 
   // -- IR → General --
-  relRationale["DB15-DB20"] = {exists:false, reason:"IR面談と部門に直接の関係はない。"};
-  relRationale["DB15-DB21"] = {exists:false, reason:"IR面談と社内PJに直接の関係はない。IR関連プロジェクトは PJ(DB21)で独立管理。"};
-  relRationale["DB15-DB22"] = {exists:false, reason:"IR面談とGeneralタスクに直接の関係はない。IR固有タスクはIRタスク(DB18)が担う。"};
-  relRationale["DB15-DB23"] = {exists:false, reason:"IR面談とドキュメントに直接の関係はない。IR資料はページ本文に格納。"};
-  relRationale["DB15-DB24"] = {exists:false, reason:"IR面談とプロダクトに直接の関係はない。"};
-  relRationale["DB16-DB20"] = {exists:false, reason:"IR活動と部門に直接の関係はない。"};
-  relRationale["DB16-DB21"] = {exists:false, reason:"IR活動と社内PJに直接の関係はない。"};
-  relRationale["DB16-DB22"] = {exists:false, reason:"IR活動とGeneralタスクに直接の関係はない。"};
-  relRationale["DB16-DB23"] = {exists:false, reason:"IR活動とドキュメントに直接の関係はない。"};
-  relRationale["DB16-DB24"] = {exists:false, reason:"IR活動とプロダクトに直接の関係はない。"};
-  relRationale["DB17-DB20"] = {exists:false, reason:"投資契約と部門に直接の関係はない。"};
-  relRationale["DB17-DB21"] = {exists:false, reason:"投資契約と社内PJに直接の関係はない。"};
-  relRationale["DB17-DB22"] = {exists:false, reason:"投資契約とGeneralタスクに直接の関係はない。"};
-  relRationale["DB17-DB23"] = {exists:false, reason:"投資契約とドキュメントに直接の関係はない。契約書はページ本文に添付。"};
-  relRationale["DB17-DB24"] = {exists:false, reason:"投資契約とプロダクトに直接の関係はない。"};
-  relRationale["DB18-DB20"] = {exists:false, reason:"IRタスクと部門に直接の関係はない。"};
-  relRationale["DB18-DB21"] = {exists:false, reason:"IRタスクと社内PJに直接の関係はない。"};
-  relRationale["DB18-DB22"] = {exists:false, reason:"IRタスク(DB18)とGeneral Tasks(DB22)は役割が異なる。混在は管理の複雑化を招く。"};
-  relRationale["DB18-DB23"] = {exists:false, reason:"IRタスクとドキュメントに直接の関係はない。"};
-  relRationale["DB18-DB24"] = {exists:false, reason:"IRタスクとプロダクトに直接の関係はない。"};
+  relRationale["DB15-DB20"] = {exists:false, reason:"IR面談と部門は無関係。"};
+  relRationale["DB15-DB21"] = {exists:false, reason:"IR面談と社内PJは無関係。"};
+  relRationale["DB15-DB22"] = {exists:false, reason:"IR面談とGeneralタスクは無関係。IRタスク(DB18)が担う。"};
+  relRationale["DB15-DB23"] = {exists:false, reason:"IR面談とドキュメントは無関係。IR資料はページ本文。"};
+  relRationale["DB16-DB20"] = {exists:false, reason:"IR活動と部門は無関係。"};
+  relRationale["DB16-DB21"] = {exists:false, reason:"IR活動と社内PJは無関係。"};
+  relRationale["DB16-DB22"] = {exists:false, reason:"IR活動とGeneralタスクは無関係。"};
+  relRationale["DB16-DB23"] = {exists:false, reason:"IR活動とドキュメントは無関係。"};
+  relRationale["DB17-DB20"] = {exists:false, reason:"投資契約と部門は無関係。"};
+  relRationale["DB17-DB21"] = {exists:false, reason:"投資契約と社内PJは無関係。"};
+  relRationale["DB17-DB22"] = {exists:false, reason:"投資契約とGeneralタスクは無関係。"};
+  relRationale["DB17-DB23"] = {exists:false, reason:"投資契約とドキュメントは無関係。契約書はページ本文に添付。"};
+  relRationale["DB18-DB20"] = {exists:false, reason:"IRタスクと部門は無関係。"};
+  relRationale["DB18-DB21"] = {exists:false, reason:"IRタスクと社内PJは無関係。"};
+  relRationale["DB18-DB22"] = {exists:false, reason:"IRタスク(DB18)とGeneral Tasks(DB22)は役割が異なる。"};
+  relRationale["DB18-DB23"] = {exists:false, reason:"IRタスクとドキュメントは無関係。"};
 
-  // -- IR → Executive --
-  relRationale["DB15-DB25"] = {exists:false, reason:"IR面談と1on1は別の対話記録。投資家面談と社内1on1は混在させない。"};
-  relRationale["DB16-DB25"] = {exists:false, reason:"IR活動と1on1に直接の関係はない。"};
-  relRationale["DB17-DB25"] = {exists:false, reason:"投資契約と1on1に直接の関係はない。"};
-  relRationale["DB18-DB25"] = {exists:false, reason:"IRタスクと1on1に直接の関係はない。"};
+  // -- IR → 外交 --
+  relRationale["DB15-DB31"] = {exists:true,  reason:"IR面談→法人SH(投資家法人)。投資家法人を外交基盤から参照。"};
+  relRationale["DB15-DB32"] = {exists:true,  reason:"IR面談→支店SH。投資家の支店を参照（銀行支店等）。"};
+  relRationale["DB15-DB33"] = {exists:true,  reason:"IR面談→人SH(投資家個人)。投資家個人を外交基盤から参照。"};
+  relRationale["DB15-DB34"] = {exists:false, reason:"IR面談→SHタスクは不要。IRタスク(DB18)で管理。"};
+  relRationale["DB15-DB35"] = {exists:false, reason:"IR面談→SH活動は不要。IR活動(DB16)で管理。"};
+  relRationale["DB16-DB31"] = {exists:true,  reason:"IR活動→法人SH(投資家法人)。投資家法人との活動記録。"};
+  relRationale["DB16-DB32"] = {exists:true,  reason:"IR活動→支店SH。支店での活動記録。"};
+  relRationale["DB16-DB33"] = {exists:true,  reason:"IR活動→人SH(投資家個人)。投資家個人との活動記録。"};
+  relRationale["DB16-DB34"] = {exists:false, reason:"IR活動→SHタスクは無関係。"};
+  relRationale["DB16-DB35"] = {exists:false, reason:"IR活動→SH活動は無関係。IR活動はIR Teamspace内で完結。"};
+  relRationale["DB17-DB31"] = {exists:true,  reason:"IR契約→法人SH(投資家法人)。投資契約の当事者として紐づけ。"};
+  relRationale["DB17-DB32"] = {exists:true,  reason:"IR契約→支店SH。契約の支店を記録。"};
+  relRationale["DB17-DB33"] = {exists:false, reason:"IR契約→人SHは不要。投資契約は法人(DB31)が主体。"};
+  relRationale["DB17-DB34"] = {exists:false, reason:"IR契約→SHタスクは無関係。"};
+  relRationale["DB17-DB35"] = {exists:false, reason:"IR契約→SH活動は無関係。"};
+  relRationale["DB18-DB31"] = {exists:true,  reason:"IRタスク→法人SH(投資家法人)。投資家法人関連のタスクを紐づけ。"};
+  relRationale["DB18-DB32"] = {exists:true,  reason:"IRタスク→支店SH。支店関連のタスクを紐づけ。"};
+  relRationale["DB18-DB33"] = {exists:true,  reason:"IRタスク→人SH(投資家個人)。投資家個人関連のタスクを紐づけ。"};
+  relRationale["DB18-DB34"] = {exists:false, reason:"IRタスク→SHタスクは無関係。各Teamspaceで独立管理。"};
+  relRationale["DB18-DB35"] = {exists:false, reason:"IRタスク→SH活動は無関係。"};
 
-  // -- Corporate → General --
-  relRationale["DB19-DB20"] = {exists:false, reason:"コンテンツと部門に直接の関係はない。コンテンツ担当チームは PJ(DB21)経由で管理。"};
-  relRationale["DB19-DB21"] = {exists:true,  reason:"コンテンツ→PJのリレーション（DB19→DB21）。マーケティングキャンペーンや連載シリーズをPJとして管理。コンテンツ群をPJ単位でまとめる。"};
-  relRationale["DB19-DB22"] = {exists:false, reason:"コンテンツ関連タスクは PJ(DB21)→タスク(DB22)経由で管理。コンテンツから直接タスクへのリレーションは冗長。"};
-  relRationale["DB19-DB23"] = {exists:false, reason:"コンテンツとドキュメントは別の実体。コンテンツは投稿単位、ドキュメントは社内文書。"};
-  relRationale["DB19-DB24"] = {exists:false, reason:"コンテンツとプロダクトに直接の関係はない。プロダクト関連コンテンツは DB1(法人)/DB21(PJ)経由でフィルタ。"};
+  // -- 社長室 internal (DB19, DB24) --
+  relRationale["DB19-DB24"] = {exists:false, reason:"コンテンツとプロダクトは直接の関係がない。プロダクト関連コンテンツはPJ(DB21)経由でフィルタ。"};
 
-  // -- Corporate → Executive --
-  relRationale["DB19-DB25"] = {exists:false, reason:"コンテンツと1on1に直接の関係はない。"};
+  // -- 社長室 → General --
+  relRationale["DB19-DB20"] = {exists:false, reason:"コンテンツと部門は無関係。コンテンツ担当はPJ(DB21)経由で管理。"};
+  relRationale["DB19-DB21"] = {exists:true,  reason:"コンテンツ→PJのリレーション。マーケティングキャンペーンや連載をPJとしてまとめる。"};
+  relRationale["DB19-DB22"] = {exists:false, reason:"コンテンツ関連タスクはPJ(DB21)→タスク(DB22)経由で管理。"};
+  relRationale["DB19-DB23"] = {exists:false, reason:"コンテンツとドキュメントは別実体。投稿単位 vs 社内文書。"};
+  relRationale["DB24-DB20"] = {exists:false, reason:"プロダクトと部門は無関係。プロダクトはPJ(DB21)または事業所(DB3)経由。"};
+  relRationale["DB24-DB21"] = {exists:false, reason:"PJとプロダクトの直接リレーションは不要。ドキュメント(DB23)経由で間接参照。"};
+  relRationale["DB24-DB22"] = {exists:false, reason:"プロダクトとタスクは無関係。プロダクト関連タスクはPJ(DB21)経由。"};
+  relRationale["DB24-DB23"] = {exists:true,  reason:"DB23→DB24で参照済み（双方向）。ドキュメント→プロダクトの紐づけ。仕様書・ロードマップ。"};
 
-  // -- General internal --
+  // -- 社長室 → 外交 --
+  relRationale["DB19-DB31"] = {exists:false, reason:"コンテンツ→法人SHは無関係。"};
+  relRationale["DB19-DB32"] = {exists:false, reason:"コンテンツ→SH支店は無関係。"};
+  relRationale["DB19-DB33"] = {exists:false, reason:"コンテンツ→人SHは無関係。"};
+  relRationale["DB19-DB34"] = {exists:false, reason:"コンテンツ→SHタスクは無関係。"};
+  relRationale["DB19-DB35"] = {exists:false, reason:"コンテンツ→SH活動は無関係。"};
+  relRationale["DB24-DB31"] = {exists:false, reason:"プロダクト→法人SHは無関係。"};
+  relRationale["DB24-DB32"] = {exists:false, reason:"プロダクト→SH支店は無関係。"};
+  relRationale["DB24-DB33"] = {exists:false, reason:"プロダクト→人SHは無関係。"};
+  relRationale["DB24-DB34"] = {exists:false, reason:"プロダクト→SHタスクは無関係。"};
+  relRationale["DB24-DB35"] = {exists:false, reason:"プロダクト→SH活動は無関係。"};
+
+  // -- General internal (DB20-23) --
   relRationale["DB20-DB21"] = {exists:true,  reason:"部門→PJの1:N。部門ページから配下PJを一覧表示。組織とプロジェクトの紐づけに必須。"};
-  relRationale["DB20-DB22"] = {exists:true,  reason:"部門→タスクの1:N。部門ページから配下タスクを一覧表示。部門の作業負荷の可視化に使用。"};
-  relRationale["DB20-DB23"] = {exists:true,  reason:"部門→ドキュメントの1:N。部門ページから関連ドキュメントを一覧表示。ナレッジ管理の基点。"};
-  relRationale["DB20-DB24"] = {exists:false, reason:"部門とプロダクトに直接の関係はない。プロダクトはPJ(DB21)または事業所(DB3)経由でひも付け。"};
-  relRationale["DB21-DB22"] = {exists:true,  reason:"PJ→タスクの1:N。PJを構成するタスクを管理。プロジェクト管理の中核リレーション。"};
-  relRationale["DB21-DB23"] = {exists:true,  reason:"PJ→ドキュメントの1:N。PJに紐づく仕様書・設計書・議事録を一覧表示。"};
-  relRationale["DB21-DB24"] = {exists:false, reason:"PJとプロダクトに直接の関係はない（#27削除）。プロダクトはドキュメント(DB23)経由でPJに間接参照。"};
-  relRationale["DB22-DB23"] = {exists:true,  reason:"タスク→ドキュメントのリレーション（#21追加）。タスクの成果物・参考資料を直接ドキュメントに紐づけ。"};
-  relRationale["DB22-DB24"] = {exists:false, reason:"タスクとプロダクトに直接の関係はない。プロダクト関連タスクは PJ(DB21)経由で管理。"};
-  relRationale["DB23-DB24"] = {exists:true,  reason:"ドキュメント→プロダクトのリレーション（#23追加）。プロダクト仕様書・ロードマップドキュメントをプロダクトに紐づけ。"};
+  relRationale["DB20-DB22"] = {exists:true,  reason:"部門→タスクの1:N。部門の作業負荷可視化に使用。"};
+  relRationale["DB20-DB23"] = {exists:true,  reason:"部門→ドキュメントの1:N。ナレッジ管理の基点。"};
+  relRationale["DB21-DB22"] = {exists:true,  reason:"PJ→タスクの1:N。プロジェクト管理の中核リレーション。"};
+  relRationale["DB21-DB23"] = {exists:true,  reason:"PJ→ドキュメントの1:N。仕様書・設計書・議事録を一覧表示。"};
+  relRationale["DB22-DB23"] = {exists:true,  reason:"タスク→ドキュメントのリレーション。タスクの成果物・参考資料を直接紐づけ。"};
 
-  // -- General → Executive --
-  relRationale["DB20-DB25"] = {exists:true,  reason:"1on1の部門参照は DB25→DB20 で管理済み（双方向）。部門ページから配下メンバーの1on1を一覧表示可能。"};
-  relRationale["DB21-DB25"] = {exists:false, reason:"PJと1on1に直接の関係はない。"};
-  relRationale["DB22-DB25"] = {exists:false, reason:"タスクと1on1に直接の関係はない。DB25↔DB22 リレーションは削除済み（#22）。"};
-  relRationale["DB23-DB25"] = {exists:false, reason:"ドキュメントと1on1に直接の関係はない。"};
-  relRationale["DB24-DB25"] = {exists:false, reason:"プロダクトと1on1に直接の関係はない。"};
+  // -- General → 外交 --
+  relRationale["DB20-DB31"] = {exists:false, reason:"部門(社内組織)と法人SH(外部)は無関係。"};
+  relRationale["DB20-DB32"] = {exists:false, reason:"部門とSH支店は無関係。"};
+  relRationale["DB20-DB33"] = {exists:false, reason:"部門と人SHは無関係。"};
+  relRationale["DB20-DB34"] = {exists:false, reason:"部門とSHタスクは無関係。"};
+  relRationale["DB20-DB35"] = {exists:false, reason:"部門とSH活動は無関係。"};
+  relRationale["DB21-DB31"] = {exists:false, reason:"社内PJと法人SHは無関係。"};
+  relRationale["DB21-DB32"] = {exists:false, reason:"社内PJとSH支店は無関係。"};
+  relRationale["DB21-DB33"] = {exists:false, reason:"社内PJと人SHは無関係。"};
+  relRationale["DB21-DB34"] = {exists:false, reason:"社内PJとSHタスクは無関係。"};
+  relRationale["DB21-DB35"] = {exists:false, reason:"社内PJとSH活動は無関係。"};
+  relRationale["DB22-DB31"] = {exists:false, reason:"GeneralタスクとSH法人は無関係。"};
+  relRationale["DB22-DB32"] = {exists:false, reason:"GeneralタスクとSH支店は無関係。"};
+  relRationale["DB22-DB33"] = {exists:false, reason:"Generalタスクと人SHは無関係。"};
+  relRationale["DB22-DB34"] = {exists:false, reason:"GeneralタスクとSHタスクは無関係。"};
+  relRationale["DB22-DB35"] = {exists:false, reason:"GeneralタスクとSH活動は無関係。"};
+  relRationale["DB23-DB31"] = {exists:false, reason:"ドキュメントとSH法人は無関係。"};
+  relRationale["DB23-DB32"] = {exists:false, reason:"ドキュメントとSH支店は無関係。"};
+  relRationale["DB23-DB33"] = {exists:false, reason:"ドキュメントと人SHは無関係。"};
+  relRationale["DB23-DB34"] = {exists:false, reason:"ドキュメントとSHタスクは無関係。"};
+  relRationale["DB23-DB35"] = {exists:false, reason:"ドキュメントとSH活動は無関係。"};
 
-  // -- Executive self (already done above) --
+  // -- 外交 internal (DB31-35) --
+  relRationale["DB31-DB32"] = {exists:true,  reason:"法人SH→支店SHの1:N。ステークホルダー法人の支店管理。銀行本店→支店。"};
+  relRationale["DB31-DB33"] = {exists:true,  reason:"法人SH→人SHの1:N。ステークホルダー法人の所属メンバーを一覧表示。"};
+  relRationale["DB31-DB34"] = {exists:true,  reason:"法人SH→SHタスクの1:N。ステークホルダー法人関連のタスクを管理。"};
+  relRationale["DB31-DB35"] = {exists:true,  reason:"法人SH→SH活動の1:N。ステークホルダー法人との活動記録。"};
+  relRationale["DB32-DB33"] = {exists:true,  reason:"支店SH→人SHの1:N。支店に所属するメンバーを管理。"};
+  relRationale["DB32-DB34"] = {exists:false, reason:"支店→SHタスクは法人SH(DB31)経由で管理。"};
+  relRationale["DB32-DB35"] = {exists:false, reason:"DB35→DB32で参照済み（双方向）。SH活動の支店参照。"};
+  relRationale["DB33-DB34"] = {exists:false, reason:"DB34→DB33で参照済み（双方向）。SHタスクの人SH参照。"};
+  relRationale["DB33-DB35"] = {exists:false, reason:"DB35→DB33で参照済み（双方向）。SH活動の人SH参照。"};
+  relRationale["DB34-DB35"] = {exists:false, reason:"SHタスクとSH活動は独立した記録単位。法人SH(DB31)/人SH(DB33)を経由して統合。"};
+
+  // -- (end of rationale data) --
 
   // Verify and build the matrix
   // Helper to get key in canonical form (smaller index first, or same for self-ref)
@@ -1725,7 +1917,7 @@ function renderRationale() {
   }
 
   html += `<div class="rationale-section">
-    <h2>完全リレーション行列（25×25 インタラクティブ）</h2>
+    <h2>完全リレーション行列（29×29 インタラクティブ）</h2>
     <p style="font-size:0.85rem;color:var(--text2);margin-bottom:16px;">
       ✅ リレーションあり &nbsp;|&nbsp; ➖ リレーションなし &nbsp;|&nbsp; 🔄 自己参照 &nbsp;|&nbsp; セルをクリックで詳細表示
     </p>`;
@@ -1877,7 +2069,7 @@ const issues = [
    title:"旧People DB（846件）の正規化移行が未実施",
    desc:"現行WSのPeople DB（神テーブル）を法人(DB1)/施設(DB2)/名刺(DB4)に分割して移行完了。4,829ページ移行済み（2026-04-10）。検証サンプリング全件一致。",
    impact:"✅ 解決済み: DB1(372)+DB2(851)+DB4(361)+DB22(681)+DB23(2564)=4,829ページ移行完了",
-   blockedBy:[],blocks:["ISS-002","ISS-003","ISS-005"],relatedDbs:["DB1","DB2","DB3","DB4","DB5"],status:"done"},
+   blockedBy:[],blocks:["ISS-002","ISS-003","ISS-005"],relatedDbs:["DB1","DB2","DB3","DB4"],status:"done"},
   {id:"ISS-002",category:"データ移行",severity:"critical",
    title:"旧Tasks/Projects/Departments DBの移行",
    desc:"DB20(部門)・DB21(プロジェクト)構築済み・データ投入済み。DB22(タスク)681件移行完了（2026-04-10）。",
@@ -1888,11 +2080,11 @@ const issues = [
    desc:"244,232事業所/70,383法人/198,233施設からTier1（187法人）をDB1/DB2/DB3に投入。",
    impact:"営業ターゲットリストが空。新規営業活動に使えない",
    blockedBy:["ISS-001"],blocks:[],relatedDbs:["DB1","DB2","DB3"],status:"pending"},
-  {id:"ISS-004",category:"データ移行",severity:"medium",
-   title:"旧1on1 DB（6個）の統合移行",
-   desc:"現行WSの6個の個人別1on1 DBをDB25に統合。",
-   impact:"1on1記録が散在したまま",
-   blockedBy:[],blocks:[],relatedDbs:["DB25"],status:"pending"},
+  {id:"ISS-004",category:"リストラクチャリング",severity:"medium",
+   title:"DB25(1on1記録) 廃止済み",
+   desc:"旧Executive層のDB25(1on1記録)は不要と判断し廃止。既存データがある場合はDB23(ドキュメント)に種別:1on1記録として統合、またはアーカイブ。",
+   impact:"✅ 廃止決定済み: Executive層ごと廃止。1on1はDB23で代替可能",
+   blockedBy:[],blocks:[],relatedDbs:["DB23"],status:"done"},
   {id:"ISS-005",category:"環境構築",severity:"critical",
    title:"新WSのMCPサーバーがVSCode拡張で起動しない",
    desc:"notion-new-nagaraのMCPサーバーは正常稼働中。全自動化ツールも新WS接続済み。",
@@ -1900,14 +2092,14 @@ const issues = [
    blockedBy:[],blocks:["ISS-011"],relatedDbs:[],status:"done"},
   {id:"ISS-006",category:"テンプレート",severity:"medium",
    title:"大部分のDBのテンプレートが未作成",
-   desc:"DB1/DB2/DB10のテンプレートは作成済み。残り22DBのテンプレートが未作成。特にDB6(商談)とDB9(CRMタスク)は営業運用に必須。",
+   desc:"DB1/DB2/DB10のテンプレートは作成済み。残りDBのテンプレートが未作成。特にDB6(商談)とDB9(CRMタスク)は営業運用に必須。新規DB(DB26,DB31-35)もテンプレート必要。",
    impact:"新規レコード作成時にページ構造が空。運用効率が悪い",
-   blockedBy:[],blocks:[],relatedDbs:["DB3","DB4","DB5","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB14","DB15","DB16","DB17","DB18","DB19","DB20","DB21","DB22","DB23","DB24","DB25"],status:"pending"},
+   blockedBy:[],blocks:[],relatedDbs:["DB3","DB4","DB6","DB7","DB8","DB9","DB11","DB12","DB13","DB14","DB15","DB16","DB17","DB18","DB19","DB20","DB21","DB22","DB23","DB24","DB26","DB31","DB32","DB33","DB34","DB35"],status:"pending"},
   {id:"ISS-007",category:"ビュー",severity:"medium",
    title:"リンクドビューの配置が未実施",
-   desc:"各DBのページテンプレート内にリンクドビュー（他DBの絞り込みビュー）を埋め込む必要がある。",
+   desc:"各DBのページテンプレート内にリンクドビュー（他DBの絞り込みビュー）を埋め込む必要がある。外交基盤(DB31-35)にもリンクドビュー必要。",
    impact:"法人ページを開いても配下情報が一覧で見えない",
-   blockedBy:["ISS-006"],blocks:[],relatedDbs:["DB1","DB2"],status:"pending"},
+   blockedBy:["ISS-006"],blocks:[],relatedDbs:["DB1","DB2","DB31","DB33"],status:"pending"},
   {id:"ISS-008",category:"自動化",severity:"high",
    title:"Notta→Notion自動連携フローが未構築",
    desc:"NottaビジネスプランでZapier利用可能。Notta→Zapier→DB7(活動)/DB23(ドキュメント)の自動パイプラインが未構築。",
@@ -1915,9 +2107,9 @@ const issues = [
    blockedBy:[],blocks:["ISS-012"],relatedDbs:["DB7","DB23"],status:"pending"},
   {id:"ISS-009",category:"自動化",severity:"high",
    title:"Gmail→CRM連携Skillが未構築",
-   desc:"gmail-notion-sync本番稼働中（2026-04-09〜）。WIF+DWDで全ユーザーGmail監視、10分cron。DB1/DB2/DB4マッチ→DB7自動保存。PM/メンバー実装済み、重複防止強化済み。",
-   impact:"✅ 解決済み: gmail-notion-sync稼働中（nagara-internal/gmail-notion-sync）",
-   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB7"],status:"done"},
+   desc:"gmail-notion-sync本番稼働中（2026-04-09〜）。WIF+DWDで全ユーザーGmail監視、10分cron。DB1/DB2/DB4マッチ→DB7自動保存。PM/メンバー実装済み、重複防止強化済み。リストラクチャリング後はDB31-33もマッチ対象に追加が必要。",
+   impact:"✅ 解決済み: gmail-notion-sync稼働中（nagara-internal/gmail-notion-sync）。⚠️ DB31-33対応が追加で必要",
+   blockedBy:["ISS-005"],blocks:["ISS-012"],relatedDbs:["DB7","DB31","DB33"],status:"done"},
   {id:"ISS-010",category:"自動化",severity:"high",
    title:"Slack→CRM連携Skillが未構築",
    desc:"技術調査の結果、Slack連携は対象外（実施しない）と決定。",
@@ -1930,49 +2122,74 @@ const issues = [
    blockedBy:[],blocks:[],relatedDbs:["DB21","DB22"],status:"done"},
   {id:"ISS-012",category:"自動化",severity:"critical",
    title:"統合アクティビティハブ（DB7）が部分稼働中",
-   desc:"DB7に2チャネル接続済み: zoom-phone-notion（通話ログ）+ gmail-notion-sync（メール）。Slack対象外。残: Notta連携 + Zoom文字起こし拡張。",
+   desc:"DB7に2チャネル接続済み: zoom-phone-notion（通話ログ）+ gmail-notion-sync（メール）。Slack対象外。残: Notta連携 + Zoom文字起こし拡張。リストラクチャリング後はDB35(SH活動)との連携も要検討。",
    impact:"⚡ 部分稼働: 2/3チャネル接続済み（通話+メール）、残りNotta+Zoom拡張",
-   blockedBy:["ISS-008"],blocks:[],relatedDbs:["DB7"],status:"workaround"},
+   blockedBy:["ISS-008"],blocks:[],relatedDbs:["DB7","DB35"],status:"workaround"},
   {id:"ISS-013",category:"権限・組織",severity:"high",
-   title:"Teamspace構造が未決定",
-   desc:"新WSに作るTeamspaceの数と構成が未決定。7レイヤー（SSOT/CRM/HR/IR/Corp/General/Exec）とTeamspaceの対応を決める必要がある。",
-   impact:"権限設計ができない。HR/IR層のClosed制御ができない",
-   blockedBy:[],blocks:["ISS-014"],relatedDbs:[],status:"pending"},
+   title:"Teamspace構造の実装",
+   desc:"6 Teamspace構成が決定済み: Sales(Open), HR(Closed), IR(Closed), General(Open), 社長室(Closed), 外交(TBD)。Notionでの実際のTeamspace作成とDB配置が未実施。外交Teamspaceの権限方針（Open/Closed）が要決定。",
+   impact:"権限設計の基盤。クロスTeamspaceリレーションの権限テストが先行必要",
+   blockedBy:["ISS-021"],blocks:["ISS-014"],relatedDbs:[],status:"pending"},
   {id:"ISS-014",category:"権限・組織",severity:"high",
    title:"権限設計（メンバー17名）が未実施",
-   desc:"CEO/部門Lead/メンバーの権限マトリクスが未定義。DB25(1on1)のExecutive層限定、DB11-14のHR層限定、DB15-18のIR層限定アクセスなど。",
+   desc:"CEO/部門Lead/メンバーの権限マトリクスが未定義。HR Teamspace(DB11-14,DB26)はClosed、IR Teamspace(DB15-18)はClosed、社長室(DB19,DB24)はClosed。外交Teamspaceの公開範囲が要検討（紹介元情報を営業に見せるか）。",
    impact:"全メンバーが全DBにアクセスできてしまう",
-   blockedBy:["ISS-013"],blocks:[],relatedDbs:["DB25","DB11","DB12","DB13","DB14","DB15","DB16","DB17","DB18"],status:"pending"},
+   blockedBy:["ISS-013"],blocks:[],relatedDbs:["DB11","DB12","DB13","DB14","DB15","DB16","DB17","DB18","DB19","DB24","DB26","DB31","DB32","DB33","DB34","DB35"],status:"pending"},
   {id:"ISS-015",category:"マーケティング",severity:"medium",
    title:"32エージェント投稿パイプラインが未稼働",
-   desc:"DB19(発信コンテンツ)は作成済みだが、32エージェントの実行基盤が未構築。",
+   desc:"DB19(発信コンテンツ)は作成済みだが、32エージェントの実行基盤が未構築。DB19は社長室Teamspaceに移動予定。",
    impact:"SNS発信の自動化ができない",
    blockedBy:[],blocks:[],relatedDbs:["DB19"],status:"pending"},
   {id:"ISS-016",category:"運用",severity:"medium",
    title:"SSOT仕様書の更新が必要",
-   desc:"仕様書は旧15DB構成のもの。25DB/7レイヤーへの変更が反映されていない。",
+   desc:"仕様書は旧構成のもの。29DB/6 Teamspace構成への変更が反映されていない。SSOT物理分割（CRM基盤+ステークホルダー基盤）の設計思想もドキュメント化が必要。",
    impact:"仕様書と実態が乖離",
    blockedBy:[],blocks:[],relatedDbs:[],status:"pending"},
   {id:"ISS-017",category:"新規構築",severity:"high",
-   title:"HR層（DB11-14）の新規構築が未実施",
-   desc:"人事・採用管理の4DBが全て未作成。スキーマ設計は完了。",
-   impact:"採用管理がNotion上で行えない",
-   blockedBy:[],blocks:[],relatedDbs:["DB11","DB12","DB13","DB14"],status:"pending"},
+   title:"HR Teamspace の残DB構築",
+   desc:"DB11(HR面談)・DB13(雇契約)・DB14(HRタスク)は作成済み。DB12(HR活動)とDB26(採用ポジション)が未作成。DB26は旧DB15(採用ポジション)のリナンバー。",
+   impact:"HR Teamspace 5DB中2DBが未作成。活動記録とポジション管理ができない",
+   blockedBy:[],blocks:[],relatedDbs:["DB12","DB26"],status:"pending"},
   {id:"ISS-018",category:"新規構築",severity:"high",
-   title:"IR層（DB15-18）の新規構築が未実施",
-   desc:"投資家関係管理の4DBが全て未作成。スキーマ設計は完了。",
-   impact:"IR管理がNotion上で行えない",
-   blockedBy:[],blocks:[],relatedDbs:["DB15","DB16","DB17","DB18"],status:"pending"},
+   title:"IR Teamspace の残DB構築",
+   desc:"DB15(IR面談=旧DB17リナンバー)・DB18(IRタスク)は作成済み。DB16(IR活動)とDB17(IR契約)が未作成。",
+   impact:"IR Teamspace 4DB中2DBが未作成。活動記録と契約管理ができない",
+   blockedBy:[],blocks:[],relatedDbs:["DB16","DB17"],status:"pending"},
   {id:"ISS-019",category:"新規構築",severity:"medium",
-   title:"DB5支店・DB24プロダクトの新規構築が未実施",
-   desc:"支店DB(DB5)とプロダクトDB(DB24)が未作成。",
-   impact:"支店ネットワーク管理とプロダクト管理ができない",
-   blockedBy:[],blocks:[],relatedDbs:["DB5","DB24"],status:"pending"},
+   title:"DB32(支店)リネーム・移動、DB24(プロダクト)移動",
+   desc:"DB5(支店, 13props)はDB32にリネームして外交Teamspaceへ移動。DB24(プロダクト)はGeneralから社長室Teamspaceへ移動。どちらも既存DBの移動のみ。",
+   impact:"支店DBが外交基盤に統合されていない。プロダクトDBが社長室に配置されていない",
+   blockedBy:[],blocks:[],relatedDbs:["DB32","DB24"],status:"pending"},
   {id:"ISS-020",category:"自動化",severity:"critical",
    title:"Notion AIエージェント（Custom Agent）の構築が未実施",
    desc:"IT構想で8エージェント構築予定。CRM営業支援Bot/議事録生成Bot等。",
    impact:"AIがDBを横断して営業マンを支援する世界が実現できない",
    blockedBy:["ISS-001","ISS-012"],blocks:[],relatedDbs:["DB7","DB9","DB23"],status:"pending"},
+  {id:"ISS-021",category:"リストラクチャリング",severity:"critical",
+   title:"SSOT物理分割（DB1→DB31 データ移行）",
+   desc:"DB1(法人441件)から非顧客（投資家/エージェント/紹介元）をDB31(法人SH)へ移動。DB4(名刺)から非顧客をDB33(人SH)へ移動。取引種別multi_selectで判別可能だが、「顧客」かつ「紹介元」のグレーゾーンが存在する可能性。",
+   impact:"SSOT物理分割の核心。CRM基盤とステークホルダー基盤の情報境界が未分離",
+   blockedBy:[],blocks:["ISS-013","ISS-022","ISS-023"],relatedDbs:["DB1","DB4","DB31","DB33"],status:"pending"},
+  {id:"ISS-022",category:"リストラクチャリング",severity:"critical",
+   title:"外交Teamspace（DB31-35）の新規構築",
+   desc:"DB31(法人SH)・DB33(人SH)・DB34(SHタスク)・DB35(SH活動)を新規作成。DB32(支店)はDB5からリネーム・移動。DB31→DB32→DB33の階層リレーション構築。CRM基盤からの紹介元リレーション(DB1/DB2/DB3→DB31)接続。",
+   impact:"ステークホルダー管理の専用基盤がない。紹介元/投資家/エージェントの独立管理ができない",
+   blockedBy:["ISS-021"],blocks:["ISS-013"],relatedDbs:["DB31","DB32","DB33","DB34","DB35"],status:"pending"},
+  {id:"ISS-023",category:"リストラクチャリング",severity:"high",
+   title:"自動化ツール4本のDB31-33対応",
+   desc:"zoom-phone-notion/gmail-notion-sync/notion-phone-normalizerのマッチ・正規化対象にDB31-33を追加。asana-notion-syncは影響なし(DB20/DB21のみ)。既存の3ツールがDB1/DB2/DB4を参照→DB31-33も検索先に追加。",
+   impact:"SSOT分割後に非顧客の通話/メールが自動記録されなくなる",
+   blockedBy:["ISS-021","ISS-022"],blocks:[],relatedDbs:["DB31","DB32","DB33","DB7"],status:"pending"},
+  {id:"ISS-024",category:"リストラクチャリング",severity:"high",
+   title:"クロスTeamspaceリレーションの権限検証",
+   desc:"Sales(Open)→外交(TBD)の紹介元リレーションが全メンバーに見えるか検証が必要。HR→外交(DB11→DB31/DB33)、IR→外交(DB15→DB31/DB33)のClosed→TBDリレーションも検証。テスト用ページで権限を検証してから本番移行。",
+   impact:"権限制約でリレーション先が見えない場合、運用に支障",
+   blockedBy:[],blocks:["ISS-013"],relatedDbs:["DB1","DB31","DB33"],status:"pending"},
+  {id:"ISS-025",category:"新規構築",severity:"medium",
+   title:"DB9(CRMタスク)の新規作成",
+   desc:"Sales Teamspace内のCRMタスクDB。Notionに未作成。CRM活動パターン（面談→活動→契約→タスク）の一部として必要。",
+   impact:"CRM営業のタスク管理がDB22(General)に混在してしまう",
+   blockedBy:[],blocks:[],relatedDbs:["DB9"],status:"pending"},
 ];
 
 function renderIssues() {
@@ -2009,22 +2226,35 @@ function renderIssues() {
   html += `<div class="critical-path-box">
     <h3>クリティカルパス（最長依存チェーン）</h3>
     <div class="critical-path-chain">
-      <span class="critical-path-node">ISS-001<br><span style="font-size:0.68rem;font-weight:400;">People DB正規化→DB1-5</span></span>
+      <span class="critical-path-node" style="border-color:#16a34a;">ISS-001<br><span style="font-size:0.68rem;font-weight:400;">People DB正規化 ✅</span></span>
       <span class="critical-path-arrow">&#10140;</span>
-      <span class="critical-path-node">ISS-002<br><span style="font-size:0.68rem;font-weight:400;">Tasks/PJ移行→DB20-22</span></span>
+      <span class="critical-path-node" style="border-color:#16a34a;">ISS-002<br><span style="font-size:0.68rem;font-weight:400;">Tasks/PJ移行 ✅</span></span>
       <span class="critical-path-arrow">/</span>
-      <span class="critical-path-node">ISS-003<br><span style="font-size:0.68rem;font-weight:400;">市場データ投入</span></span>
+      <span class="critical-path-node" style="border-color:#16a34a;">ISS-003<br><span style="font-size:0.68rem;font-weight:400;">市場データ ✅</span></span>
     </div>
     <div class="critical-path-chain" style="margin-top:12px;">
-      <span class="critical-path-node">ISS-005<br><span style="font-size:0.68rem;font-weight:400;">MCP接続</span></span>
+      <span class="critical-path-node" style="border-color:#16a34a;">ISS-005<br><span style="font-size:0.68rem;font-weight:400;">MCP接続 ✅</span></span>
       <span class="critical-path-arrow">&#10140;</span>
-      <span class="critical-path-node">ISS-009/010<br><span style="font-size:0.68rem;font-weight:400;">Gmail/Slack→DB7</span></span>
+      <span class="critical-path-node" style="border-color:#16a34a;">ISS-009/010<br><span style="font-size:0.68rem;font-weight:400;">Gmail/ZoomPhone ✅</span></span>
       <span class="critical-path-arrow">&#10140;</span>
-      <span class="critical-path-node">ISS-012<br><span style="font-size:0.68rem;font-weight:400;">統合ハブ(DB7)実現</span></span>
+      <span class="critical-path-node">ISS-012<br><span style="font-size:0.68rem;font-weight:400;">統合ハブ(DB7)</span></span>
       <span class="critical-path-arrow">&#10140;</span>
       <span class="critical-path-node">ISS-020<br><span style="font-size:0.68rem;font-weight:400;">AIエージェント</span></span>
     </div>
-    <p style="margin-top:12px;font-size:0.78rem;color:var(--text2);">上段: データ移行の依存チェーン / 下段: 自動化の依存チェーン</p>
+    <div class="critical-path-chain" style="margin-top:12px;">
+      <span class="critical-path-node" style="border-color:#f59e0b;background:#fffbeb;">ISS-021<br><span style="font-size:0.68rem;font-weight:400;">SSOT物理分割</span></span>
+      <span class="critical-path-arrow">&#10140;</span>
+      <span class="critical-path-node" style="border-color:#f59e0b;background:#fffbeb;">ISS-022<br><span style="font-size:0.68rem;font-weight:400;">外交TS構築</span></span>
+      <span class="critical-path-arrow">&#10140;</span>
+      <span class="critical-path-node" style="border-color:#f59e0b;background:#fffbeb;">ISS-013<br><span style="font-size:0.68rem;font-weight:400;">6 Teamspace実装</span></span>
+    </div>
+    <div class="critical-path-chain" style="margin-top:8px;">
+      <span class="critical-path-node" style="border-color:#f59e0b;background:#fffbeb;">ISS-024<br><span style="font-size:0.68rem;font-weight:400;">権限検証</span></span>
+      <span class="critical-path-arrow">&#10140;</span>
+      <span class="critical-path-node" style="border-color:#f59e0b;background:#fffbeb;">ISS-013<br><span style="font-size:0.68rem;font-weight:400;">6 Teamspace実装</span></span>
+      <span style="margin-left:16px;font-size:0.72rem;color:#92400e;">※ ISS-023(自動化更新)もISS-021/022に依存</span>
+    </div>
+    <p style="margin-top:12px;font-size:0.78rem;color:var(--text2);">上段: データ移行（完了） / 中段: 自動化チェーン / 下段2行: リストラクチャリング（次フェーズ）</p>
   </div>`;
 
   const categories = {};
@@ -2307,8 +2537,8 @@ function renderHub() {
 
 // ===== AGENTS TAB =====
 const dbAutomations = [
-  // === SSOT基盤 ===
-  {db:"DB1",name:"法人",automations:[
+  // === Sales（CRM基盤 DB1-4 + CRM DB6-10）===
+  {db:"DB1",name:"法人（顧客）",automations:[
     {type:"automation",trigger:"プロパティ変更: 営業ステータス",action:"DB9にCRMタスク自動作成（次のアクション提案）",status:"可能"},
     {type:"automation",trigger:"ページ追加",action:"DB23にドキュメント自動作成（法人概要テンプレート）",status:"可能"},
     {type:"autofill",trigger:"ページ内容更新",action:"取引先サマリを自動生成",status:"可能"},
@@ -2323,13 +2553,10 @@ const dbAutomations = [
     {type:"automation",trigger:"プロパティ変更: 導入ステータス=トライアル中",action:"DB8に契約レコード自動作成（トライアル契約）",status:"可能"},
     {type:"automation",trigger:"プロパティ変更: 導入ステータス=契約中",action:"DB8の契約ステータスを締結完了に更新。DB1/DB2の営業ステータスも契約法人/契約施設に更新",status:"可能"},
   ],agents:[]},
-  {db:"DB4",name:"人・名刺",automations:[
-    {type:"automation",trigger:"ページ追加",action:"取引種別に基づいてDB9(CRMタスク)に初回フォロータスク自動作成",status:"可能"},
-    {type:"autofill",trigger:"ページ内容更新",action:"カテゴリを自動判定（ページ内容から顧客/投資家/採用候補等）",status:"可能"},
+  {db:"DB4",name:"人・名刺（顧客）",automations:[
+    {type:"automation",trigger:"ページ追加",action:"DB9(CRMタスク)に初回フォロータスク自動作成",status:"可能"},
+    {type:"autofill",trigger:"ページ内容更新",action:"顧客担当者サマリを自動生成",status:"可能"},
   ],agents:[]},
-  {db:"DB5",name:"支店",automations:[],agents:[]},
-
-  // === CRM ===
   {db:"DB6",name:"商談",automations:[
     {type:"automation",trigger:"プロパティ変更: パイプラインステージ=受注",action:"DB8に契約レコード自動作成。想定MRR→MRRにコピー。取引先/施設リレーションもコピー",status:"可能"},
     {type:"automation",trigger:"プロパティ変更: パイプラインステージ=失注",action:"DB9にフォローアップタスク作成（3ヶ月後に再アプローチ）",status:"可能"},
@@ -2387,12 +2614,13 @@ const dbAutomations = [
     {type:"automation",trigger:"プロパティ変更: ステータス=完了",action:"完了日を自動入力",status:"可能"},
   ],agents:[]},
 
-  // === Corporate ===
+  // === 社長室 ===
   {db:"DB19",name:"発信コンテンツ",automations:[
     {type:"automation",trigger:"プロパティ変更: ステータス=公開済",action:"Slackに公開通知。エンゲージメント追跡タスクを自動作成",status:"可能"},
   ],agents:[
     {name:"コンテンツ企画エージェント",desc:"DB7(CRM活動)やDB6(商談)から成功事例を検出し、SNSコンテンツの企画案をDB19に自動作成。プラットフォーム別に本文ドラフト生成",access:["DB19","DB6","DB7","DB1","DB2"],trigger:"スケジュール（毎週月曜）"},
   ]},
+  {db:"DB24",name:"プロダクト",automations:[],agents:[]},
 
   // === General ===
   {db:"DB20",name:"部門",automations:[],agents:[]},
@@ -2404,20 +2632,43 @@ const dbAutomations = [
     {type:"automation",trigger:"スケジュール（毎朝）",action:"締切が今日のタスクをSlack通知",status:"可能"},
   ],agents:[]},
   {db:"DB23",name:"ドキュメント",automations:[
-    {type:"autofill",trigger:"ページ内容更新",action:"要約を自動生成。レイヤーを自動判定",status:"可能"},
+    {type:"autofill",trigger:"ページ内容更新",action:"要約を自動生成。Teamspaceを自動判定",status:"可能"},
   ],agents:[]},
-  {db:"DB24",name:"プロダクト",automations:[],agents:[]},
 
-  // === Executive ===
-  {db:"DB25",name:"1on1記録",automations:[
-    {type:"autofill",trigger:"ページ内容更新",action:"議事サマリ・決定事項・次のアクションを自動抽出",status:"可能"},
+  // === HR（追加分）===
+  {db:"DB26",name:"採用ポジション",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=オープン",action:"DB11に面談レコードのテンプレート準備。Slackの#hrチャンネルに通知",status:"可能"},
   ],agents:[]},
+
+  // === 外交（ステークホルダー）===
+  {db:"DB31",name:"法人（SH）",automations:[
+    {type:"automation",trigger:"ページ追加",action:"DB34にSHタスク自動作成（初回コンタクト）",status:"可能"},
+    {type:"autofill",trigger:"ページ内容更新",action:"ステークホルダーサマリを自動生成（種別: 投資家/エージェント/紹介元/銀行）",status:"可能"},
+  ],agents:[
+    {name:"ステークホルダー360°エージェント",desc:"ステークホルダー法人の全情報（支店/担当者/活動/タスク）をサマリ化。IR面談やHR面談との紐づけも横断表示",access:["DB31","DB32","DB33","DB34","DB35","DB15","DB11"],trigger:"メンション"},
+  ]},
+  {db:"DB32",name:"支店（SH）",automations:[
+    {type:"autofill",trigger:"ページ内容更新",action:"支店情報サマリを自動生成",status:"可能"},
+  ],agents:[]},
+  {db:"DB33",name:"人（SH）",automations:[
+    {type:"automation",trigger:"ページ追加",action:"DB34にSHタスク自動作成（初回フォロー）",status:"可能"},
+    {type:"autofill",trigger:"ページ内容更新",action:"担当者サマリを自動生成（所属法人/役割/コンタクト履歴）",status:"可能"},
+  ],agents:[]},
+  {db:"DB34",name:"SHタスク",automations:[
+    {type:"automation",trigger:"プロパティ変更: ステータス=完了",action:"完了日を自動入力",status:"可能"},
+    {type:"automation",trigger:"スケジュール（毎朝）",action:"締切が今日のSHタスクをSlack通知",status:"可能"},
+  ],agents:[]},
+  {db:"DB35",name:"活動（SH）",automations:[
+    {type:"autofill",trigger:"ページ内容更新",action:"活動サマリを自動生成。次のアクションを抽出",status:"可能"},
+  ],agents:[
+    {name:"SH活動→タスク変換エージェント",desc:"SH活動が追加されたら内容を読んで次のアクションをDB34にタスク作成。法人/人のリレーションも自動設定",access:["DB35","DB34","DB31","DB33"],trigger:"Notionイベント（DB35にページ追加）"},
+  ]},
 ];
 
 const customAgents = [
   {
     name: "法人360°エージェント",
-    layer: "CRM",
+    layer: "Sales",
     trigger: "メンション or 毎朝9:00",
     access: ["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9"],
     capabilities: [
@@ -2478,7 +2729,7 @@ const customAgents = [
   },
   {
     name: "商談進捗エージェント",
-    layer: "CRM",
+    layer: "Sales",
     trigger: "毎朝9:00スケジュール",
     access: ["DB6","DB7","DB9"],
     capabilities: [
@@ -2542,7 +2793,7 @@ const customAgents = [
   },
   {
     name: "活動→タスク変換エージェント",
-    layer: "CRM",
+    layer: "Sales",
     trigger: "DB7にページ追加時",
     access: ["DB7","DB9","DB1","DB2","DB4"],
     capabilities: [
@@ -2599,7 +2850,7 @@ const customAgents = [
   },
   {
     name: "顧客コンテキストエージェント",
-    layer: "CRM",
+    layer: "Sales",
     trigger: "メンション",
     access: ["DB1","DB2","DB4","DB6","DB7","DB8"],
     capabilities: [
@@ -2671,7 +2922,7 @@ const customAgents = [
   },
   {
     name: "議事録生成エージェント",
-    layer: "CRM",
+    layer: "Sales",
     trigger: "DB10にページ追加時",
     access: ["DB10","DB7","DB9","DB6","DB1","DB4"],
     capabilities: [
@@ -2755,7 +3006,7 @@ const customAgents = [
   },
   {
     name: "MRRレポートエージェント",
-    layer: "CRM",
+    layer: "Sales",
     trigger: "毎月1日スケジュール",
     access: ["DB8","DB1"],
     capabilities: [
@@ -2822,7 +3073,7 @@ const customAgents = [
   },
   {
     name: "コンテンツ企画エージェント",
-    layer: "Corporate",
+    layer: "社長室",
     trigger: "毎週月曜スケジュール",
     access: ["DB19","DB6","DB7","DB1","DB2"],
     capabilities: [
@@ -2885,9 +3136,9 @@ const customAgents = [
     name: "全社タスクリマインダー",
     layer: "General",
     trigger: "毎朝8:30スケジュール",
-    access: ["DB9","DB14","DB18","DB22"],
+    access: ["DB9","DB14","DB18","DB22","DB34"],
     capabilities: [
-      "CRM/人事/投資家/社内の全タスクDBを横断スキャン",
+      "CRM/人事/IR/外交/社内の全タスクDBを横断スキャン",
       "締切が今日・期限切れのタスクをSlack通知",
       "担当者別にメンション付きで通知",
     ],
@@ -2898,11 +3149,12 @@ const customAgents = [
 毎朝、全タスクDBを横断スキャンし、締切が今日または期限切れのタスクをSlackで通知します。
 
 ## 実行手順
-1. 以下の4つのタスクDBをスキャンします:
+1. 以下の5つのタスクDBをスキャンします:
    - @DB9 CRMタスク（営業タスク）
    - @DB14 人事タスク（採用タスク）
    - @DB18 IRタスク（投資家タスク）
    - @DB22 Generalタスク（社内タスク）
+   - @DB34 SHタスク（ステークホルダータスク）
 
 2. 各DBで以下を検出:
    - 締切が今日のタスク
@@ -2929,13 +3181,13 @@ const customAgents = [
 - 担当者のSlackメンションは@名前形式で`,
     setup: [
       "Triggers: スケジュール（毎朝8:30 JST）",
-      "Tools and Access: DB9(Can view), DB14(Can view), DB18(Can view), DB22(Can view)",
+      "Tools and Access: DB9(Can view), DB14(Can view), DB18(Can view), DB22(Can view), DB34(Can view)",
       "Slack: #general チャンネルにCan post",
       "Model: Auto（軽量タスクなのでコスト最適化）",
     ],
     concerns: [
-      "DB14/DB18はClosedだが、このAgentにはCan viewを付与する必要がある→Agent共有時に注意（営業メンバーにこのAgentを共有するとClosed DBの内容が見えてしまう可能性）",
-      "対策: DB14/DB18の情報はSlack通知に具体的内容を含めない。「人事タスクが1件期限切れです」のみ",
+      "DB14/DB18/DB34はClosedの可能性あり。このAgentにはCan viewを付与する必要がある→Agent共有時に注意（営業メンバーにこのAgentを共有するとClosed DBの内容が見えてしまう可能性）",
+      "対策: DB14/DB18/DB34の情報はSlack通知に具体的内容を含めない。「人事タスクが1件期限切れです」「SHタスクが1件期限切れです」のみ",
       "タスク数が多い場合、Slackメッセージが長すぎて読まれない→上位5件に絞るか、DMで個別通知にする",
     ],
   },
