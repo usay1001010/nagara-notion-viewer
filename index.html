@@ -218,13 +218,13 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
 <header>
   <h1>NAGARA Notion Architecture Viewer</h1>
-  <p>29 DBs / 7 Teamspaces (Dev=TBD) / 4,829ページ移行完了 / 自動化4/6稼働 — 最終更新: 2026-04-12 <span style="background:#7c3aed;color:#fff;padding:2px 8px;border-radius:10px;font-size:0.7rem;margin-left:6px;">v2 理想案適用</span></p>
+  <p>6 Teamspaces (Executive / General / コーポレート / プロダクト開発 / 営業 / test) / 30 DB定義 — 最終更新: 2026-04-13 <span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:10px;font-size:0.7rem;margin-left:6px;">0413 replan 現行構成</span></p>
 </header>
 
 <div class="container">
   <div class="tabs">
     <button class="tab active" data-tab="overview">現状のDB構成</button>
-    <button class="tab" data-tab="ideal">理想のDB構成</button>
+    <button class="tab" data-tab="ideal">理想のDB構成 <span style="font-size:0.65rem;background:#fbbf24;color:#78350f;padding:1px 5px;border-radius:3px;margin-left:2px;">旧計画記録</span></button>
     <button class="tab" data-tab="diagram">リレーション図</button>
     <button class="tab" data-tab="action">アクションプラン</button>
     <button class="tab" data-tab="rationale">設計根拠</button>
@@ -235,6 +235,41 @@ canvas#archCanvas { display:block; margin:0 auto; }
   </div>
 
   <div class="tab-content active" id="tab-overview">
+    <div style="background:linear-gradient(135deg,#f0fdf4,#ecfeff);border:2px solid #16a34a;border-radius:12px;padding:18px 20px;margin-bottom:20px;">
+      <h3 style="font-size:1.05rem;font-weight:700;color:#15803d;margin-bottom:10px;">🗂 現行 Teamspace 階層（0413 replan）</h3>
+      <p style="font-size:0.85rem;color:var(--text2);margin-bottom:10px;line-height:1.6;">
+        旧計画の「機能ごとTeamspace（外交TS/HR TS/IR TS/社長室TS 新設）」は<b>不採用</b>。実態は <b>コーポレートTSに集約してページ分割</b>。
+      </p>
+      <pre style="background:#fff;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;font-size:0.78rem;line-height:1.55;color:#334155;overflow-x:auto;margin:0;">
+営業 TS / Sales top
+├─ DB1 法人 / DB2 施設 / DB3 事業所 / DB4 人・名刺
+├─ DB6 商談 / DB7 活動 / DB8 契約 / DB9 CRMタスク / DB10 商談報告
+
+コーポレート TS / コーポレート top
+├─ 経営 top
+│   ├─ 外交 page
+│   │   ├─ DB32 ステークホルダー支店（旧DB5をリネーム）
+│   │   ├─ DB31 法人SH / DB33 人SH / DB34 SHタスク / DB35 SH活動
+│   ├─ IR page
+│   │   └─ DB15 面談 / DB16 活動 / DB17 契約 / DB18 タスク
+│   ├─ 企画課 page
+│   │   └─ DB24 プロダクト
+│   └─ CEO室 page
+│       └─ DB19 発信コンテンツ
+└─ HR page / HR Home
+    └─ DB11 選考 / DB12 HR活動 / DB13 雇契約 / DB14 人事タスク / DB26 採用ポジション
+
+General TS / General top
+└─ DB20 部門 / DB21 PJ / DB22 Generalタスク / DB23 ドキュメント
+
+Executive TS / Executive top
+└─ DB25 1on1記録
+
+プロダクト開発 TS（未調査） / test TS（廃止予定）</pre>
+      <div style="margin-top:10px;font-size:0.8rem;color:var(--text2);">
+        ⚠️ 旧計画で想定した外交TS/HR TS/IR TS/社長室TSは新設<b>しない</b>。本ビューアの「理想のDB構成」タブは<b>旧計画の記録</b>（不採用）として残存。
+      </div>
+    </div>
     <div class="stats-grid" id="statsGrid"></div>
     <div class="search-box"><input type="text" id="searchInput" placeholder="DB名・プロパティ名で検索..."></div>
     <div id="layerSections"></div>
@@ -246,16 +281,16 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
   <div class="tab-content" id="tab-diagram">
     <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:0.85rem;line-height:1.6;">
-      <b style="color:#7c3aed;">v2 リレーション設計ルール</b>
+      <b style="color:#7c3aed;">6 Teamspace × DB リレーション図（2026-04-13 現構成）</b>
       <ul style="margin:6px 0 0;padding-left:20px;color:var(--text2);">
-        <li>CRM基盤(Sales DB1-4) → 外交(DB31-35) は<b>紹介元の一方向のみ</b></li>
-        <li>DB1-4 相互リレーション は<b>原則なし</b>（自己参照=Phase 0-8判断待ち）</li>
-        <li>外交TS内: DB31→DB32→DB33 の階層リレーションで完結</li>
-        <li>HR/IR → 外交 は Closed→TBD 接続（権限テストPhase 0-4要）</li>
+        <li><b>経営</b> = コーポレートTS → 経営 top 配下（外交 / IR / CEO室 / 企画課 の4ページ集約）</li>
+        <li><b>営業</b> = 営業TS ／ <b>コーポレート</b> = コーポレートTS → HR page ／ <b>General</b> = General TS ／ <b>Executive</b> = Executive TS</li>
+        <li><b>プロダクト開発</b> TS は存在するが DB 未整備（プレースホルダ）</li>
+        <li>営業(DB1-4) → 外交(DB31) は<b>紹介元の一方向のみ</b>。クロスTSは破線で表示</li>
       </ul>
     </div>
     <div class="canvas-wrap">
-      <canvas id="archCanvas" width="1400" height="640"></canvas>
+      <canvas id="archCanvas" width="1400" height="760"></canvas>
     </div>
     <div class="canvas-legend" id="canvasLegend"></div>
     <p style="text-align:center;margin-top:8px;font-size:0.8rem;color:var(--text2);">ノードをクリックするとリレーションをハイライト。背景クリックでリセット</p>
@@ -288,14 +323,25 @@ canvas#archCanvas { display:block; margin:0 auto; }
 
 <script>
 // ===== DATA =====
+// 論理グルーピング（色分け用）。実TS配置は下記コメント参照:
+//   営業TS/Sales top              → sales 9DB (DB1-4,6-10)
+//   コーポレートTS/HR page         → hr 5DB (DB11-14,26)
+//   コーポレートTS/経営top/IR page → ir 4DB (DB15-18)
+//   コーポレートTS/経営top/外交page→ gaiko 5DB (DB31-35)
+//   コーポレートTS/経営top/CEO室   → shachoushitsu→CEO室 (DB19)
+//   コーポレートTS/経営top/企画課  → shachoushitsu→企画課 (DB24)
+//   General TS/General top         → general 4DB (DB20-23)
+//   Executive TS/Executive top     → executive 1DB (DB25)
 const layers = {
-  sales:        {name:"Sales",      color:"#2563eb", bg:"#eff6ff", count:9, desc:"CRM基盤(DB1-4顧客)+営業パイプライン Open"},
-  hr:           {name:"HR",         color:"#059669", bg:"#ecfdf5", count:5, desc:"採用管理 Closed"},
-  ir:           {name:"IR",         color:"#dc2626", bg:"#fef2f2", count:4, desc:"投資家管理 Closed"},
-  general:      {name:"General",    color:"#0ea5e9", bg:"#ecfeff", count:4, desc:"社内運営 Open"},
-  shachoushitsu:{name:"社長室",     color:"#f59e0b", bg:"#fffbeb", count:2, desc:"経営層 Closed"},
-  gaiko:        {name:"外交",       color:"#7c3aed", bg:"#f5f3ff", count:5, desc:"ステークホルダー基盤 TBD"},
-  dev:          {name:"Dev",        color:"#64748b", bg:"#f1f5f9", count:0, desc:"開発部長管轄 Closed TBD（目的未定）"},
+  sales:        {name:"営業TS / CRM+営業", color:"#2563eb", bg:"#eff6ff", count:9, desc:"営業TS配下: CRM基盤(DB1-4)+営業パイプライン(DB6-10)"},
+  hr:           {name:"コーポレートTS / HR page", color:"#059669", bg:"#ecfdf5", count:5, desc:"コーポレートTS→HR page配下。採用・人事管理"},
+  ir:           {name:"コーポレートTS / 経営top / IR page", color:"#dc2626", bg:"#fef2f2", count:4, desc:"コーポレートTS→経営top→IR page配下。投資家関係"},
+  general:      {name:"General TS", color:"#0ea5e9", bg:"#ecfeff", count:4, desc:"General TS配下: 部門・PJ・タスク・ドキュメント"},
+  shachoushitsu:{name:"コーポレートTS / 経営top / CEO室+企画課", color:"#f59e0b", bg:"#fffbeb", count:2, desc:"DB19=CEO室、DB24=企画課(プロダクト)。経営top配下のページ群"},
+  gaiko:        {name:"コーポレートTS / 経営top / 外交 page", color:"#7c3aed", bg:"#f5f3ff", count:5, desc:"ステークホルダー基盤。DB5はDB32にリネーム済"},
+  executive:    {name:"Executive TS", color:"#ec4899", bg:"#fdf2f8", count:1, desc:"1on1記録専用。DB25のみ"},
+  keiei:        {name:"経営 (コーポTS/経営top配下)", color:"#b45309", bg:"#fef3c7", count:11, desc:"IR+CEO室+企画課+外交 の4ページ集合帯"},
+  pd:           {name:"プロダクト開発 TS", color:"#6b7280", bg:"#f3f4f6", count:0, desc:"未調査・DB未整備"},
 };
 
 const dbs = [
@@ -545,6 +591,13 @@ const dbs = [
      {n:"活動タイプ",t:"select",o:["面談","メール","電話","訪問","Web会議"]},
      {n:"活動日時",t:"date"},{n:"サマリ",t:"rich_text"},
      {n:"法人SH",t:"relation",to:"DB31"},{n:"支店SH",t:"relation",to:"DB32"},{n:"人SH",t:"relation",to:"DB33"},
+   ]},
+  // === Executive Teamspace ===
+  {id:"DB25",name:"1on1記録（One-on-One）",layer:"executive",desc:"Executive TS配下。1on1専用DB。0413 replanで維持決定",
+   props:[
+     {n:"タイトル",t:"title"},{n:"実施日",t:"date"},
+     {n:"相手",t:"relation",to:"DB4"},
+     {n:"サマリ",t:"rich_text"},{n:"ネクストアクション",t:"rich_text"},
    ]},
 ];
 
@@ -887,42 +940,24 @@ let selectedNode = null;
 const canvasW = 1400, canvasH = 760;
 
 function layoutNodes() {
-  const nw = 110, nh = 46;
-  const padX = 16;
-
-  // Row 1: Sales — CRM基盤(DB1-4) + CRM活動(DB6-10) = 9 nodes, y=60
-  const row1 = ["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10"];
-  const row1Total = row1.length * nw + (row1.length - 1) * padX;
-  let r1s = (canvasW - row1Total) / 2;
-  row1.forEach((id, i) => { nodePositions[id] = {x: r1s + i*(nw+padX), y:60, w:nw, h:nh}; });
-
-  // Row 2: HR(DB11-14,DB26) | IR(DB15-18) = 9 nodes, y=200
-  const row2a = ["DB11","DB12","DB13","DB14","DB26"];
-  const row2b = ["DB15","DB16","DB17","DB18"];
-  const gap2 = 50;
-  const r2aTotal = row2a.length * nw + (row2a.length-1)*padX;
-  const r2bTotal = row2b.length * nw + (row2b.length-1)*padX;
-  let r2s = (canvasW - (r2aTotal + gap2 + r2bTotal)) / 2;
-  row2a.forEach((id, i) => { nodePositions[id] = {x: r2s + i*(nw+padX), y:200, w:nw, h:nh}; });
-  let r2bs = r2s + r2aTotal + gap2;
-  row2b.forEach((id, i) => { nodePositions[id] = {x: r2bs + i*(nw+padX), y:200, w:nw, h:nh}; });
-
-  // Row 3: General(DB20-23) | 社長室(DB19,DB24) = 6 nodes, y=340
-  const row3a = ["DB20","DB21","DB22","DB23"];
-  const row3b = ["DB19","DB24"];
-  const gap3 = 50;
-  const r3aTotal = row3a.length * nw + (row3a.length-1)*padX;
-  const r3bTotal = row3b.length * nw + (row3b.length-1)*padX;
-  let r3s = (canvasW - (r3aTotal + gap3 + r3bTotal)) / 2;
-  row3a.forEach((id, i) => { nodePositions[id] = {x: r3s + i*(nw+padX), y:340, w:nw, h:nh}; });
-  let r3bs = r3s + r3aTotal + gap3;
-  row3b.forEach((id, i) => { nodePositions[id] = {x: r3bs + i*(nw+padX), y:340, w:nw, h:nh}; });
-
-  // Row 4: 外交(DB31-35) = 5 nodes, y=480
-  const row4 = ["DB31","DB32","DB33","DB34","DB35"];
-  const row4Total = row4.length * nw + (row4.length - 1) * padX;
-  let r4s = (canvasW - row4Total) / 2;
-  row4.forEach((id, i) => { nodePositions[id] = {x: r4s + i*(nw+padX), y:480, w:nw, h:nh}; });
+  const nw = 110, nh = 46, padX = 16;
+  const centerRow = (ids, y) => {
+    const total = ids.length * nw + (ids.length - 1) * padX;
+    const start = (canvasW - total) / 2;
+    ids.forEach((id, i) => { nodePositions[id] = {x: start + i*(nw+padX), y, w:nw, h:nh}; });
+  };
+  // 営業 TS
+  centerRow(["DB1","DB2","DB3","DB4","DB6","DB7","DB8","DB9","DB10"], 60);
+  // コーポレートTS / HR page
+  centerRow(["DB11","DB12","DB13","DB14","DB26"], 174);
+  // 経営 (IR+CEO室+企画課 上段, 外交 下段)
+  centerRow(["DB15","DB16","DB17","DB18","DB19","DB24"], 298);
+  centerRow(["DB31","DB32","DB33","DB34","DB35"], 370);
+  // プロダクト開発 TS: DB 未整備（nodes無し）
+  // General TS
+  centerRow(["DB20","DB21","DB22","DB23"], 548);
+  // Executive TS
+  centerRow(["DB25"], 678);
 }
 
 function drawDiagram() {
@@ -938,19 +973,19 @@ function drawDiagram() {
 
   layoutNodes();
 
-  // Draw layer bands
+  // 6 Teamspace bands (経営 / 営業 / プロダクト開発 / コーポレート / General / Executive)
   const bands = [
-    {y:36, h:86, layer:"sales",          label:"Sales (DB1-4, DB6-10) — Open"},
-    {y:170, h:98, layer:"hr",            label:"HR (DB11-14, DB26) — Closed"},
-    {y:170, h:98, layer:"ir",            label:"IR (DB15-18) — Closed", xOffset: 0.55},
-    {y:312, h:86, layer:"general",       label:"General (DB20-23) — Open"},
-    {y:312, h:86, layer:"shachoushitsu", label:"社長室 (DB19, DB24) — Closed", xOffset: 0.62},
-    {y:452, h:86, layer:"gaiko",         label:"外交 (DB31-35)"},
+    {y:36,  h:86,  layer:"sales",     label:"営業 TS — DB1-4 (CRM基盤) + DB6-10 (商談/活動/契約/CRMタスク/報告)"},
+    {y:150, h:86,  layer:"hr",        label:"コーポレート TS / HR page — DB11-14, DB26 (採用・人事)"},
+    {y:270, h:158, layer:"keiei",     label:"経営 = コーポレート TS / 経営 top ▸ IR(DB15-18) + CEO室(DB19) + 企画課(DB24) + 外交(DB31-35)"},
+    {y:446, h:60,  layer:"pd",        label:"プロダクト開発 TS — 未調査 / DB 未整備（プレースホルダ）"},
+    {y:524, h:86,  layer:"general",   label:"General TS — DB20-23 (部門 / PJ / Generalタスク / ドキュメント)"},
+    {y:654, h:74,  layer:"executive", label:"Executive TS — DB25 (1on1記録)"},
   ];
   for (const b of bands) {
     const lyr = layers[b.layer] || {bg:"#f5f5f5", color:"#888"};
-    const bx = b.xOffset ? 16 + (canvasW - 32) * b.xOffset : 16;
-    const bw = b.xOffset ? (canvasW - 32) * (1 - b.xOffset) : (b.xOffset === undefined && bands.some(o => o !== b && o.y === b.y)) ? (canvasW - 32) * 0.53 : canvasW - 32;
+    const bx = 16;
+    const bw = canvasW - 32;
     ctx.fillStyle = lyr.bg;
     ctx.globalAlpha = 0.55;
     ctx.beginPath();
@@ -3244,28 +3279,31 @@ function renderNextActions() {
   if (!c) return;
 
   const naCategories = [
-    {name:"Notion環境 手動仕上げ", color:"#7c3aed", items:[
-      {priority:"high", title:"child_database手動再作成", desc:"各ページ内のインラインDBはAPI制約で移行不可。必要に応じて手動再作成", owner:"Yusei"},
-      {priority:"high", title:"ビュー設計・構築", desc:"全DBのフィルター・ソート設定（リンクドビュー含む）", owner:"Yusei"},
-      {priority:"medium", title:"テンプレート作成", desc:"DB6(商談)・DB9(CRMタスク)等の営業運用必須テンプレート", owner:"Yusei"},
-      {priority:"medium", title:"オートメーション設定", desc:"プロパティ変更トリガーのNotion内自動化", owner:"Yusei"},
-      {priority:"medium", title:"Teamspace権限設定", desc:"メンバー17名の権限マトリクス定義・適用", owner:"Yusei"},
+    {name:"ステークホルダー基盤 構築・移行（Phase 2）", color:"#dc2626", items:[
+      {priority:"high", title:"DB31_法人（ステークホルダー）新規作成", desc:"コーポレートTS → 経営top → 外交page 配下に作成。DB32(支店)/DB33(人SH)とのリレーション設計込み", owner:"AI"},
+      {priority:"high", title:"DB1 → DB31 データ移行（76件）", desc:"銀行1件＋ステークホルダー75件を DB31 に移行。DB1監査済（441件中76件対象、重複タグ0件）", owner:"AI+Yusei"},
+      {priority:"high", title:"DB4 → DB33 ステークホルダー個人の判別・移行", desc:"「顧客担当者」と「紹介元連絡先」重複判定が必要", owner:"AI+Yusei"},
+      {priority:"medium", title:"紹介元リレーション切替 DB1→DB1 を DB1→DB31 へ", desc:"自己参照を外交基盤への片方向参照に変更", owner:"AI"},
+      {priority:"medium", title:"DB1→DB5（支店一覧）旧リレーション DROP 判断", desc:"DB32存在下での役割を監査後に判定", owner:"Yusei"},
     ]},
-    {name:"自動化ツール 残タスク", color:"#2563eb", items:[
-      {priority:"high", title:"Zoom Phone スコープ追加", desc:"marketplace.zoom.usで phone:read:recording_transcript:admin + phone:read:ai_call_summary:admin を追加 → Phase 3（文字起こし・AI要約）実装", owner:"Yusei"},
-      {priority:"medium", title:"Notta→DB7連携", desc:"Nottaプラン確認後、ネイティブ連携（手動）またはZapier（自動）を設定", owner:"Yusei"},
-      {priority:"low", title:"notion-phone-normalizer 手動修正22件", desc:"自動正規化できなかった22件の電話番号を手動修正", owner:"Yusei"},
+    {name:"自動化ツール DB31/DB33 対応（Phase 3）", color:"#2563eb", items:[
+      {priority:"medium", title:"zoom-phone-notion: DB31/DB33 検索対象追加", desc:"着信マッチ対象を外交基盤まで拡張", owner:"AI"},
+      {priority:"medium", title:"gmail-notion-sync: DB31/DB33 マッチ対象追加", desc:"ステークホルダー宛メールの自動紐付け", owner:"AI"},
+      {priority:"medium", title:"notion-phone-normalizer: DB31/DB33 正規化対象追加", desc:"電話番号フォーマット統一対象を拡張", owner:"AI"},
     ]},
-    {name:"新規DB構築", color:"#059669", items:[
-      {priority:"medium", title:"DB3事業所・DB5支店の振り分け", desc:"DB2からの事業所・支店データ分離", owner:"AI+Yusei"},
-      {priority:"low", title:"HR層（DB11-14）新規構築", desc:"人事・採用管理4DB。スキーマ設計済み", owner:"AI"},
-      {priority:"low", title:"IR層（DB15-18）新規構築", desc:"投資家関係管理4DB。スキーマ設計済み", owner:"AI"},
-      {priority:"low", title:"DB5支店・DB24プロダクト・DB25 1on1構築", desc:"追加DB群の構築", owner:"AI"},
+    {name:"Notion UI 手動タスク", color:"#7c3aed", items:[
+      {priority:"low", title:"test Teamspace 廃止", desc:"検証用TS。UIから手動削除（後回し）", owner:"Yusei"},
+      {priority:"low", title:"DB1上の tmp view 削除", desc:"検証用 `_tmp_取引種別集計` (view://341aa45a-3f13-818a-8fa1-000cc401b2d7) を UI から削除", owner:"Yusei"},
+      {priority:"medium", title:"ビュー・テンプレート・オートメーション最終調整", desc:"DB31/DB33 追加後の各Teamspace運用整備", owner:"Yusei"},
     ]},
-    {name:"将来タスク", color:"#94a3b8", items:[
-      {priority:"low", title:"DB12→DB6連携（30分）", desc:"統合コミュニケーション: フォーム→商談パイプライン", owner:"AI"},
-      {priority:"low", title:"SNS→DB19パイプライン", desc:"X API $200/月、note.com API不可 — コスト判断待ち", owner:"Yusei"},
-      {priority:"low", title:"Notion AIエージェント構築", desc:"CRM営業支援Bot等8エージェント構想", owner:"AI+Yusei"},
+    {name:"ドキュメント整備（Phase 4）", color:"#059669", items:[
+      {priority:"medium", title:"architecture.md / workspace-spec.md 書き直し", desc:"28DB / 6TS体制に修正。旧7TS計画（外交TS新設案）を「採用せず」と注記", owner:"AI"},
+      {priority:"low", title:"0412_restructuring-plan.md をアーカイブ注記", desc:"旧計画は設計思想の記録として保存。実装参照は 0413_replan から", owner:"AI"},
+    ]},
+    {name:"既存の懸案（継続）", color:"#94a3b8", items:[
+      {priority:"low", title:"Zoom Phone スコープ追加（Phase 3 文字起こし）", desc:"phone:read:recording_transcript:admin + phone:read:ai_call_summary:admin を marketplace.zoom.us で追加", owner:"Yusei"},
+      {priority:"low", title:"Notta→DB7連携", desc:"プラン確認後、ネイティブ連携またはZapier設定", owner:"Yusei"},
+      {priority:"low", title:"Notion AIエージェント構築", desc:"CRM営業支援Bot等の構想。課金体系（2026-05-04以降）踏まえて再評価", owner:"AI+Yusei"},
     ]},
   ];
 
@@ -3280,15 +3318,15 @@ function renderNextActions() {
 
   let html = `
     <div style="background:linear-gradient(135deg,#f0fdf4,#ecfeff);border:2px solid #22c55e;border-radius:12px;padding:20px;margin-bottom:24px;">
-      <h3 style="font-size:1.1rem;font-weight:700;color:#16a34a;margin-bottom:8px;">📊 プロジェクト進捗サマリー（2026-04-10時点）</h3>
+      <h3 style="font-size:1.1rem;font-weight:700;color:#16a34a;margin-bottom:8px;">📊 リストラクチャリング進捗（2026-04-13 / 0413 replan）</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px;">
         <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;">
-          <div style="font-size:1.6rem;font-weight:800;color:#22c55e;">4,829</div>
-          <div style="font-size:0.78rem;color:var(--text2);">ページ移行完了</div>
+          <div style="font-size:1.6rem;font-weight:800;color:#22c55e;">6 / 6</div>
+          <div style="font-size:0.78rem;color:var(--text2);">Teamspace体制（アクティブ5＋test）</div>
         </div>
         <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;">
-          <div style="font-size:1.6rem;font-weight:800;color:#2563eb;">4/6</div>
-          <div style="font-size:0.78rem;color:var(--text2);">自動化ツール稼働中</div>
+          <div style="font-size:1.6rem;font-weight:800;color:#2563eb;">28 → 29</div>
+          <div style="font-size:0.78rem;color:var(--text2);">DB数（DB31 追加予定）</div>
         </div>
         <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;">
           <div style="font-size:1.6rem;font-weight:800;color:#ef4444;">${highCount}</div>
@@ -3300,8 +3338,9 @@ function renderNextActions() {
         </div>
       </div>
       <div style="font-size:0.82rem;color:var(--text2);line-height:1.7;">
-        <strong>完了:</strong> データ移行全Phase(A/B/C/D)、重複削除、リレーション整合性検証、4自動化ツール本番接続<br>
-        <strong>稼働中:</strong> zoom-phone-notion / gmail-notion-sync / notion-phone-normalizer / asana-notion-sync
+        <strong>完了:</strong> DB5→DB32_ステークホルダー支店リネーム、DB1取引種別集計（441件→移行対象76件確定、重複タグ0件）、Executive TS / DB25維持判断、0413 replan策定<br>
+        <strong>方針転換:</strong> 旧計画の「外交TS / HR TS / IR TS / 社長室TS 新設」は <em>不採用</em>。コーポレートTS配下のページ分割に集約（権限設計を簡素化）<br>
+        <strong>次アクション:</strong> DB31 新規作成 → DB1→DB31 76件移行 → DB4→DB33 判別 → 紹介元リレーション切替（ユーザ指示で作業実施は保留中）
       </div>
     </div>
 
