@@ -226,6 +226,7 @@ canvas#archCanvas { display:block; margin:0 auto; }
     <button class="tab active" data-tab="overview">現状のDB構成</button>
     <button class="tab" data-tab="ideal">理想のDB構成 <span style="font-size:0.65rem;background:#fbbf24;color:#78350f;padding:1px 5px;border-radius:3px;margin-left:2px;">旧計画記録</span></button>
     <button class="tab" data-tab="diagram">リレーション図</button>
+    <button class="tab" data-tab="scope7">7DBスコープ (CRM×SH) <span style="font-size:0.65rem;background:#ddd6fe;color:#5b21b6;padding:1px 5px;border-radius:3px;margin-left:2px;">NEW</span></button>
     <button class="tab" data-tab="action">アクションプラン</button>
     <button class="tab" data-tab="rationale">設計根拠</button>
     <button class="tab" data-tab="issues">課題一覧</button>
@@ -299,6 +300,47 @@ Executive TS / Executive top
     </div>
     <div class="canvas-legend" id="canvasLegend"></div>
     <p style="text-align:center;margin-top:8px;font-size:0.8rem;color:var(--text2);">ノードをクリックするとリレーションをハイライト。背景クリックでリセット</p>
+  </div>
+
+  <div class="tab-content" id="tab-scope7">
+    <div style="background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:2px solid #7c3aed;border-radius:12px;padding:14px 18px;margin-bottom:14px;">
+      <h3 style="font-size:1.02rem;font-weight:700;color:#5b21b6;margin-bottom:8px;">🎯 CRM × SH 7DBスコープ — 現行リレーション</h3>
+      <p style="font-size:0.83rem;color:var(--text2);line-height:1.65;margin:0;">
+        <b>CRMクラスタ</b>（営業TS: DB1-4）と <b>SHクラスタ</b>（外交: DB31-33）は<b>独立した2つの階層</b>で、両者を結ぶのは<b>紹介元リンク（DB1/2/3 → DB31）</b>のみの一方向。DB4 → DB33 の個人-SH間リンクは<b>未設置</b>（移行時の検討ポイント）。
+      </p>
+      <ul style="margin:8px 0 0;padding-left:20px;font-size:0.8rem;color:var(--text2);line-height:1.55;">
+        <li>CRM内: DB1 → DB2 → DB3 → DB4 の階層的親子 + DB1自己親子（子法人） + DB4自己参照（紹介元個人）</li>
+        <li>SH内: DB31 → DB32 → DB33 の階層的親子（CRMのDB1/2/4 に対応する簡略版）</li>
+        <li>橋: 紹介元4軸（DB1/2/3 → DB31）。DB4→DB33 や DB4→DB32 は<b>現状なし</b></li>
+      </ul>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="scope7Canvas" width="1100" height="420"></canvas>
+    </div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-size:0.8rem;color:var(--text2);">
+      <span style="display:inline-flex;align-items:center;gap:6px;"><svg width="38" height="10"><line x1="2" y1="5" x2="28" y2="5" stroke="#2563eb" stroke-width="2"/><polygon points="28,1 36,5 28,9" fill="#2563eb"/></svg> <b style="color:#2563eb;">上下関係</b>（階層・自己親）</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;"><svg width="38" height="10"><line x1="2" y1="5" x2="28" y2="5" stroke="#ea580c" stroke-width="1.8" stroke-dasharray="7,3"/><polygon points="28,1 36,5 28,9" fill="#ea580c"/></svg> <b style="color:#ea580c;">紹介関係</b>（CRM→SH / 自己紹介）</span>
+    </div>
+
+    <h3 style="margin-top:24px;margin-bottom:10px;font-size:1rem;color:#1a1d2e;">📋 プロパティ比較（CRM側 vs SH側）</h3>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.78rem;min-width:880px;">
+        <thead>
+          <tr style="background:#f1f5f9;">
+            <th style="text-align:left;padding:8px 10px;border:1px solid #e2e8f0;">観点</th>
+            <th style="padding:8px 10px;border:1px solid #e2e8f0;background:#eff6ff;color:#2563eb;">DB1<br><span style="font-weight:400;font-size:0.7rem;">法人</span></th>
+            <th style="padding:8px 10px;border:1px solid #e2e8f0;background:#eff6ff;color:#2563eb;">DB2<br><span style="font-weight:400;font-size:0.7rem;">施設</span></th>
+            <th style="padding:8px 10px;border:1px solid #e2e8f0;background:#eff6ff;color:#2563eb;">DB3<br><span style="font-weight:400;font-size:0.7rem;">事業所</span></th>
+            <th style="padding:8px 10px;border:1px solid #e2e8f0;background:#eff6ff;color:#2563eb;">DB4<br><span style="font-weight:400;font-size:0.7rem;">人・名刺</span></th>
+            <th style="padding:8px 10px;border:1px solid #e2e8f0;background:#f5f3ff;color:#7c3aed;">DB31<br><span style="font-weight:400;font-size:0.7rem;">SH法人</span></th>
+            <th style="padding:8px 10px;border:1px solid #e2e8f0;background:#f5f3ff;color:#7c3aed;">DB32<br><span style="font-weight:400;font-size:0.7rem;">SH支店</span></th>
+            <th style="padding:8px 10px;border:1px solid #e2e8f0;background:#f5f3ff;color:#7c3aed;">DB33<br><span style="font-weight:400;font-size:0.7rem;">SH人</span></th>
+          </tr>
+        </thead>
+        <tbody id="scope7PropTable"></tbody>
+      </table>
+    </div>
+    <p style="text-align:center;margin-top:10px;font-size:0.78rem;color:var(--text2);">○=有 / △=類似別名 / ✕=無 / —=N/A</p>
   </div>
 
   <div class="tab-content" id="tab-action">
@@ -763,7 +805,7 @@ function renderStats() {
 
 function renderLayerSections(filter) {
   const container = document.getElementById("layerSections");
-  const layerOrder = ["sales","hr","ir","general","shachoushitsu","gaiko","dev"];
+  const layerOrder = ["sales","hr","ir","gaiko","shachoushitsu","keiei","general","executive","pd"];
   let html = "";
   for (const lk of layerOrder) {
     const ly = layers[lk];
@@ -918,6 +960,7 @@ document.querySelectorAll(".tab").forEach(tab => {
     tab.classList.add("active");
     document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
     if (tab.dataset.tab === "diagram") drawDiagram();
+    if (tab.dataset.tab === "scope7") { drawScope7Diagram(); renderScope7PropTable(); }
   });
 });
 
@@ -1123,6 +1166,175 @@ function drawDiagram() {
   }
 
   renderCanvasLegend();
+}
+
+// ===== SCOPE 7DB DIAGRAM =====
+const scope7IDs = ["DB1","DB2","DB3","DB4","DB31","DB32","DB33"];
+const scope7Positions = {};
+function drawScope7Diagram() {
+  const canvas = document.getElementById("scope7Canvas");
+  const W = 1100, H = 420;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  // Two cluster bands
+  const bands = [
+    {y:36,  h:140, bg:"#eff6ff", color:"#2563eb", label:"CRMクラスタ (営業TS) — DB1 法人 → DB2 施設 → DB3 事業所 → DB4 人・名刺"},
+    {y:230, h:140, bg:"#f5f3ff", color:"#7c3aed", label:"SHクラスタ (外交 page) — DB31 SH法人 → DB32 SH支店 → DB33 SH人"},
+  ];
+  for (const b of bands) {
+    ctx.fillStyle = b.bg; ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.roundRect(16, b.y, W - 32, b.h, 10); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = b.color; ctx.font = "bold 12px Inter, sans-serif"; ctx.textAlign = "left";
+    ctx.fillText(b.label, 28, b.y + 20);
+  }
+
+  // Layout: CRM row (4 nodes centered) / SH row (3 nodes centered)
+  const nw = 150, nh = 54;
+  const rowY = (ids, y) => {
+    const pad = 40;
+    const total = ids.length * nw + (ids.length - 1) * pad;
+    const start = (W - total) / 2;
+    ids.forEach((id, i) => { scope7Positions[id] = {x: start + i*(nw+pad), y, w:nw, h:nh}; });
+  };
+  rowY(["DB1","DB2","DB3","DB4"], 90);
+  rowY(["DB31","DB32","DB33"], 286);
+
+  const scope7Rels = [
+    // CRM hierarchy
+    {f:"DB1",t:"DB2",l:"施設一覧",k:"parent"},
+    {f:"DB1",t:"DB3",l:"事業所一覧",k:"parent"},
+    {f:"DB1",t:"DB4",l:"名刺一覧",k:"parent"},
+    {f:"DB2",t:"DB3",l:"事業所",k:"parent"},
+    {f:"DB2",t:"DB4",l:"所属メンバー",k:"parent"},
+    {f:"DB3",t:"DB4",l:"名刺",k:"parent"},
+    {f:"DB1",t:"DB1",l:"子法人/親法人",k:"parent"},
+    {f:"DB4",t:"DB4",l:"紹介元(個人)",k:"ref"},
+    // SH hierarchy
+    {f:"DB31",t:"DB32",l:"支店一覧",k:"parent"},
+    {f:"DB31",t:"DB33",l:"メンバー一覧",k:"parent"},
+    {f:"DB32",t:"DB33",l:"所属メンバー",k:"parent"},
+    // Cross-cluster (紹介元)
+    {f:"DB1",t:"DB31",l:"紹介元(法人SH)",k:"ref"},
+    {f:"DB2",t:"DB31",l:"紹介元(法人SH)",k:"ref"},
+    {f:"DB3",t:"DB31",l:"紹介元(法人SH)",k:"ref"},
+  ];
+
+  const drawArrow = (x, y, angle, color) => {
+    const s = 7;
+    ctx.save(); ctx.setLineDash([]); ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - s*Math.cos(angle - 0.45), y - s*Math.sin(angle - 0.45));
+    ctx.lineTo(x - s*Math.cos(angle + 0.45), y - s*Math.sin(angle + 0.45));
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  };
+
+  for (const rel of scope7Rels) {
+    const from = scope7Positions[rel.f], to = scope7Positions[rel.t];
+    if (!from || !to) continue;
+    const color = rel.k === "parent" ? "#2563eb" : "#ea580c";
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = rel.k === "parent" ? 1.8 : 1.6;
+    ctx.globalAlpha = 0.82;
+    if (rel.k === "ref") ctx.setLineDash([7,3]);
+
+    if (rel.f === rel.t) {
+      const cx = from.x + from.w + 10;
+      const cy = from.y + from.h / 2;
+      ctx.beginPath(); ctx.arc(cx, cy, 14, -Math.PI*0.5, Math.PI*0.5); ctx.stroke();
+      drawArrow(cx, cy + 14, Math.PI*0.5, color);
+    } else {
+      const fx = from.x + from.w/2, fy = from.y + from.h/2;
+      const tx = to.x + to.w/2,   ty = to.y + to.h/2;
+      const midY = (fy + ty)/2;
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      ctx.bezierCurveTo(fx, midY, tx, midY, tx, ty);
+      ctx.stroke();
+      drawArrow(tx, ty, Math.atan2(ty - midY, tx - fx), color);
+
+      // label on curve midpoint (only cross-cluster / self for clarity)
+      const fromLayer = dbById(rel.f)?.layer;
+      const toLayer = dbById(rel.t)?.layer;
+      if (fromLayer !== toLayer) {
+        ctx.save();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#fff";
+        ctx.strokeStyle = color; ctx.lineWidth = 1;
+        const midX = (fx + tx)/2;
+        const my = midY;
+        ctx.font = "600 9px Inter, sans-serif";
+        const tw = ctx.measureText(rel.l).width + 8;
+        ctx.beginPath(); ctx.roundRect(midX - tw/2, my - 8, tw, 14, 4); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(rel.l, midX, my);
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
+  // Nodes
+  for (const id of scope7IDs) {
+    const pos = scope7Positions[id];
+    const db = dbById(id);
+    if (!pos || !db) continue;
+    const color = getLayerColor(db.layer);
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.1)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(pos.x, pos.y, pos.w, pos.h, 10); ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.roundRect(pos.x + 6, pos.y + 6, 42, 18, 5); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.font = "bold 10px Inter, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(db.id, pos.x + 27, pos.y + 18);
+    ctx.fillStyle = "#1a1d2e"; ctx.font = "600 11px Inter, Hiragino Sans, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(db.name.replace(/（.+?）/g,""), pos.x + pos.w/2, pos.y + 44);
+    ctx.restore();
+  }
+}
+
+function renderScope7PropTable() {
+  const rows = [
+    {label:"タイトル", v:["法人名","施設名","事業所名","氏名","法人名","支店名","氏名"]},
+    {label:"コード(unique_id)", v:["ACC","FAC","OFF","CON","SHA","BRN","SHC"]},
+    {label:"種別/区分", v:["組織区分+取引種別+ランク","—","サービス種別+導入ST","取引種別+カテゴリ","SH種別","—","SH種別"]},
+    {label:"エリア", v:["○","○","—","—","○","○","—"]},
+    {label:"電話/メール", v:["○","—","—","○","○","○","○"]},
+    {label:"HP(url)", v:["○","—","—","—","○","—","—"]},
+    {label:"営業ステータス", v:["○","○","○(導入ST)","—","—","—","—"]},
+    {label:"自己参照(親子)", v:["○ 子法人/親法人","—","—","○ 紹介元個人(ref)","—","—","—"]},
+    {label:"上位法人リレーション", v:["—","→DB1","→DB1","→DB1","—","→DB31","→DB31"]},
+    {label:"所属施設", v:["—","—","→DB2","→DB2","—","—","—"]},
+    {label:"所属事業所", v:["—","—","—","→DB3","—","—","—"]},
+    {label:"所属支店/メンバー", v:["—","所属メンバー→DB4","—","—","支店一覧→DB32 / メンバー→DB33","所属メンバー→DB33","所属支店→DB32"]},
+    {label:"紹介元(法人SH)", v:["→DB31","→DB31","→DB31","✕ 未設置","—","—","—"]},
+    {label:"紹介元(個人)", v:["→DB4","→DB4","→DB4","→DB4 self","—","—","—"]},
+    {label:"活動/商談/契約連携", v:["DB6-10+DB22/23/18","—","DB8/DB24","DB18","DB34/DB35","DB35","DB34/DB35"]},
+    {label:"ロールアップ", v:["施設数/事業所数","—","—","—","—","—","—"]},
+  ];
+  const tb = document.getElementById("scope7PropTable");
+  let html = "";
+  for (const r of rows) {
+    html += `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;font-weight:600;background:#fafafa;">${r.label}</td>`;
+    r.v.forEach((cell, i) => {
+      const isSH = i >= 4;
+      const bg = isSH ? "#faf9ff" : "#f8fbff";
+      html += `<td style="padding:6px 8px;border:1px solid #e2e8f0;text-align:center;background:${bg};font-size:0.76rem;">${cell}</td>`;
+    });
+    html += `</tr>`;
+  }
+  tb.innerHTML = html;
 }
 
 function renderCanvasLegend() {
